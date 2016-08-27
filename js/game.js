@@ -52,7 +52,7 @@ class Play {
 
 }
 var game = new Phaser.Game(C.game.width,C.game.height);
-this.state.add("Boot",Boot);
-this.state.add("Load",Load);
-this.state.add("Play",Play);
-this.state.start("Boot");
+game.state.add("Boot",Boot);
+game.state.add("Load",Load);
+game.state.add("Play",Play);
+game.state.start("Boot");
