@@ -1,12 +1,12 @@
 var C = {
  "game": {
-   "width": 360,
-   "height": 568
+   "width": 557.4,
+   "height": 557.4
  },
  "bg": {
    "width": 5574,
    "height": 5574,
-   "scale": 0.05740940078,
+   "scale": 0.1,
    "file": "assets/gameboard.jpg"
  }
 }
