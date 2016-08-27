@@ -23,6 +23,9 @@ function preload() {
  this.load.image("purplecircle", "assets/purple-circle.png", 72, 72);
  this.load.image("menubar","assets/greenishbar.jpg",1200,90);
  this.load.image("gameboard","assets/gameboard.jpg",5574,5574);
+}
+
+function create() {
  background = game.add.tileSprite(0,0,5574,5574,"gameboard");
  this.background.scale.set(this.config.bg.scale || 1);
 }
