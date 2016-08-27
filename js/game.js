@@ -1,31 +1,53 @@
-var game = new Phaser.Game(320,568);
 var CONFIG = {
  "bg": {
    "width": 5574,
    "height": 5574,
-   "scale": 0.05740940078
+   "scale": 0.05740940078,
+   "file": "assets/gameboard.jpg"
  }
 }
 
-var Mech = function() {
- this.config = CONFIG;
- 
+class Boot {
+  preload() {
+    this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+    this.scale.pageAlignHorizontally = true;
+    this.scale.pageAlignVertically = true;
+  }
+  create() {
+    this.state.start("Load");
+  }
+
+class Load {
+  preload() {
+    console.log("Loading.");
+    this.load.image("gameboard",C.bg.file);
+    this.load.image("blue", "assets/bluesquare.png",72,72);
+    this.load.image("red", "assets/redsquare.png",72,72);
+    this.load.image("green", "assets/greensquare.png",72,72);
+    this.load.image("orange", "assets/orangesquare.png",72,72);
+    this.load.image("bluecircle", "assets/blue-circle.png", 72, 72);
+    this.load.image("redcircle", "assets/red-circle.png", 72, 72);
+    this.load.image("purplecircle", "assets/purple-circle.png", 72, 72);
+    this.load.image("menubar","assets/greenishbar.jpg",1200,90);
+  }
+  create() {
+    console.log("Loaded!");
+    this.state.start("Play");
+  }
+
 }
 
-function preload() {
- this.config = CONFIG;
- this.load.image("blue", "assets/bluesquare.png",72,72);
- this.load.image("red", "assets/redsquare.png",72,72);
- this.load.image("green", "assets/greensquare.png",72,72);
- this.load.image("orange", "assets/orangesquare.png",72,72);
- this.load.image("bluecircle", "assets/blue-circle.png", 72, 72);
- this.load.image("redcircle", "assets/red-circle.png", 72, 72);
- this.load.image("purplecircle", "assets/purple-circle.png", 72, 72);
- this.load.image("menubar","assets/greenishbar.jpg",1200,90);
- this.load.image("gameboard","assets/gameboard.jpg",5574,5574);
-}
+class Play {
 
-function create() {
- background = game.add.tileSprite(0,0,5574,5574,"gameboard");
- this.background.scale.set(this.config.bg.scale || 1);
+  create() {
+    console.log("Game Start");
+    this.bg = this.add.tileSprite(0,0,5574,5574,"gameboard");
+    this.bg.scale.set(this.config.bg.scale || 1);
+  }
+
 }
+var game = new Phaser.Game(C.game.width,C.game.height);
+this.state.add("Boot",Boot);
+this.state.add("Load",Load);
+this.state.add("Play",Play);
+this.state.start("Boot");
