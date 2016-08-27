@@ -1,4 +1,8 @@
 var C = {
+ "game": {
+   "width": 360,
+   "height": 568
+ },
  "bg": {
    "width": 5574,
    "height": 5574,
