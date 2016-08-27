@@ -47,7 +47,7 @@ class Play {
   create() {
     console.log("Game Start");
     this.bg = this.add.tileSprite(0,0,5574,5574,"gameboard");
-    this.bg.scale.set(this.config.bg.scale || 1);
+    this.bg.scale.set(C.bg.scale || 1);
   }
 
 }
