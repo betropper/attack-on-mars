@@ -1,4 +1,4 @@
-var CONFIG = {
+var C = {
  "bg": {
    "width": 5574,
    "height": 5574,
@@ -16,6 +16,7 @@ class Boot {
   create() {
     this.state.start("Load");
   }
+}
 
 class Load {
   preload() {
