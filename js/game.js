@@ -6,7 +6,7 @@ var C = {
  "bg": {
    "width": 5574,
    "height": 5574,
-   "scale": 0.057,
+   "scale": 0.058,
    "file": "assets/gameboard.jpg"
  },
  "mech": {
