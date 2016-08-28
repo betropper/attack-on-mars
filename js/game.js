@@ -102,7 +102,7 @@ class Load {
     /*this.load.image("bluecircle", "assets/blue-circle.png", 72, 72);
     this.load.image("redcircle", "assets/red-circle.png", 72, 72);
     this.load.image("purplecircle", "assets/purple-circle.png", 72, 72);*/
-    this.load.image("greencircle", "assets/green-circle.png", C.monster.width, C.monster.height);
+    this.load.image("monster", "assets/green-circle.png", C.monster.width, C.monster.height);
     this.load.image("menubar","assets/greenishbar.jpg",1200,90);
   }
   create() {
@@ -128,6 +128,7 @@ class Play {
     for (var i = 1; i <= playerCount; i++) {
       console.log(i);
       var player = playersList[i];
+      spawnRandom("monster");
     }
     
   }
@@ -138,12 +139,18 @@ function getRandomSpace() {
   var obj_keys= Object.keys(Space);
   var ran_key = obj_keys[Math.floor(Math.random() *obj_keys.length)];
   selectedSpace = Space[ran_key];
-  return selectedSpace
+  return {
+    selectedSpace: selectedSpace,
+    key: ran_key
+  }
 }
 
 function spawnRandom(object) {
-  //game.add.sprite(x,y,object)
-}
+  var space = getRandomSpace();
+  while (space.key.indexOf("0")) {
+    space = getRandomSpace();
+  }
+  game.add.sprite(space.selectedSpace.x,space.selectedSpace.y,object) 
 
 var game = new Phaser.Game(C.game.width,C.game.height);
 game.state.add("Boot",Boot);
