@@ -76,10 +76,10 @@ var Space = {
  }
 }
 
-var First = "red";
-var Second = "blue";
-var Third = "orange";
-var Fourth = "green";
+var First;
+var Second;
+var Third;
+var Fourth;
 var playersList = [First,Second,Third,Fourth];
 
 class Boot {
