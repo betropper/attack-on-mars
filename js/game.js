@@ -64,8 +64,8 @@ class Play {
     } else if (playerCount > 4) {
       var playerCount = 4;
     }
-    players = game.add.group();
-    for (i = 0; i < playerCount; i++) {
+    //players = game.add.group();
+    for (var i = 0; i < playerCount; i++) {
       console.log(i);
     }
     
