@@ -138,8 +138,6 @@ function getRandomSpace() {
   var obj_keys= Object.keys(Space);
   var ran_key = obj_keys[Math.floor(Math.random() *obj_keys.length)];
   selectedSpace = Space[ran_key];
-  console.log(selectedSpace);
-  console.log(Space);
   return selectedSpace
 }
 
