@@ -54,7 +54,7 @@ class Load {
 class Play {
 
   create() {
-    var playersList = ["red","blue","green","orange"];
+    var playersList = ["red","blue","orange","green"];
     console.log("Game Start");
     this.bg = this.add.tileSprite(0,0,5574,5574,"gameboard");
     this.bg.scale.set(C.bg.scale || .1);
@@ -64,7 +64,10 @@ class Play {
     } else if (playerCount > 4) {
       var playerCount = 4;
     }
-    for 
+    players = game.add.group();
+    for (i = 0; i < playerCount; i++) {
+      console.log(i);
+    }
     
   }
 
