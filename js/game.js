@@ -150,7 +150,7 @@ function spawnRandom(object) {
   if (space.key.indexOf("0") != null) {
     space = getRandomSpace();
   }
-  game.add.sprite(space.selectedSpace.x,space.selectedSpace.y,object) 
+  game.add.sprite(space.selectedSpace.x*C.bg.scale,space.selectedSpace.y*C.bg.scale,object) 
 }
 var game = new Phaser.Game(C.game.width,C.game.height);
 game.state.add("Boot",Boot);
