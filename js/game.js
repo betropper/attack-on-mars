@@ -65,7 +65,7 @@ class Play {
       var playerCount = 4;
     }
     //players = game.add.group();
-    for (var i = 0; i < playerCount; i++) {
+    for (var i = 1; i <= playerCount; i++) {
       console.log(i);
     }
     
