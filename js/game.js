@@ -48,6 +48,8 @@ class Play {
     console.log("Game Start");
     this.bg = this.add.tileSprite(0,0,5574,5574,"gameboard");
     this.bg.scale.set(C.bg.scale || 1);
+    playerCount = prompt("How many will be playing?", "1");
+
   }
 
 }
