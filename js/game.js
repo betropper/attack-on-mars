@@ -147,8 +147,7 @@ function getRandomSpace() {
 
 function spawnRandom(object) {
   var space = getRandomSpace();
-  if (space.key.indexOf("0")) {
-    console.log(space.key.indexOf("0"));
+  while (space.key.indexOf("0") > -1) {
     console.log("Rerolling.");
     space = getRandomSpace();
   }
