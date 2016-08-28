@@ -1,13 +1,21 @@
 var C = {
  "game": {
    "width": 557.4,
-   "height": 557.4
+   "height": 879.5
  },
  "bg": {
    "width": 5574,
    "height": 5574,
    "scale": 0.1,
    "file": "assets/gameboard.jpg"
+ },
+ "mech": {
+   "width": 72,
+   "height": 72
+ },
+ "monster": {
+   "width": 72,
+   "height": 72
  }
 }
 
@@ -26,13 +34,14 @@ class Load {
   preload() {
     console.log("Loading.");
     this.load.image("gameboard",C.bg.file);
-    this.load.image("blue", "assets/bluesquare.png",72,72);
-    this.load.image("red", "assets/redsquare.png",72,72);
-    this.load.image("green", "assets/greensquare.png",72,72);
-    this.load.image("orange", "assets/orangesquare.png",72,72);
-    this.load.image("bluecircle", "assets/blue-circle.png", 72, 72);
+    this.load.image("blue", "assets/bluesquare.png",C.mech.width,C.mech.height);
+    this.load.image("red", "assets/redsquare.png",C.mech.width,C.mech.height);
+    this.load.image("green", "assets/greensquare.png",C.mech.width,C.mech.height);
+    this.load.image("orange", "assets/orangesquare.png",C.mech.width,C.mech.height);
+    /*this.load.image("bluecircle", "assets/blue-circle.png", 72, 72);
     this.load.image("redcircle", "assets/red-circle.png", 72, 72);
-    this.load.image("purplecircle", "assets/purple-circle.png", 72, 72);
+    this.load.image("purplecircle", "assets/purple-circle.png", 72, 72);*/
+    this.load.image("greencircle", "assets/green-circle.png", C.monster.width, C.monster.height);
     this.load.image("menubar","assets/greenishbar.jpg",1200,90);
   }
   create() {
@@ -45,13 +54,17 @@ class Load {
 class Play {
 
   create() {
+    var playersList = ["red","blue","green","orange"];
     console.log("Game Start");
     this.bg = this.add.tileSprite(0,0,5574,5574,"gameboard");
     this.bg.scale.set(C.bg.scale || .1);
-    var playerCount = prompt("How many will be playing?", "1");
-    if (!playerCount || !int(playerCount)) {
-      var playerCount = 1;
+    var playerCount = prompt("How many will be playing?", "2");
+    if (!playerCount || !Number.isInteger(playerCount)) {
+      var playerCount = 2;
+    } else if (playerCount > 4) {
+      var playerCount = 4;
     }
+    for 
     
   }
 
