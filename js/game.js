@@ -19,6 +19,69 @@ var C = {
  }
 }
 
+var Space = {
+ "center": {
+   "x": 2795,
+   "y": 2765
+ },
+ "a": {
+    "10": {
+      "x": 3215,
+      "y": 543
+    },
+    "11": {
+      "x": 3145,
+      "y": 930
+    },
+    "12": {
+      "x": 3065,
+      "y": 1360
+    },
+    "13": {
+      "x": 2955,
+      "y": 1922
+    },
+    "20": {
+      "x": 4080,
+      "y": 875
+    },
+    "21": {
+      "x": 3835,
+      "y": 1217
+    },
+    "22": {
+      "x": 3575,
+      "y": 1593
+    },
+    "23": {
+      "x": 3271,
+      "y": 2077
+    },
+    "30": {
+      "x": 4667,
+      "y": 1550
+    },
+    "31": {
+      "x": 4347,
+      "y": 1745
+    },
+    "32": {
+      "x": 3975,
+      "y": 2000
+    },
+    "33": {
+      "x": 3523,
+      "y": 2290
+    }
+ }
+}
+
+var First = "red";
+var Second = "blue";
+var Third = "orange";
+var Fourth = "green";
+var playersList = [First,Second,Third,Fourth];
+
 class Boot {
   preload() {
     this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
@@ -54,7 +117,6 @@ class Load {
 class Play {
 
   create() {
-    var playersList = ["red","blue","orange","green"];
     console.log("Game Start");
     this.bg = this.add.tileSprite(0,0,5574,5574,"gameboard");
     this.bg.scale.set(C.bg.scale || .1);
@@ -67,11 +129,27 @@ class Play {
     //players = game.add.group();
     for (var i = 1; i <= playerCount; i++) {
       console.log(i);
+      player = playersList[i];
+      player.type = "player"
     }
     
   }
 
 }
+
+function getRandomSpace() {
+  var obj_keys= Object.keys(Space);
+  var ran_key = obj_keys[Math.floor(Math.random() *obj_keys.length)];
+  selectedSpace = Space[ran_key];
+  console.log(selectedSpace);
+  console.log(Space);
+  return selectedSpace
+}
+
+function spawnRandom(object) {
+  //game.add.sprite(x,y,object)
+}
+
 var game = new Phaser.Game(C.game.width,C.game.height);
 game.state.add("Boot",Boot);
 game.state.add("Load",Load);
