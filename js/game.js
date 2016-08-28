@@ -147,7 +147,7 @@ function getRandomSpace() {
 
 function spawnRandom(object) {
   var space = getRandomSpace();
-  if (space.key.indexOf("0") != null) {
+  if (space.key.indexOf("0")) {
     space = getRandomSpace();
   }
   random = game.add.sprite(space.selectedSpace.x*C.bg.scale,space.selectedSpace.y*C.bg.scale,object); 
