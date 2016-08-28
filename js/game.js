@@ -153,8 +153,8 @@ function spawnRandom(object) {
   random = game.add.sprite(space.selectedSpace.x*C.bg.scale,space.selectedSpace.y*C.bg.scale,object); 
   random.anchor.x = .5;
   random.anchor.y = .5;
-  random.scale.x = C.bg.scale;
-  random.scale.y = C.bg.scale;
+  random.scale.x = .3;
+  random.scale.y = .3;
 }
 var game = new Phaser.Game(C.game.width,C.game.height);
 game.state.add("Boot",Boot);
