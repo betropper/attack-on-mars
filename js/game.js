@@ -1,7 +1,7 @@
 var C = {
  "game": {
-   "width": 557.4,
-   "height": 879.5
+   "width": 320,
+   "height": 568
  },
  "bg": {
    "width": 5574,
