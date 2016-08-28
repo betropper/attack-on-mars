@@ -129,7 +129,7 @@ class Play {
     //players = game.add.group();
     for (var i = 1; i <= playerCount; i++) {
       console.log(i);
-      player = playersList[i];
+      var player = playersList[i];
       player.type = "player"
     }
     
