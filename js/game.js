@@ -59,7 +59,7 @@ class Play {
     this.bg = this.add.tileSprite(0,0,5574,5574,"gameboard");
     this.bg.scale.set(C.bg.scale || .1);
     var playerCount = prompt("How many will be playing?", "2");
-    if (!playerCount || !Number.isInteger(playerCount)) {
+    if (!Number.isInteger(playerCount)) {
       var playerCount = 2;
     } else if (playerCount > 4) {
       var playerCount = 4;
