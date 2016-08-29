@@ -101,7 +101,7 @@ var Space = {
       "y": 3063
     },
     "b13": {
-      "x": 3745.
+      "x": 3745,
       "y": 2983
     },
     "b20": {
@@ -248,7 +248,7 @@ class Play {
 }
 
 function getRandomSpace() {
-  var obj_keys= Object.keys(Space);
+  var obj_keys = Object.keys(Space);
   var ran_key = obj_keys[Math.floor(Math.random() *obj_keys.length)];
   selectedSpace = Space[ran_key];
   return {
