@@ -1,3 +1,4 @@
+import Space from 'spaces.js';
 var C = {
  "game": {
    "width": 320,
@@ -19,7 +20,6 @@ var C = {
  }
 }
 
-import Space from 'spaces.js';
 var First;
 var Second;
 var Third;
