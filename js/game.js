@@ -73,7 +73,7 @@ class Play {
     for (var i = 1; i <= playerCount; i++) {
       console.log(i);
       var player = playersList[i];
-      spawnRandom("monster");
+      spawnRandom("monster", i);
     }
     
   }
@@ -90,12 +90,22 @@ function getRandomSpace() {
   }
 }
 
-function spawnRandom(object) {
-  var space = getRandomSpace();
-  while (space.key.indexOf("0") > -1) {
-    console.log("Rerolling.");
-    space = getRandomSpace();
+function spawnRandom(object,quadrant) {
+  if (time == "play") {
+    var space = getRandomSpace();
+    while (space.key.indexOf("0") > -1) {
+      console.log("Rerolling.");
+      space = getRandomSpace();
+    }
   }
+ else if (time == "start" && quadrant) {
+   var space = getRandomSpace();
+   var chr = String.fromCharCode(96 + quadrant);
+  while (space.key.indexOf(3) != 2 && space.key.indexOf(chr) != 0) {
+     console.log("Rerolling.");
+     space = getRandomSpace();
+   }
+ }
   random = game.add.sprite(space.selectedSpace.x*C.bg.scale,space.selectedSpace.y*C.bg.scale,object); 
   random.anchor.x = .5;
   random.anchor.y = .5;
