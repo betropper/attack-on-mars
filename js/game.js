@@ -52,12 +52,12 @@ class Load {
   }
   create() {
     console.log("Loaded!");
-    this.state.start("Play");
+    this.state.start("Setup");
   }
 
 }
 
-class Play {
+class Setup {
 
   create() {
     console.log("Game Start");
@@ -91,19 +91,20 @@ function getRandomSpace() {
 }
 
 function spawnRandom(object,quadrant) {
-  if (time == "play") {
+  if (quadrant == "random") {
     var space = getRandomSpace();
     while (space.key.indexOf("0") > -1) {
       console.log("Rerolling.");
       space = getRandomSpace();
     }
   }
- else if (time == "start" && quadrant) {
+ else if (quadrant) {
    var space = getRandomSpace();
    var chr = String.fromCharCode(96 + quadrant);
-  while (space.key.indexOf(3) != 2 && space.key.indexOf(chr) != 0) {
+   while (space.key.indexOf("3") !== 2 || space.key.indexOf(chr) !== 0) {
      console.log("Rerolling.");
      space = getRandomSpace();
+     console.log(space);
    }
  }
   random = game.add.sprite(space.selectedSpace.x*C.bg.scale,space.selectedSpace.y*C.bg.scale,object); 
@@ -115,5 +116,5 @@ function spawnRandom(object,quadrant) {
 var game = new Phaser.Game(C.game.width,C.game.height);
 game.state.add("Boot",Boot);
 game.state.add("Load",Load);
-game.state.add("Play",Play);
+game.state.add("Setup",Setup);
 game.state.start("Boot");
