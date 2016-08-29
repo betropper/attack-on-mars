@@ -19,7 +19,7 @@ var C = {
  }
 }
 
-import Space from "spaces";
+import Space from 'spaces.js';
 var First;
 var Second;
 var Third;
