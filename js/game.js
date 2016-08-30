@@ -19,7 +19,7 @@ var C = {
  }
 }
 
-var Firsti = "red";
+var First = "red";
 var Second = "blue";
 var Third = "green";
 var Fourth = "orange";
@@ -62,7 +62,7 @@ class Setup {
   create() {
     console.log("Game Start");
     this.bg = this.add.tileSprite(0,0,5574,5574,"gameboard");
-    this.bg.scale.set(C.bg.scale || .1);
+    //this.bg.scale.set(C.bg.scale || .1);
     var playerCount = parseInt(prompt("How many will be playing?", "2")) || null;
     if (!playerCount || Number.isInteger(playerCount) == false || playerCount < 2) {
       var playerCount = 2;
@@ -74,7 +74,7 @@ class Setup {
       console.log(i);
       var player = playersList[i];
       spawnRandom("monster", i);
-      player = game.add.sprite(game.world.center.x - C.game.width/2 + C.mech.width/2 + i*C.mech.width  ,game.world.center.y - 100, player)
+      player = game.add.sprite(game.world.centerX - C.game.width/2 + C.mech.width/2 + i*C.mech.width, game.world.centerY - 100, player)
     }
     
   }
@@ -115,6 +115,7 @@ function spawnRandom(object,quadrant) {
   random.anchor.y = .5;
   random.scale.x = .3;
   random.scale.y = .3;
+  random.smoothed = false;
 }
 var game = new Phaser.Game(C.game.width,C.game.height);
 game.state.add("Boot",Boot);
