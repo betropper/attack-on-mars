@@ -24,6 +24,7 @@ var Second = "blue";
 var Third = "green";
 var Fourth = "orange";
 var playersList = [First,Second,Third,Fourth];
+var turn = playerList[1];
 
 class Boot {
   preload() {
