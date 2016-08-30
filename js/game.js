@@ -23,7 +23,7 @@ var First = "red";
 var Second = "blue";
 var Third = "green";
 var Fourth = "orange";
-var playersList = [First,Second,Third,Fourth];
+var playersList = ["red","blue","green","orange"];
 
 class Boot {
   preload() {
