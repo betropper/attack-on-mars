@@ -1,12 +1,12 @@
 var C = {
  "game": {
-   "width": 320,
-   "height": 568
+   "width": 3200,
+   "height": 5680
  },
  "bg": {
    "width": 5574,
    "height": 5574,
-   "scale": 0.058,
+   "scale": 0.58,
    "file": "assets/gameboard.jpg"
  },
  "mech": {
@@ -62,7 +62,7 @@ class Setup {
   create() {
     console.log("Game Start");
     this.bg = this.add.tileSprite(0,0,5574,5574,"gameboard");
-    //this.bg.scale.set(C.bg.scale || .1);
+    this.bg.scale.set(C.bg.scale || .1);
     var playerCount = parseInt(prompt("How many will be playing?", "2")) || null;
     if (!playerCount || Number.isInteger(playerCount) == false || playerCount < 2) {
       var playerCount = 2;
@@ -113,8 +113,8 @@ function spawnRandom(object,quadrant) {
   random = game.add.sprite(space.selectedSpace.x*C.bg.scale,space.selectedSpace.y*C.bg.scale,object); 
   random.anchor.x = .5;
   random.anchor.y = .5;
-  random.scale.x = .3;
-  random.scale.y = .3;
+  random.scale.x = 2;
+  random.scale.y = 2;
   random.smoothed = false;
 }
 var game = new Phaser.Game(C.game.width,C.game.height);
