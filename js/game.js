@@ -74,7 +74,7 @@ class Setup {
       console.log(i);
       var player = playersList[i];
       spawnRandom("monster", i);
-      player = game.add.sprite(game.world.centerX + i*C.mech.width, game.world.centerY - 2000, player)
+      player = game.add.sprite(game.world.centerX, game.world.centerY, player)
       player.scale = 2.5;
       player.smoothed = false;
     }
