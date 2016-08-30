@@ -72,9 +72,6 @@ class Setup {
     //players = game.add.group();
     for (var i = 1; i <= playerCount; i++) {
       console.log(i);
-      playersList[i-1] = function() {
-        game.add.sprite(game.world.centerX, game.world.centerY, player)
-      }
       spawnRandom(playersList[i-1], i) ;
       spawnRandom("monster", i);
     }
@@ -106,10 +103,17 @@ function spawnRandom(object,quadrant) {
  else if (quadrant) {
    var space = getRandomSpace();
    var chr = String.fromCharCode(96 + quadrant);
-   while (space.key.indexOf("3") !== 2 || space.key.indexOf(chr) !== 0) {
-     console.log("Rerolling.");
-     space = getRandomSpace();
-     console.log(space);
+   if (object != "monster") {
+    while (space.key.indexOf("0") !== 2 || space.key.indexOf(chr) !== 0) {
+      console.log("Rerolling.");
+      space = getRandomSpace();
+      console.log(space);
+   } else {
+    while (space.key.indexOf("3") !== 2 || space.key.indexOf(chr) !== 0) {
+      console.log("Rerolling.");
+      space = getRandomSpace();
+      console.log(space);
+    }
    }
  }
   random = game.add.sprite(space.selectedSpace.x*C.bg.scale,space.selectedSpace.y*C.bg.scale,object); 
