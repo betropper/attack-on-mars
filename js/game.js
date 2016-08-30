@@ -19,10 +19,10 @@ var C = {
  }
 }
 
-var First;
-var Second;
-var Third;
-var Fourth;
+var Firsti = "red";
+var Second = "blue";
+var Third = "green";
+var Fourth = "orange";
 var playersList = [First,Second,Third,Fourth];
 
 class Boot {
@@ -74,9 +74,12 @@ class Setup {
       console.log(i);
       var player = playersList[i];
       spawnRandom("monster", i);
+      player = game.add.sprite(game.world.center.x - C.game.width/2 + C.mech.width/2 + i*C.mech.width  ,game.world.center.y - 100, player)
     }
     
   }
+
+
 
 }
 
