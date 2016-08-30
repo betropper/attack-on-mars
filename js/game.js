@@ -108,6 +108,7 @@ function spawnRandom(object,quadrant) {
       console.log("Rerolling.");
       space = getRandomSpace();
       console.log(space);
+    }
    } else {
     while (space.key.indexOf("3") !== 2 || space.key.indexOf(chr) !== 0) {
       console.log("Rerolling.");
@@ -122,6 +123,7 @@ function spawnRandom(object,quadrant) {
   random.scale.x = 2;
   random.scale.y = 2;
   random.smoothed = false;
+  C.selectedSpace.occupied = true;
 }
 var game = new Phaser.Game(C.game.width,C.game.height);
 game.state.add("Boot",Boot);
