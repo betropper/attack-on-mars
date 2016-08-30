@@ -123,7 +123,7 @@ function spawnRandom(object,quadrant) {
   random.scale.x = 2;
   random.scale.y = 2;
   random.smoothed = false;
-  C.selectedSpace.occupied = true;
+  selectedSpace.occupied = true;
 }
 var game = new Phaser.Game(C.game.width,C.game.height);
 game.state.add("Boot",Boot);
