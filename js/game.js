@@ -24,7 +24,7 @@ var Second = "blue";
 var Third = "green";
 var Fourth = "orange";
 var playersList = [First,Second,Third,Fourth];
-var turn = playerList[1];
+var turn = playersList[1];
 
 class Boot {
   preload() {
@@ -73,8 +73,8 @@ class Setup {
     //players = game.add.group();
     for (var i = 1; i <= playerCount; i++) {
       console.log(i);
-      spawnRandom(playersList[i-1], i) ;
-      spawnRandom("monster", i);
+      spawnRandom(playersList[i-1], i, "0") ;
+      spawnRandom("monster", i, "3");
     }
     
   }
@@ -93,7 +93,7 @@ function getRandomSpace() {
   }
 }
 
-function spawnRandom(object,quadrant) {
+function spawnRandom(object,quadrant,row) {
   if (quadrant == "random") {
     var space = getRandomSpace();
     while (space.key.indexOf("0") > -1) {
@@ -104,19 +104,11 @@ function spawnRandom(object,quadrant) {
  else if (quadrant) {
    var space = getRandomSpace();
    var chr = String.fromCharCode(96 + quadrant);
-   if (object != "monster") {
-    while (space.key.indexOf("0") !== 2 || space.key.indexOf(chr) !== 0) {
+    while (space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0) {
       console.log("Rerolling.");
       space = getRandomSpace();
       console.log(space);
     }
-   } else {
-    while (space.key.indexOf("3") !== 2 || space.key.indexOf(chr) !== 0) {
-      console.log("Rerolling.");
-      space = getRandomSpace();
-      console.log(space);
-    }
-   }
  }
   random = game.add.sprite(space.selectedSpace.x*C.bg.scale,space.selectedSpace.y*C.bg.scale,object); 
   random.anchor.x = .5;
@@ -126,6 +118,7 @@ function spawnRandom(object,quadrant) {
   random.smoothed = false;
   selectedSpace.occupied = true;
 }
+
 var game = new Phaser.Game(C.game.width,C.game.height);
 game.state.add("Boot",Boot);
 game.state.add("Load",Load);
