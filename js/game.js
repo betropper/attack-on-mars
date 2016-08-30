@@ -72,7 +72,8 @@ class Setup {
     //players = game.add.group();
     for (var i = 1; i <= playerCount; i++) {
       console.log(i);
-      var player = playersList[i];
+      var player = playersList[i-1];
+      console.log(player);
       spawnRandom("monster", i);
       player = game.add.sprite(game.world.centerX, game.world.centerY, player)
       player.scale = 2.5;
