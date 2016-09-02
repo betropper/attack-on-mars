@@ -19,12 +19,14 @@ var C = {
  }
 }
 
+
 var First = "red";
 var Second = "blue";
 var Third = "green";
 var Fourth = "orange";
 var playersList = [First,Second,Third,Fourth];
 var turn = playersList[1];
+var occupiedRows = ['center'];
 
 class Boot {
   preload() {
@@ -45,9 +47,9 @@ class Load {
     this.load.image("red", "assets/redsquare.png",C.mech.width,C.mech.height);
     this.load.image("green", "assets/greensquare.png",C.mech.width,C.mech.height);
     this.load.image("orange", "assets/orangesquare.png",C.mech.width,C.mech.height);
-    /*this.load.image("bluecircle", "assets/blue-circle.png", 72, 72);
+    this.load.image("bluecircle", "assets/blue-circle.png", 72, 72);
     this.load.image("redcircle", "assets/red-circle.png", 72, 72);
-    this.load.image("purplecircle", "assets/purple-circle.png", 72, 72);*/
+    this.load.image("purplecircle", "assets/purple-circle.png", 72, 72);
     this.load.image("monster", "assets/green-circle.png", C.monster.width, C.monster.height);
     this.load.image("menubar","assets/greenishbar.jpg",1200,90);
   }
@@ -73,8 +75,10 @@ class Setup {
     //players = game.add.group();
     for (var i = 1; i <= playerCount; i++) {
       console.log(i);
-      spawnRandom(playersList[i-1], i, "0") ;
-      spawnRandom("monster", i, "3");
+      var destroyedCityColumn = spawnRandom("purplecircle", i, "0", false);
+      occupiedRows.push(destroyedCityColumn.substring(0,2));
+      spawnRandom(playersList[i-1], i, "0", true) ;
+      spawnRandom("monster", i, "i", true);
     }
     
   }
@@ -93,12 +97,19 @@ function getRandomSpace() {
   }
 }
 
-function spawnRandom(object,quadrant,row) {
+
+function spawnRandom(object,quadrant,row,occupiedCheck) {
   if (quadrant == "random") {
     var space = getRandomSpace();
     while (space.key.indexOf("0") > -1) {
       console.log("Rerolling.");
       space = getRandomSpace();
+      if (occupiedCheck === true) {
+        while (selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2))) {  
+          console.log("Rerolling");
+          space = getRandomSpace();
+        }
+      }
     }
   }
  else if (quadrant) {
@@ -108,6 +119,12 @@ function spawnRandom(object,quadrant,row) {
       console.log("Rerolling.");
       space = getRandomSpace();
       console.log(space);
+      if (occupiedCheck === true) {
+        while (selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2))) {  
+          console.log("Rerolling");
+          space = getRandomSpace();
+        }
+      }
     }
  }
   random = game.add.sprite(space.selectedSpace.x*C.bg.scale,space.selectedSpace.y*C.bg.scale,object); 
@@ -117,6 +134,7 @@ function spawnRandom(object,quadrant,row) {
   random.scale.y = 2;
   random.smoothed = false;
   selectedSpace.occupied = true;
+  return space.key;
 }
 
 var game = new Phaser.Game(C.game.width,C.game.height);
