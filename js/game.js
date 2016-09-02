@@ -100,23 +100,21 @@ function getRandomSpace() {
 
 function spawnRandom(object,quadrant,row,occupiedCheck) {
   var condition;
-  var space = getRandomSpace();
-  if (quadrant === "random" && occupiedCheck === true) {
-      condition = space.key.indexOf("0") || selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1; 
-  } else if (quadrant === "random") {
-      condition = space.key.indexOf("0");
-  } else if (quadrant && row && occupiedCheck === true) {
-      var chr = String.fromCharCode(96 + quadrant);
-      condition = space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0 || selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1;
-  } else if (quadrant && row) { 
-      var chr = String.fromCharCode(96 + quadrant);
-      condition = space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0;
-  }
-
-  while (condition) {
-    console.log("Rerolling");
-    var space = getRandomSpace();
-  }
+  do {
+      var space = getRandomSpace();
+    if (quadrant === "random" && occupiedCheck === true) {
+        condition = space.key.indexOf("0") || selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1; 
+    } else if (quadrant === "random") {
+        condition = space.key.indexOf("0");
+    } else if (quadrant && row && occupiedCheck === true) {
+        var chr = String.fromCharCode(96 + quadrant);
+        condition = space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0 || selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1;
+    } else if (quadrant && row) { 
+        var chr = String.fromCharCode(96 + quadrant);
+        condition = space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0;
+    }
+    console.log(condition);
+  } while (condition === true);
 
   random = game.add.sprite(space.selectedSpace.x*C.bg.scale,space.selectedSpace.y*C.bg.scale,object); 
   random.anchor.x = .5;
