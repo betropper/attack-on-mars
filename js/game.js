@@ -99,34 +99,25 @@ function getRandomSpace() {
 
 
 function spawnRandom(object,quadrant,row,occupiedCheck) {
-  if (quadrant == "random") {
-    var space = getRandomSpace();
-    while (space.key.indexOf("0") > -1) {
-      console.log("Rerolling.");
-      space = getRandomSpace();
-      if (occupiedCheck === true) {
-        while (selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2))) {  
-          console.log("Rerolling");
-          space = getRandomSpace();
-        }
-      }
-    }
+  var condition;
+  var space = getRandomSpace();
+  if (quadrant === "random" && occupiedCheck === true) {
+      condition = space.key.indexOf("0") || selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1; 
+  } else if (quadrant === "random") {
+      condition = space.key.indexOf("0");
+  } else if (quadrant && row && occupiedCheck === true) {
+      var chr = String.fromCharCode(96 + quadrant);
+      condition = space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0 || selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1;
+  } else if (quadrant && row) { 
+      var chr = String.fromCharCode(96 + quadrant);
+      condition = space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0;
   }
- else if (quadrant) {
-   var space = getRandomSpace();
-   var chr = String.fromCharCode(96 + quadrant);
-    while (space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0) {
-      console.log("Rerolling.");
-      space = getRandomSpace();
-      console.log(space);
-      if (occupiedCheck === true) {
-        while (selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2))) {  
-          console.log("Rerolling");
-          space = getRandomSpace();
-        }
-      }
-    }
- }
+
+  while (condition) {
+    console.log("Rerolling");
+    var space = getRandomSpace();
+  }
+
   random = game.add.sprite(space.selectedSpace.x*C.bg.scale,space.selectedSpace.y*C.bg.scale,object); 
   random.anchor.x = .5;
   random.anchor.y = .5;
