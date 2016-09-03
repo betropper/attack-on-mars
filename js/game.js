@@ -78,8 +78,10 @@ class Setup {
       var destroyedCityColumn = spawnRandom("purplecircle", i, "0", false);
       occupiedRows.push(destroyedCityColumn.substring(0,2));
       spawnRandom(playersList[i-1], i, "0", true) ;
-      spawnRandom("monster", i, "i", true);
+      spawnRandom("monster", i, "3", true);
     }
+    console.log("Pieces Placed.");
+
     
   }
 
@@ -112,6 +114,8 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     } else if (quadrant && row) { 
         var chr = String.fromCharCode(96 + quadrant);
         condition = space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0;
+    } else {
+        condition = false;
     }
     console.log(condition);
   } while (condition === true);
