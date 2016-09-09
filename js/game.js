@@ -30,6 +30,7 @@ var playersList = [];
 var occupiedRows = ['center'];
 var playerNames = [First,Second,Third,Fourth];
 var playerCount = 2;
+var turn;
 
 class Boot {
   preload() {
@@ -81,17 +82,18 @@ class Setup {
       var destroyedCityColumn = spawnRandom("purplecircle", i, "0", false).key;
       occupiedRows.push(destroyedCityColumn.substring(0,2));
       playersList[i] = spawnRandom(playerNames[i-1], i, "0", true);
+      playersList[i].number = i;
       spawnRandom("monster", i, "3", true);
     }
   }
 
   create() {
-    var turn = playersList[1];
+    turn = playersList[1];
     turn.sprite.inputEnabled = true;
     turn.sprite.input.enableDrag(true);
     var closestSpaces = getClosestSpaces(turn.key);
-    //turn.events.onDragStop.add(attachClosestSpace, this,
-    //moveableSpaces);
+    turn.sprite.closestSpaces = closestSpaces;
+    turn.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
   }
 }
 
@@ -102,8 +104,32 @@ class Play {
     }
 }
 
-function attachClosestSpace(mech,closestSpaces) {
-    
+function distance(x1, y1, x2, y2) {
+   var dx = x1 - x2;
+   var dy = y1 - y2;
+
+   console.log(Math.sqrt(dx * dx + dy * dy));
+   return Math.sqrt(dx * dx + dy * dy);
+
+}
+
+function attachClosestSpace(sprite,pointer) {
+    var closestDistance = 9999;
+    var closest = sprite;
+    for (i = 0; i < sprite.closestSpaces.selectedSpaces.length; i++) {
+        var spaceObjX = sprite.closestSpaces.selectedSpaces[i].x*C.bg.scale;
+        var spaceObjY = sprite.closestSpaces.selectedSpaces[i].y*C.bg.scale;
+        console.log(spaceObjX,spaceObjY,sprite.x,sprite.y);
+        if (distance(spaceObjX,spaceObjY,sprite.x,sprite.y) < closestDistance) {
+          closest = sprite.closestSpaces.selectedSpaces[i];
+          closestDistance = distance(spaceObjX,spaceObjY,sprite.x,sprite.y);
+          closestKey = sprite.closestSpaces.keys[i];
+        }
+    }
+    console.log(closest);
+    sprite.x = closest.x*C.bg.scale;
+    sprite.y = closest.y*C.bg.scale;
+    sprite.closestSpaces = getClosestSpaces(closestKey);
 }
 
 function findNextLetter(letter) {
@@ -138,14 +164,14 @@ function getClosestSpaces(spaceKey) {
       close_keys.push(findNextLetter(spaceKey.charAt(0)) + 1 + spaceKey.charAt(2) );
       console.log(findNextLetter(spaceKey));
     } 
-   } else {
+   } else if (spaceKey !== "center") {
       close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) + 1) + spaceKey.charAt(2) );
       close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) - 1) + spaceKey.charAt(2) );
    } 
 
   // These next if statements find the nearby spaces per column, up
    // and down. It accounts for the top and bottom spaces as well.
-  if (spaceKey.indexOf("3") === 2) { 
+  if (spaceKey.indexOf("3") === 2 || spaceKey.indexOf("33") === 1) { 
     close_keys.push("center");
     close_keys.push(findPreviousLetter(spaceKey));
   } else if (spaceKey.indexOf("0") === 2 ) { 
