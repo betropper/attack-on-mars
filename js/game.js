@@ -1,7 +1,12 @@
 var C = {
  "game": {
    "width": 320,
-   "height": 568
+   "height": 568,
+   "textStyle": {
+      align: 'center',
+      fill: "#ffffff",
+      fontSize: '20px Arial'
+   }
  },
  "bg": {
    "width": 5574,
@@ -31,6 +36,8 @@ var occupiedRows = ['center'];
 var playerNames = [First,Second,Third,Fourth];
 var playerCount = 2;
 var turn;
+var actionPoints = 3;
+var closestSpaces;
 
 class Boot {
   preload() {
@@ -64,6 +71,8 @@ class Load {
 
 }
 
+var spaceDisplay;
+
 class Setup {
 
   preload() {
@@ -83,6 +92,8 @@ class Setup {
       occupiedRows.push(destroyedCityColumn.substring(0,2));
       playersList[i] = spawnRandom(playerNames[i-1], i, "0", true);
       playersList[i].number = i;
+      playersList[i].rp = 3;
+      playersList[i].hp = 4;
       spawnRandom("monster", i, "3", true);
     }
   }
@@ -91,10 +102,17 @@ class Setup {
     turn = playersList[1];
     turn.sprite.inputEnabled = true;
     turn.sprite.input.enableDrag(true);
-    var closestSpaces = getClosestSpaces(turn.key);
+    closestSpaces = getClosestSpaces(turn.key);
     turn.sprite.closestSpaces = closestSpaces;
+    spaceDisplay = game.add.text(game.world.centerX - 40, game.world.centerY + 60,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
     turn.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
   }
+  update() {
+    if (spaceDisplay) {
+      spaceDisplay.setText("Valid Movements for " + turn.sprite.key + ":\n " + turn.sprite.closestSpaces.keys.join(" ") + "\nRemaining moves: " + actionPoints,C.game.textStyle);
+    }
+  }
+
 }
 
 
@@ -104,13 +122,32 @@ class Play {
     }
 }
 
+function changeTurn() {
+    actionPoints = 3;
+    turn.sprite.input.enableDrag(false);
+    turn.sprite.inputEnabled = false;
+    if (turn.number < playerCount) {
+      turn = playersList[turn.number + 1];
+    } else {
+      turn = playersList[1];
+    }
+    //if (turn.sprite.inputEnabled === false) {
+      turn.sprite.inputEnabled = true;
+      turn.sprite.input.enableDrag(true);
+    //}
+    closestSpaces = getClosestSpaces(turn.key);
+    turn.sprite.closestSpaces = closestSpaces;
+    turn.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
+}
+
+
+
+
 function distance(x1, y1, x2, y2) {
    var dx = x1 - x2;
    var dy = y1 - y2;
 
-   console.log(Math.sqrt(dx * dx + dy * dy));
    return Math.sqrt(dx * dx + dy * dy);
-
 }
 
 function attachClosestSpace(sprite,pointer) {
@@ -119,7 +156,6 @@ function attachClosestSpace(sprite,pointer) {
     for (i = 0; i < sprite.closestSpaces.selectedSpaces.length; i++) {
         var spaceObjX = sprite.closestSpaces.selectedSpaces[i].x*C.bg.scale;
         var spaceObjY = sprite.closestSpaces.selectedSpaces[i].y*C.bg.scale;
-        console.log(spaceObjX,spaceObjY,sprite.x,sprite.y);
         if (distance(spaceObjX,spaceObjY,sprite.x,sprite.y) < closestDistance) {
           closest = sprite.closestSpaces.selectedSpaces[i];
           closestDistance = distance(spaceObjX,spaceObjY,sprite.x,sprite.y);
@@ -130,6 +166,14 @@ function attachClosestSpace(sprite,pointer) {
     sprite.x = closest.x*C.bg.scale;
     sprite.y = closest.y*C.bg.scale;
     sprite.closestSpaces = getClosestSpaces(closestKey);
+    turn.key = closestKey;
+    turn.space.occupied = false;
+    turn.space = closest;
+    closest.occupied = true;
+    actionPoints -= 1;
+    if (actionPoints === 0) {
+      changeTurn();
+    }
 }
 
 function findNextLetter(letter) {
