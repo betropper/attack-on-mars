@@ -38,6 +38,7 @@ var playerCount = 2;
 var turn;
 var actionPoints = 3;
 var closestSpaces;
+var monstersList = [];
 
 class Boot {
   preload() {
@@ -94,7 +95,7 @@ class Setup {
       playersList[i].number = i;
       playersList[i].rp = 3;
       playersList[i].hp = 4;
-      spawnRandom("monster", i, "3", true);
+      monstersList[i-1] = spawnRandom("monster", i, "3", true);
     }
   }
 
@@ -122,6 +123,12 @@ class Play {
     }
 }
 
+function moveMonsters() {
+    for (var i = 0; i <= monstersList.length; i++) {
+      monstersList[i].sprite.closestSpaces = getClosestSpaces(monster.key);
+    }
+}
+
 function changeTurn() {
     actionPoints = 3;
     turn.sprite.input.enableDrag(false);
@@ -129,6 +136,7 @@ function changeTurn() {
     if (turn.number < playerCount) {
       turn = playersList[turn.number + 1];
     } else {
+      moveMonsters();
       turn = playersList[1];
     }
     //if (turn.sprite.inputEnabled === false) {
