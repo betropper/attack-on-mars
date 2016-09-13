@@ -73,6 +73,7 @@ class Load {
 }
 
 var spaceDisplay;
+var destroyedCities = [];
 
 class Setup {
 
@@ -89,8 +90,9 @@ class Setup {
     //players = game.add.group();
     for (var i = 1; i <= playerCount; i++) {
       console.log(i);
-      var destroyedCityColumn = spawnRandom("purplecircle", i, "0", false).key;
-      occupiedRows.push(destroyedCityColumn.substring(0,2));
+      var destroyedCityColumn = spawnRandom("purplecircle", i, "0", false);
+      destroyedCities[i-1] = destroyedCityColumn;
+      occupiedRows.push(destroyedCityColumn.key.substring(0,2));
       playersList[i] = spawnRandom(playerNames[i-1], i, "0", true);
       playersList[i].number = i;
       playersList[i].rp = 3;
@@ -125,8 +127,35 @@ class Play {
 
 function moveMonsters() {
     for (var i = 0; i <= monstersList.length; i++) {
-      monstersList[i].sprite.closestSpaces = getClosestSpaces(monster.key);
+      monstersList[i].sprite.closestSpaces = getClosestSpaces(monstersList[i].key);
+      var newDestination = monstersList[i].key.charAt(0,1) + (parseInt(monstersList[i].key.charAt(2)) - 1);
+      if (parseInt(monstersList[i].key.charAt(2)) - 1 === 0 && monstersList[i].sprite.closestSpaces.selectedSpaces[newDestination].occupied && monstersList[i].sprite.closestSpaces.selectedSpaces[newDestination].occupied !== true) {
+        console.log("U R DED");  
+        var destroyedCityColumn = spawnRandom("purplecircle", newDestination.charCodeAt(0) - 96, "0", false);
+        destroyedCities[].push(destroyedCityColumn);
+        occupiedRows.push(destroyedCityColumn.key.substring(0,2));
+      } else if (parseInt(monstersList[i].key.charAt(2)) === 0 )  {
+        newDestination = monstersList[i].sprite.closestSpaces.keys[clockwise];
+        if (Space[newDestination].occupied !== true) {
+          var destroyedCityColumn = spawnRandom("purplecircle", newDestination.charCodeAt(0) - 96, "0", false);
+          destroyedCities[].push(destroyedCityColumn);
+          occupiedRows.push(destroyedCityColumn.key.substring(0,2));
+        }
+      }
+      console.log(newDestination);
+      move(monstersList[i], newDestination);
     }
+    monstersList[].push(spawnRandom("monster", Math.floor(Math.random() * (playerCount - 1)) + 1, "3", true));
+}
+
+function move(object,destination) {
+  object.sprite.x = Space[destination].x*C.bg.scale;
+  object.sprite.y = Space[destination].y*C.bg.scale;
+  object.sprite.closestSpaces = getClosestSpaces(object.key);
+  object.key = destination;
+  object.space.occupied = false;
+  object.space = Space[destination];
+  Space[destination].occupied = true;
 }
 
 function changeTurn() {
@@ -200,34 +229,34 @@ function getClosestSpaces(spaceKey) {
   //spaces. Pattern is Left, Right, Up, Down
   if (spaceKey.indexOf("1") === 1) {
     if (spaceKey.charAt(0) !== "a") {
-      close_keys.push(findPreviousLetter(spaceKey.charAt(0)) + 4 + spaceKey.charAt(2) );
-      close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) + 1) + spaceKey.charAt(2) );
+      var counter_clockwise = close_keys.push(findPreviousLetter(spaceKey.charAt(0)) + 4 + spaceKey.charAt(2) );
+      var clockwise = close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) + 1) + spaceKey.charAt(2) );
       console.log(findPreviousLetter(spaceKey));
      } else {
-      close_keys.push(lastQuadrant + 4 + spaceKey.charAt(2));
-      close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) + 1) + spaceKey.charAt(2) );
+      var counter_clockwise = close_keys.push(lastQuadrant + 4 + spaceKey.charAt(2));
+      var clockwise = close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) + 1) + spaceKey.charAt(2) );
      }     
   } else if (spaceKey.indexOf("4") === 1) {
     if (spaceKey.charAt(0) === lastQuadrant) {
-      close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) - 1) + spaceKey.charAt(2) );
-      close_keys.push("a1" + spaceKey.charAt(2));
+      var counter_clockwise = close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) - 1) + spaceKey.charAt(2) );
+      var clockwise = close_keys.push("a1" + spaceKey.charAt(2));
     } else {
-      close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) - 1) + spaceKey.charAt(2) );
-      close_keys.push(findNextLetter(spaceKey.charAt(0)) + 1 + spaceKey.charAt(2) );
+      var counter_clockwise = close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) - 1) + spaceKey.charAt(2) );
+      var clockwise = close_keys.push(findNextLetter(spaceKey.charAt(0)) + 1 + spaceKey.charAt(2) );
       console.log(findNextLetter(spaceKey));
     } 
    } else if (spaceKey !== "center") {
-      close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) + 1) + spaceKey.charAt(2) );
-      close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) - 1) + spaceKey.charAt(2) );
+      var counter_clockwise = close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) + 1) + spaceKey.charAt(2) );
+      var clockwise = close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) - 1) + spaceKey.charAt(2) );
    } 
 
   // These next if statements find the nearby spaces per column, up
    // and down. It accounts for the top and bottom spaces as well.
   if (spaceKey.indexOf("3") === 2 || spaceKey.indexOf("33") === 1) { 
-    close_keys.push("center");
-    close_keys.push(findPreviousLetter(spaceKey));
+    var inward = close_keys.push("center");
+    var outward = close_keys.push(findPreviousLetter(spaceKey));
   } else if (spaceKey.indexOf("0") === 2 ) { 
-    close_keys.push(findNextLetter(spaceKey));
+    var inward = close_keys.push(findNextLetter(spaceKey));
   } else if (spaceKey === "center") {
     for (var i = 1; i <= playerCount; i++) {
        for (var l = 1; l <= 4; l++) {
@@ -235,8 +264,8 @@ function getClosestSpaces(spaceKey) {
        } 
     } 
   } else {
-    close_keys.push(findPreviousLetter(spaceKey));
-    close_keys.push(findNextLetter(spaceKey));
+    var inward = close_keys.push(findPreviousLetter(spaceKey));
+    var outward = close_keys.push(findNextLetter(spaceKey));
   }
   selectedSpaces = [];
   close_keys.forEach(function(key) {
