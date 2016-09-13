@@ -126,10 +126,10 @@ class Play {
 }
 
 function moveMonsters() {
-    for (var i = 0; i <= monstersList.length; i++) {
+    for (var i = 0; i <= monstersList.length - 1; i++) {
       monstersList[i].sprite.closestSpaces = getClosestSpaces(monstersList[i].key);
-      var newDestination = monstersList[i].key.charAt(0,1) + (parseInt(monstersList[i].key.charAt(2)) - 1);
-      if (parseInt(monstersList[i].key.charAt(2)) - 1 === 0 && monstersList[i].sprite.closestSpaces.selectedSpaces[newDestination].occupied && monstersList[i].sprite.closestSpaces.selectedSpaces[newDestination].occupied !== true) {
+      var newDestination = monstersList[i].key.substring(0,2) + (parseInt(monstersList[i].key.charAt(2)) - 1);
+      if (parseInt(monstersList[i].key.charAt(2)) - 1 === 0 && Space[newDestination].occupied && Space[newDestination].occupied !== true) {
         console.log("U R DED");  
         var destroyedCityColumn = spawnRandom("purplecircle", newDestination.charCodeAt(0) - 96, "0", false);
         destroyedCities.push(destroyedCityColumn);
@@ -145,7 +145,7 @@ function moveMonsters() {
       console.log(newDestination);
       move(monstersList[i], newDestination);
     }
-    monstersList[].push(spawnRandom("monster", Math.floor(Math.random() * (playerCount - 1)) + 1, "3", true));
+    monstersList.push(spawnRandom("monster", Math.floor(Math.random() * (playerCount - 1)) + 1, "3", true));
 }
 
 function move(object,destination) {
@@ -225,38 +225,39 @@ function getClosestSpaces(spaceKey) {
   var obj_keys = Object.keys(Space);
   var close_keys = [];
   var lastQuadrant = String.fromCharCode(96 + playerCount);
+  var inward; var outward; var clockwise; var counter_clockwise;
   //Fisrt three, the if, the else if, and the else, determine the left and right
   //spaces. Pattern is Left, Right, Up, Down
   if (spaceKey.indexOf("1") === 1) {
     if (spaceKey.charAt(0) !== "a") {
-      var counter_clockwise = close_keys.push(findPreviousLetter(spaceKey.charAt(0)) + 4 + spaceKey.charAt(2) );
-      var clockwise = close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) + 1) + spaceKey.charAt(2) );
+      counter_clockwise = findPreviousLetter(spaceKey.charAt(0)) + 4 + spaceKey.charAt(2);
+      clockwise = spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) + 1) + spaceKey.charAt(2);
       console.log(findPreviousLetter(spaceKey));
      } else {
-      var counter_clockwise = close_keys.push(lastQuadrant + 4 + spaceKey.charAt(2));
-      var clockwise = close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) + 1) + spaceKey.charAt(2) );
+      counter_clockwise = lastQuadrant + 4 + spaceKey.charAt(2);
+      clockwise = spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) + 1) + spaceKey.charAt(2);
      }     
   } else if (spaceKey.indexOf("4") === 1) {
     if (spaceKey.charAt(0) === lastQuadrant) {
-      var counter_clockwise = close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) - 1) + spaceKey.charAt(2) );
-      var clockwise = close_keys.push("a1" + spaceKey.charAt(2));
+      counter_clockwise = spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) - 1) + spaceKey.charAt(2);
+      clockwise = "a1" + spaceKey.charAt(2);
     } else {
-      var counter_clockwise = close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) - 1) + spaceKey.charAt(2) );
-      var clockwise = close_keys.push(findNextLetter(spaceKey.charAt(0)) + 1 + spaceKey.charAt(2) );
+      counter_clockwise = spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) - 1) + spaceKey.charAt(2);
+      clockwise = findNextLetter(spaceKey.charAt(0)) + 1 + spaceKey.charAt(2);
       console.log(findNextLetter(spaceKey));
     } 
    } else if (spaceKey !== "center") {
-      var counter_clockwise = close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) + 1) + spaceKey.charAt(2) );
-      var clockwise = close_keys.push(spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) - 1) + spaceKey.charAt(2) );
+      counter_clockwise = spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) + 1) + spaceKey.charAt(2) ;
+      clockwise = spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) - 1) + spaceKey.charAt(2) ;
    } 
 
   // These next if statements find the nearby spaces per column, up
    // and down. It accounts for the top and bottom spaces as well.
   if (spaceKey.indexOf("3") === 2 || spaceKey.indexOf("33") === 1) { 
-    var inward = close_keys.push("center");
-    var outward = close_keys.push(findPreviousLetter(spaceKey));
+    inward = "center";
+    outward = findPreviousLetter(spaceKey);
   } else if (spaceKey.indexOf("0") === 2 ) { 
-    var inward = close_keys.push(findNextLetter(spaceKey));
+    inward = findNextLetter(spaceKey);
   } else if (spaceKey === "center") {
     for (var i = 1; i <= playerCount; i++) {
        for (var l = 1; l <= 4; l++) {
@@ -271,9 +272,12 @@ function getClosestSpaces(spaceKey) {
   close_keys.forEach(function(key) {
     selectedSpaces.push(Space[key]);
   });
+  close_keys.push(counter_clockwise,clockwise,outward,inward);
+  var directions = [clockwise,counter_clockwise,inward,outward]
   return {
     selectedSpaces: selectedSpaces,
-    keys: close_keys
+    keys: close_keys,
+    directions: directions
   }
 }
 
