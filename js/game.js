@@ -19,6 +19,10 @@ var C = {
    "height": 72,
    "scale": .2
  },
+ "destroyed": {
+   "scale": .25
+ },
+
  "monster": {
    "width": 72,
    "height": 72,
@@ -131,13 +135,13 @@ function moveMonsters() {
       var newDestination = monstersList[i].key.substring(0,2) + (parseInt(monstersList[i].key.charAt(2)) - 1);
       if (parseInt(monstersList[i].key.charAt(2)) - 1 === 0 && Space[newDestination].occupied && Space[newDestination].occupied !== true) {
         console.log("U R DED");  
-        var destroyedCityColumn = spawnRandom("purplecircle", newDestination.charCodeAt(0) - 96, "0", false);
+        var destroyedCityColumn = spawnSpecific("purplecircle", newDestination);
         destroyedCities.push(destroyedCityColumn);
         occupiedRows.push(destroyedCityColumn.key.substring(0,2));
       } else if (parseInt(monstersList[i].key.charAt(2)) === 0 )  {
         newDestination = monstersList[i].sprite.closestSpaces.directions[1];
         if (Space[newDestination].occupied !== true) {
-          var destroyedCityColumn = spawnRandom("purplecircle", newDestination.charCodeAt(0) - 96, "0", false);
+          var destroyedCityColumn = spawnSpecific("purplecircle", newDestination);
           destroyedCities.push(destroyedCityColumn);
           occupiedRows.push(destroyedCityColumn.key.substring(0,2));
         }
@@ -145,14 +149,14 @@ function moveMonsters() {
       console.log(newDestination);
       move(monstersList[i], newDestination);
     }
-    monstersList.push(spawnRandom("monster", Math.floor(Math.random() * (playerCount - 1)) + 1, "3", true));
+    monstersList.push(spawnRandom("monster", Math.floor(Math.random() * (playerCount)) + 1, "3", true));
 }
 
 function move(object,destination) {
   object.sprite.x = Space[destination].x*C.bg.scale;
   object.sprite.y = Space[destination].y*C.bg.scale;
-  object.sprite.closestSpaces = getClosestSpaces(object.key);
   object.key = destination;
+  object.sprite.closestSpaces = getClosestSpaces(object.key);
   object.space.occupied = false;
   object.space = Space[destination];
   Space[destination].occupied = true;
@@ -251,6 +255,7 @@ function getClosestSpaces(spaceKey) {
       clockwise = spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) - 1) + spaceKey.charAt(2) ;
    } 
 
+  selectedSpaces = [];
   // These next if statements find the nearby spaces per column, up
    // and down. It accounts for the top and bottom spaces as well.
   if (spaceKey.indexOf("3") === 2 || spaceKey.indexOf("33") === 1) { 
@@ -262,18 +267,20 @@ function getClosestSpaces(spaceKey) {
     for (var i = 1; i <= playerCount; i++) {
        for (var l = 1; l <= 4; l++) {
          close_keys.push(String.fromCharCode(96 + i) + l + 3);
+         selectedSpaces.push(Space[String.fromCharCode(96 + i) + l + 3]);
        } 
     } 
   } else {
-    var inward = close_keys.push(findPreviousLetter(spaceKey));
-    var outward = close_keys.push(findNextLetter(spaceKey));
+    inward = findPreviousLetter(spaceKey);
+    outward = findNextLetter(spaceKey);
   }
-  selectedSpaces = [];
-  close_keys.forEach(function(key) {
-    selectedSpaces.push(Space[key]);
-  });
-  close_keys.push(counter_clockwise,clockwise,outward,inward);
   var directions = [clockwise,counter_clockwise,inward,outward]
+  directions.forEach(function(direction) {
+    if (direction !== undefined) {
+      selectedSpaces.push(Space[direction]);
+      close_keys.push(direction);
+    }
+  });
   return {
     selectedSpaces: selectedSpaces,
     keys: close_keys,
@@ -315,14 +322,40 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
   random = game.add.sprite(space.selectedSpace.x*C.bg.scale,space.selectedSpace.y*C.bg.scale,object); 
   random.anchor.x = .5;
   random.anchor.y = .5;
-  random.scale.x = C.mech.scale;
-  random.scale.y = C.mech.scale;
+  if (object === "purplecircle") {
+    random.scale.x = C.destroyed.scale;
+    random.scale.y = C.destroyed.scale;
+  } else {
+    random.scale.x = C.mech.scale;
+    random.scale.y = C.mech.scale;
+  }
   random.smoothed = false;
   space.selectedSpace.occupied = true;
   return {
     space: space.selectedSpace,
     key: space.key,
     sprite: random
+  }
+}
+
+function spawnSpecific(object,space) {
+  targetSpace = Space[space]
+  spawn = game.add.sprite(targetSpace.x*C.bg.scale,targetSpace.y*C.bg.scale,object); 
+  spawn.anchor.x = .5;
+  spawn.anchor.y = .5;
+  if (object === "purplecircle") {
+    spawn.scale.x = C.destroyed.scale;
+    spawn.scale.y = C.destroyed.scale;
+  } else {
+    spawn.scale.x = C.mech.scale;
+    spawn.scale.y = C.mech.scale;
+  }
+  spawn.smoothed = false;
+  targetSpace.occupied = true;
+  return {
+    space: targetSpace,
+    key: space,
+    sprite: spawn
   }
 }
 
