@@ -132,13 +132,13 @@ function moveMonsters() {
       if (parseInt(monstersList[i].key.charAt(2)) - 1 === 0 && monstersList[i].sprite.closestSpaces.selectedSpaces[newDestination].occupied && monstersList[i].sprite.closestSpaces.selectedSpaces[newDestination].occupied !== true) {
         console.log("U R DED");  
         var destroyedCityColumn = spawnRandom("purplecircle", newDestination.charCodeAt(0) - 96, "0", false);
-        destroyedCities[].push(destroyedCityColumn);
+        destroyedCities.push(destroyedCityColumn);
         occupiedRows.push(destroyedCityColumn.key.substring(0,2));
       } else if (parseInt(monstersList[i].key.charAt(2)) === 0 )  {
         newDestination = monstersList[i].sprite.closestSpaces.keys[clockwise];
         if (Space[newDestination].occupied !== true) {
           var destroyedCityColumn = spawnRandom("purplecircle", newDestination.charCodeAt(0) - 96, "0", false);
-          destroyedCities[].push(destroyedCityColumn);
+          destroyedCities.push(destroyedCityColumn);
           occupiedRows.push(destroyedCityColumn.key.substring(0,2));
         }
       }
