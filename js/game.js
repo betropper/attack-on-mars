@@ -135,7 +135,7 @@ function moveMonsters() {
         destroyedCities.push(destroyedCityColumn);
         occupiedRows.push(destroyedCityColumn.key.substring(0,2));
       } else if (parseInt(monstersList[i].key.charAt(2)) === 0 )  {
-        newDestination = monstersList[i].sprite.closestSpaces.keys[clockwise];
+        newDestination = monstersList[i].sprite.closestSpaces.directions[1];
         if (Space[newDestination].occupied !== true) {
           var destroyedCityColumn = spawnRandom("purplecircle", newDestination.charCodeAt(0) - 96, "0", false);
           destroyedCities.push(destroyedCityColumn);
