@@ -329,6 +329,9 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     random.scale.x = C.mech.scale;
     random.scale.y = C.mech.scale;
   }
+  if (object === "monster") {
+    game.world.bringToTop(random);
+  }
   random.smoothed = false;
   space.selectedSpace.occupied = true;
   return {
@@ -349,6 +352,9 @@ function spawnSpecific(object,space) {
   } else {
     spawn.scale.x = C.mech.scale;
     spawn.scale.y = C.mech.scale;
+  }
+  if (object === "monster") {
+    game.world.bringToTop(random);
   }
   spawn.smoothed = false;
   targetSpace.occupied = true;
