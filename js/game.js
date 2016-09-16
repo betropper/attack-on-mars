@@ -5,7 +5,7 @@ var C = {
    "textStyle": {
       align: 'center',
       fill: "#ffffff",
-      fontSize: '20px Arial'
+      fontSize: '20px Poiret One'
    }
  },
  "bg": {
@@ -46,8 +46,8 @@ var monstersList = [];
 
 class Boot {
   preload() {
-    this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
     this.scale.pageAlignHorizontally = true;
+    game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
     this.scale.pageAlignVertically = true;
   }
   create() {
@@ -125,7 +125,8 @@ class Setup {
 
 class GameOver {
     create() {
-      console.log("YOU LOSE.");
+      console.log("YOU LOSE.");i
+      game.add.text(game.world.centerX, game.world.centerY, "GAME\nOVER",C.game.textStyle);
     }
 }
 
