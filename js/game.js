@@ -123,9 +123,9 @@ class Setup {
 }
 
 
-class Play {
+class GameOver {
     create() {
-      console.log(playersList[1]);
+      console.log("YOU LOSE.");
     }
 }
 
@@ -133,7 +133,7 @@ function moveMonsters() {
     for (var i = 0; i <= monstersList.length - 1; i++) {
       monstersList[i].sprite.closestSpaces = getClosestSpaces(monstersList[i].key);
       var newDestination = monstersList[i].key.substring(0,2) + (parseInt(monstersList[i].key.charAt(2)) - 1);
-      if (parseInt(monstersList[i].key.charAt(2)) - 1 === 0 && Space[newDestination].occupied && Space[newDestination].occupied !== true) {
+      if (parseInt(newDestination.charAt(2)) === 0 && Space[newDestination].occupied !== true) {
         console.log("U R DED");  
         var destroyedCityColumn = spawnSpecific("purplecircle", newDestination);
         destroyedCities.push(destroyedCityColumn);
@@ -149,7 +149,11 @@ function moveMonsters() {
       console.log(newDestination);
       move(monstersList[i], newDestination);
     }
-    monstersList.push(spawnRandom("monster", Math.floor(Math.random() * (playerCount)) + 1, "3", true));
+    if (occupiedRows.length >= playerCount * 4 - 4){
+      game.state.start("GameOver");
+    } else {
+      monstersList.push(spawnRandom("monster", "random", "3"));
+    }
 }
 
 function move(object,destination) {
@@ -160,6 +164,7 @@ function move(object,destination) {
   object.space.occupied = false;
   object.space = Space[destination];
   Space[destination].occupied = true;
+  game.world.bringToTop(object.sprite);
 }
 
 function changeTurn() {
@@ -257,7 +262,7 @@ function getClosestSpaces(spaceKey) {
 
   selectedSpaces = [];
   // These next if statements find the nearby spaces per column, up
-   // and down. It accounts for the top and bottom spaces as well.
+  // and down. It accounts for the top and bottom spaces as well.
   if (spaceKey.indexOf("3") === 2 || spaceKey.indexOf("33") === 1) { 
     inward = "center";
     outward = findPreviousLetter(spaceKey);
@@ -305,12 +310,16 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
       var space = getRandomSpace();
     if (quadrant === "random" && occupiedCheck === true) {
         condition = space.key.indexOf("0") || selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1; 
-    } else if (quadrant === "random") {
-        condition = space.key.indexOf("0");
     } else if (quadrant && row && occupiedCheck === true) {
         var chr = String.fromCharCode(96 + quadrant);
         condition = space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0 || selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1;
-    } else if (quadrant && row) { 
+    } else if (quadrant && row && quadrant === "random") {
+        var chr = String.fromCharCode(96 + Math.floor(Math.random() * (playerCount)) + 1);
+        condition = space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0 || selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1;
+    } else if (quadrant === "random") {
+        condition = space.key.indexOf("0");
+    } 
+    else if (quadrant && row) { 
         var chr = String.fromCharCode(96 + quadrant);
         condition = space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0;
     } else {
@@ -369,5 +378,5 @@ var game = new Phaser.Game(C.game.width,C.game.height);
 game.state.add("Boot",Boot);
 game.state.add("Load",Load);
 game.state.add("Setup",Setup);
-game.state.add("Play",Play);
+game.state.add("GameOver",GameOver);
 game.state.start("Boot");
