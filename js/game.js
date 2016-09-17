@@ -5,7 +5,7 @@ var C = {
    "textStyle": {
       align: 'center',
       fill: "#ffffff",
-      fontSize: '20px Poiret One'
+      font: '20px Poiret One'
    }
  },
  "bg": {
@@ -78,6 +78,7 @@ class Load {
 
 var spaceDisplay;
 var destroyedCities = [];
+var obj_keys = Object.keys(Space);
 
 class Setup {
 
@@ -92,6 +93,11 @@ class Setup {
       playerCount = 4;
     }
     //players = game.add.group();
+
+    for (var i = 0; i < obj_keys.length; i++) {
+      Space[obj_keys[i]].occupied = false;
+    }   
+
     for (var i = 1; i <= playerCount; i++) {
       console.log(i);
       var destroyedCityColumn = spawnRandom("purplecircle", i, "0", false);
@@ -111,8 +117,13 @@ class Setup {
     turn.sprite.input.enableDrag(true);
     closestSpaces = getClosestSpaces(turn.key);
     turn.sprite.closestSpaces = closestSpaces;
-    spaceDisplay = game.add.text(game.world.centerX - 40, game.world.centerY + 60,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
+    spaceDisplay = game.add.text(game.world.centerX, game.world.centerY + 150,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
+    spaceDisplay.anchor.setTo(.5); 
     turn.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
+    var waitButton = game.add.button(spaceDisplay.x, spaceDisplay.y - 70, 'purplecircle', waitOneAction);
+    waitButton.anchor.x = .5;
+    waitButton.anchor.y = .5;
+    waitButton.scale.y = .6;
   }
   update() {
     if (spaceDisplay) {
@@ -125,32 +136,39 @@ class Setup {
 
 class GameOver {
     create() {
-      console.log("YOU LOSE.");i
-      game.add.text(game.world.centerX, game.world.centerY, "GAME\nOVER",C.game.textStyle);
+      console.log("YOU LOSE.");
+      var gg = game.add.text(game.world.centerX, game.world.centerY, "GAME\nOVER\n\nRestart?",C.game.textStyle);
+      gg.anchor.setTo(.5); 
     }
+}
+
+function waitOneAction() {
+  actionPoints -= 1;  
+  if (actionPoints === 0) {
+    changeTurn();
+  }
 }
 
 function moveMonsters() {
     for (var i = 0; i <= monstersList.length - 1; i++) {
       monstersList[i].sprite.closestSpaces = getClosestSpaces(monstersList[i].key);
       var newDestination = monstersList[i].key.substring(0,2) + (parseInt(monstersList[i].key.charAt(2)) - 1);
-      if (parseInt(newDestination.charAt(2)) === 0 && Space[newDestination].occupied !== true) {
+      if (parseInt(monstersList[i].key.charAt(2)) !== 0 && parseInt(newDestination.charAt(2)) === 0 && Space[newDestination].occupied === []) {
         console.log("U R DED");  
         var destroyedCityColumn = spawnSpecific("purplecircle", newDestination);
         destroyedCities.push(destroyedCityColumn);
         occupiedRows.push(destroyedCityColumn.key.substring(0,2));
       } else if (parseInt(monstersList[i].key.charAt(2)) === 0 )  {
         newDestination = monstersList[i].sprite.closestSpaces.directions[1];
-        if (Space[newDestination].occupied !== true) {
+        if (Space[newDestination].occupied === []) {
           var destroyedCityColumn = spawnSpecific("purplecircle", newDestination);
           destroyedCities.push(destroyedCityColumn);
           occupiedRows.push(destroyedCityColumn.key.substring(0,2));
         }
       }
-      console.log(newDestination);
       move(monstersList[i], newDestination);
     }
-    if (occupiedRows.length >= playerCount * 4 - 4){
+    if (destroyedCities.length >= (playerCount * 4) - 4){
       game.state.start("GameOver");
     } else {
       monstersList.push(spawnRandom("monster", "random", "3"));
@@ -158,13 +176,14 @@ function moveMonsters() {
 }
 
 function move(object,destination) {
+  console.log(object);
   object.sprite.x = Space[destination].x*C.bg.scale;
   object.sprite.y = Space[destination].y*C.bg.scale;
+  object.space.occupied = removeFromList(object, Space[object.key]);
   object.key = destination;
   object.sprite.closestSpaces = getClosestSpaces(object.key);
-  object.space.occupied = false;
   object.space = Space[destination];
-  Space[destination].occupied = true;
+  addToOccupied(object, Space[destination]);
   game.world.bringToTop(object.sprite);
 }
 
@@ -214,13 +233,27 @@ function attachClosestSpace(sprite,pointer) {
     sprite.y = closest.y*C.bg.scale;
     sprite.closestSpaces = getClosestSpaces(closestKey);
     turn.key = closestKey;
-    turn.space.occupied = false;
+    turn.space.occupied = removeFromList(turn, turn.space)
     turn.space = closest;
-    closest.occupied = true;
+    addToOccupied(turn, closest);
     actionPoints -= 1;
     if (actionPoints === 0) {
       changeTurn();
     }
+}
+
+function removeFromList(key,arrayName) {
+ var x;
+ var tmpArray = new Array();
+ for(x = 0; x <= arrayName.occupied.length; x++)
+ {
+  if(arrayName.occupied[x] != key) { tmpArray[x] = arrayName.occupied[x]; }
+ }
+  if (tmpArray.length === 0) {
+    arrayName.occupied = false;
+  } else {
+    return tmpArray;
+  }
 }
 
 function findNextLetter(letter) {
@@ -242,7 +275,6 @@ function getClosestSpaces(spaceKey) {
     if (spaceKey.charAt(0) !== "a") {
       counter_clockwise = findPreviousLetter(spaceKey.charAt(0)) + 4 + spaceKey.charAt(2);
       clockwise = spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) + 1) + spaceKey.charAt(2);
-      console.log(findPreviousLetter(spaceKey));
      } else {
       counter_clockwise = lastQuadrant + 4 + spaceKey.charAt(2);
       clockwise = spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) + 1) + spaceKey.charAt(2);
@@ -343,11 +375,24 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     game.world.bringToTop(random);
   }
   random.smoothed = false;
-  space.selectedSpace.occupied = true;
+  if (space.selectedSpace.occupied === false) {
+    space.selectedSpace.occupied = [random];
+  } else {
+    addToOccupied(random,space.selectedSpace); 
+  }
+
   return {
     space: space.selectedSpace,
     key: space.key,
     sprite: random
+  }
+}
+
+function addToOccupied(object,space) {
+  if (space.occupied === false || space.occupied === undefined) {
+    space.occupied = [object];
+  } else {
+    space.occupied.push(object);
   }
 }
 
@@ -367,7 +412,7 @@ function spawnSpecific(object,space) {
     game.world.bringToTop(random);
   }
   spawn.smoothed = false;
-  targetSpace.occupied = true;
+  addToOccupied(targetSpace,spawn);
   return {
     space: targetSpace,
     key: space,
