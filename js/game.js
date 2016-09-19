@@ -153,19 +153,20 @@ function moveMonsters() {
     for (var i = 0; i <= monstersList.length - 1; i++) {
       monstersList[i].sprite.closestSpaces = getClosestSpaces(monstersList[i].key);
       var newDestination = monstersList[i].key.substring(0,2) + (parseInt(monstersList[i].key.charAt(2)) - 1);
-      if (parseInt(monstersList[i].key.charAt(2)) !== 0 && parseInt(newDestination.charAt(2)) === 0 && Space[newDestination].occupied === []) {
-        console.log("U R DED");  
+      if (parseInt(monstersList[i].key.charAt(2)) !== 0 && parseInt(newDestination.charAt(2)) === 0 && Space[newDestination].occupied === false) {
+        console.log("U R DED"); 
         var destroyedCityColumn = spawnSpecific("purplecircle", newDestination);
         destroyedCities.push(destroyedCityColumn);
         occupiedRows.push(destroyedCityColumn.key.substring(0,2));
       } else if (parseInt(monstersList[i].key.charAt(2)) === 0 )  {
         newDestination = monstersList[i].sprite.closestSpaces.directions[1];
-        if (Space[newDestination].occupied === []) {
+        if (Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined) {
           var destroyedCityColumn = spawnSpecific("purplecircle", newDestination);
           destroyedCities.push(destroyedCityColumn);
           occupiedRows.push(destroyedCityColumn.key.substring(0,2));
         }
       }
+      console.log("Monster is moving to " + Space[newDestination].occupied);
       move(monstersList[i], newDestination);
     }
     if (destroyedCities.length >= (playerCount * 4) - 4){
@@ -247,7 +248,7 @@ function removeFromList(key,arrayName) {
  var tmpArray = new Array();
  for(x = 0; x <= arrayName.occupied.length; x++)
  {
-  if(arrayName.occupied[x] != key) { tmpArray[x] = arrayName.occupied[x]; }
+  if(arrayName.occupied[x] != key && arrayName.occupied[x] != undefined) { tmpArray[x] = arrayName.occupied[x]; }
  }
   if (tmpArray.length === 0) {
     arrayName.occupied = false;
