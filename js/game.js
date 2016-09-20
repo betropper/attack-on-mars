@@ -166,6 +166,7 @@ function moveMonsters() {
           var destroyedCityColumn = spawnSpecific("purplecircle", newDestination);
           destroyedCities.push(destroyedCityColumn);
           occupiedRows.push(destroyedCityColumn.key.substring(0,2));
+        } else {
         }
       }
       console.log("Monster is moving to " + Space[newDestination].occupied);
@@ -174,7 +175,8 @@ function moveMonsters() {
     if (destroyedCities.length >= (playerCount * 4) - 4){
       game.state.start("GameOver");
     } else {
-      monstersList.push(spawnRandom("monster", "random", "3"));
+      var newMonster = monstersList.push(spawnRandom("monster", "random", "3"));
+      checkBattle(newMonster.space);
     }
 }
 
@@ -188,7 +190,26 @@ function move(object,destination) {
   object.space = Space[destination];
   addToOccupied(object, Space[destination]);
   game.world.bringToTop(object.sprite);
+  checkBattle(object.space);
 }
+
+function checkBattle(space) {
+  if (space.occupied != false) {
+    var monsterCount = 0;
+    var playerCount = 0;
+    for (i = 0; i < space.occupied.length; i++) {
+      if (space.occupied[i].sprite.key.indexOf('monster') > -1) {
+        monsterCount += 1;
+      } else if (playerNames.indexOf(space.occupied[i].sprite.key) > -1) {
+        playerCount += 1;
+      }
+    }
+    if (monsterCount > 0 && playerCount > 0) {
+      console.log("BATTLE!");
+    }
+  }
+}
+
 
 function changeTurn() {
     actionPoints = 3;
