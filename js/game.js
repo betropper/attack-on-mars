@@ -5,14 +5,14 @@ var C = {
    "textStyle": {
       align: 'center',
       fill: "#ffffff",
-      font: '20px Poiret One'
+      font: '16px Poiret One'
    }
  },
  "bg": {
    "width": 5574,
    "height": 5574,
    "scale": .058,
-   "file": "assets/gameboard.jpg"
+   "file": "assets/gameboard.png"
  },
  "mech": {
    "width": 72,
@@ -43,6 +43,11 @@ var turn;
 var actionPoints = 3;
 var closestSpaces;
 var monstersList = [];
+var globalList = [];
+var spaceDisplay;
+var attributeDisplay;
+var destroyedCities = [];
+var obj_keys = Object.keys(Space);
 
 class Boot {
   preload() {
@@ -58,7 +63,7 @@ class Boot {
 class Load {
   preload() {
     console.log("Loading.");
-    this.load.image("gameboard",C.bg.file);
+    this.load.image("gameboard",C.bg.file,C.bg.width,C.bg.height);
     this.load.image("blue", "assets/bluesquare.png",C.mech.width,C.mech.height);
     this.load.image("red", "assets/redsquare.png",C.mech.width,C.mech.height);
     this.load.image("green", "assets/greensquare.png",C.mech.width,C.mech.height);
@@ -76,16 +81,14 @@ class Load {
 
 }
 
-var spaceDisplay;
-var destroyedCities = [];
-var obj_keys = Object.keys(Space);
+
 
 class Setup {
 
   preload() {
     console.log("Placing Board");
-    this.bg = this.add.tileSprite(0,0,5574,5574,"gameboard");
-    this.bg.scale.set(C.bg.scale || .1);
+    game.bg = game.add.tileSprite(0,0,5574,5574,"gameboard");
+    game.bg.scale.set(C.bg.scale);
     playerCount = parseInt(prompt("How many will be playing?", "2")) || null;
     if (!playerCount || Number.isInteger(playerCount) == false || playerCount < 2) {
       playerCount = 2;
@@ -105,8 +108,8 @@ class Setup {
       occupiedRows.push(destroyedCityColumn.key.substring(0,2));
       playersList[i] = spawnRandom(playerNames[i-1], i, "0", true);
       playersList[i].number = i;
-      playersList[i].rp = 3;
-      playersList[i].hp = 4;
+      playersList[i].sprite.inputEnabled = true;
+      playersList[i].sprite.input.enableDrag(true);
       monstersList[i-1] = spawnRandom("monster", i, "3", true);
     }
   }
@@ -117,9 +120,13 @@ class Setup {
     turn.sprite.input.enableDrag(true);
     closestSpaces = getClosestSpaces(turn.key);
     turn.sprite.closestSpaces = closestSpaces;
+    // Add in text that is displayed.
     spaceDisplay = game.add.text(game.world.centerX, game.world.centerY + 150,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
+    attributeDisplay = game.add.text(game.world.centerX, game.world.centerY + 230, "", C.game.textStyle);
     spaceDisplay.anchor.setTo(.5); 
+    attributeDisplay.anchor.setTo(.5);
     turn.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
+    // Temporary for testing. Change this later.
     var waitButton = game.add.button(spaceDisplay.x, spaceDisplay.y - 70, 'purplecircle', waitOneAction);
     waitButton.anchor.x = .5;
     waitButton.anchor.y = .5;
@@ -127,8 +134,21 @@ class Setup {
   }
   update() {
     if (spaceDisplay) {
-      spaceDisplay.setText("Valid Movements for " + turn.sprite.key + ":\n " + turn.sprite.closestSpaces.keys.join(" ") + "\nRemaining moves: " + actionPoints,C.game.textStyle);
+      spaceDisplay.setText("Valid Movements for " + turn.sprite.key + ":\n " + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
     }
+    for (var i = 0; i < globalList.length; i++) {
+      if (globalList[i].sprite.input && globalList[i].sprite.input.pointerOver()) {
+        var over = globalList[i];
+      }
+    }
+    if (over) { 
+      if (playerNames.indexOf(over.sprite.key) > -1) {
+        attributeDisplay.setText("Name: " + over.sprite.key + "\nHP: " + over.hp + "\nResearch Points: " + over.rp)
+      }
+    } else {
+      attributeDisplay.setText("Remaining Moves: " + actionPoints);
+    }
+
   }
 
 }
@@ -176,7 +196,9 @@ function moveMonsters() {
       game.state.start("GameOver");
     } else {
       var newMonster = monstersList.push(spawnRandom("monster", "random", "3"));
-      checkBattle(newMonster.space);
+      console.log("New Monster is: ");
+      console.log(newMonster-1);
+      checkBattle(monstersList[newMonster-1].space);
     }
 }
 
@@ -194,6 +216,8 @@ function move(object,destination) {
 }
 
 function checkBattle(space) {
+  //Takes a space, and if there are both monsters and players on that
+  //space, battle happens.
   if (space.occupied != false) {
     var monsterCount = 0;
     var playerCount = 0;
@@ -206,6 +230,8 @@ function checkBattle(space) {
     }
     if (monsterCount > 0 && playerCount > 0) {
       console.log("BATTLE!");
+      //game.paused = true;
+       
     }
   }
 }
@@ -214,7 +240,7 @@ function checkBattle(space) {
 function changeTurn() {
     actionPoints = 3;
     turn.sprite.input.enableDrag(false);
-    turn.sprite.inputEnabled = false;
+    //turn.sprite.inputEnabled = false;
     if (turn.number < playerCount) {
       turn = playersList[turn.number + 1];
     } else {
@@ -243,16 +269,31 @@ function distance(x1, y1, x2, y2) {
 function attachClosestSpace(sprite,pointer) {
     var closestDistance = 9999;
     var closest = sprite;
-    for (i = 0; i < sprite.closestSpaces.selectedSpaces.length; i++) {
-        var spaceObjX = sprite.closestSpaces.selectedSpaces[i].x*C.bg.scale;
-        var spaceObjY = sprite.closestSpaces.selectedSpaces[i].y*C.bg.scale;
+    var closestSpaces = sprite.closestSpaces;
+    if (playerNames.indexOf(sprite.key) > -1) {
+      var obj = playersList[playerNames.indexOf(sprite.key) + 1]
+      closestSpaces.selectedSpaces.push(obj.space);
+      closestSpaces.keys.push(obj.key);
+      console.log(closestSpaces);
+    }
+    for (i = 0; i < closestSpaces.selectedSpaces.length; i++) {
+        var spaceObjX = closestSpaces.selectedSpaces[i].x*C.bg.scale;
+        var spaceObjY = closestSpaces.selectedSpaces[i].y*C.bg.scale;
         if (distance(spaceObjX,spaceObjY,sprite.x,sprite.y) < closestDistance) {
-          closest = sprite.closestSpaces.selectedSpaces[i];
+          closest = closestSpaces.selectedSpaces[i];
           closestDistance = distance(spaceObjX,spaceObjY,sprite.x,sprite.y);
-          closestKey = sprite.closestSpaces.keys[i];
+          closestKey = closestSpaces.keys[i];
         }
     }
-    move(turn, closestKey);
+
+    if (closestKey !== obj.key) {
+        actionPoints -= 1;
+    }
+    if (playerNames.indexOf(sprite.key) > -1) {
+      move(obj, closestKey);
+    } else { 
+      move(turn, closestKey);
+    }
     /*console.log(closest);
     sprite.x = closest.x*C.bg.scale;
     sprite.y = closest.y*C.bg.scale;
@@ -261,7 +302,6 @@ function attachClosestSpace(sprite,pointer) {
     turn.space.occupied = removeFromList(turn, turn.space)
     turn.space = closest;
     addToOccupied(turn, closest);*/
-    actionPoints -= 1;
     if (actionPoints === 0) {
       changeTurn();
     }
@@ -396,26 +436,31 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     random.scale.x = C.mech.scale;
     random.scale.y = C.mech.scale;
   }
-  if (object === "monster") {
-    game.world.bringToTop(random);
-  }
+
   random.smoothed = false;
   var obj =  {
     space: space.selectedSpace,
     key: space.key,
     sprite: random
   };
+  globalList.push(obj);
   if (space.selectedSpace.occupied === false) {
     space.selectedSpace.occupied = [obj];
   } else {
     addToOccupied(obj,space.selectedSpace); 
   }
 
-  return {
-    space: space.selectedSpace,
-    key: space.key,
-    sprite: random
+  //deal with hitpoint values and other values
+  if (playerNames.indexOf(object) > -1) {
+    obj.rp = 3;
+    obj.hp = 4; 
+  } else if (object === "monster") {
+    game.world.bringToTop(random);
+    if (monstersList.length <= 12) {
+      obj.hp = 1;
+    }
   }
+  return obj
 }
 
 function addToOccupied(object,space) {
