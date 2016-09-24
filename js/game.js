@@ -453,11 +453,27 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
   //deal with hitpoint values and other values
   if (playerNames.indexOf(object) > -1) {
     obj.rp = 3;
-    obj.hp = 4; 
+    obj.hp = 4;
+    obj.def = 3;
+    obj.ratk = 4;
+    obj.batk = 4;
   } else if (object === "monster") {
     game.world.bringToTop(random);
     if (monstersList.length <= 12) {
-      obj.hp = 1;
+      obj.hp = 3;
+      obj.atk = 3;
+      obj.rp = 1;
+      obj.mr = 2;
+    } else if (monstersList.length <= 24) {
+      obj.hp = 4;
+      obj.atk = 4;
+      obj.rp = 2;
+      obj.mr = 3;
+    } else {
+      obj.hp = 5;
+      obj.atk = 5;
+      obj.rp = 3;
+      obj.mr = 4;
     }
   }
   return obj
