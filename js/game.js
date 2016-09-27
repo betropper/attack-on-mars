@@ -1,17 +1,18 @@
 var C = {
  "game": {
-   "width": 320,
-   "height": 568,
+   "width": 640,
+   "height": 1136,
    "textStyle": {
       align: 'center',
       fill: "#ffffff",
       font: '16px Poiret One'
-   }
+   },
+    "scaleRatio": window.devicePixelRatio / 3
  },
  "bg": {
-   "width": 5574,
-   "height": 5574,
-   "scale": .058,
+   "width": 1394,
+   "height": 1394,
+   "scale": .46,
    "file": "assets/gameboard.png"
  },
  "mech": {
@@ -30,7 +31,6 @@ var C = {
  }
 }
 
-
 var First = "red";
 var Second = "blue";
 var Third = "green";
@@ -48,6 +48,7 @@ var spaceDisplay;
 var attributeDisplay;
 var destroyedCities = [];
 var obj_keys = Object.keys(Space);
+var viewRect;
 
 class Boot {
   preload() {
@@ -86,17 +87,21 @@ class Load {
 class Setup {
 
   preload() {
+    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
     console.log("Placing Board");
-    game.bg = game.add.tileSprite(0,0,5574,5574,"gameboard");
-    game.bg.scale.set(C.bg.scale);
+    //game.bg = game.add.tileSprite(0,0,5574,5574,"gameboard");
+    game.bg = game.add.sprite(0, game.world.centerY - game.height / 2, "gameboard");
+    game.bg.scale.setTo(C.bg.scale, C.bg.scale);
+    //game.scale.scaleMode = Phaser.ScaleManager.RESIZE;
+    //game.scale.setResizeCallback(function() {
+    //game.scale.setMaximum();
+    //});
     playerCount = parseInt(prompt("How many will be playing?", "2")) || null;
     if (!playerCount || Number.isInteger(playerCount) == false || playerCount < 2) {
       playerCount = 2;
     } else if (playerCount > 4) {
       playerCount = 4;
     }
-    //players = game.add.group();
-
     for (var i = 0; i < obj_keys.length; i++) {
       Space[obj_keys[i]].occupied = false;
     }   
@@ -108,13 +113,14 @@ class Setup {
       occupiedRows.push(destroyedCityColumn.key.substring(0,2));
       playersList[i] = spawnRandom(playerNames[i-1], i, "0", true);
       playersList[i].number = i;
-      playersList[i].sprite.inputEnabled = true;
-      playersList[i].sprite.input.enableDrag(true);
       monstersList[i-1] = spawnRandom("monster", i, "3", true);
     }
   }
 
   create() {
+    //Create a rectangle that will serve as our camera for zooming and battling purposes.
+    //viewRect = new Phaser.Rectangle(0, 0, C.bg.width * C.bg.scale, C.bg.width * C.bg.scale); 
+    viewRect = new Phaser.Rectangle(0, 0, game.width, game.height);
     turn = playersList[1];
     turn.sprite.inputEnabled = true;
     turn.sprite.input.enableDrag(true);
@@ -144,6 +150,8 @@ class Setup {
     if (over) { 
       if (playerNames.indexOf(over.sprite.key) > -1) {
         attributeDisplay.setText("Name: " + over.sprite.key + "\nHP: " + over.hp + "\nResearch Points: " + over.rp)
+      } else if (over.sprite.key = "monster") {
+        attributeDisplay.setText("Name: " + over.sprite.key + "\nHP: " + over.hp + "\nResearch Point Reward: " + over.rp)
       }
     } else {
       attributeDisplay.setText("Remaining Moves: " + actionPoints);
@@ -204,8 +212,8 @@ function moveMonsters() {
 
 function move(object,destination) {
   console.log(object);
-  object.sprite.x = Space[destination].x*C.bg.scale;
-  object.sprite.y = Space[destination].y*C.bg.scale;
+  object.sprite.x = Space[destination].x*C.bg.scale + game.bg.position.x;
+  object.sprite.y = Space[destination].y*C.bg.scale + game.bg.position.y;
   removeFromList(object, Space[object.key]);
   object.key = destination;
   object.sprite.closestSpaces = getClosestSpaces(object.key);
@@ -219,17 +227,18 @@ function checkBattle(space) {
   //Takes a space, and if there are both monsters and players on that
   //space, battle happens.
   if (space.occupied != false) {
-    var monsterCount = 0;
-    var playerCount = 0;
+    var monsterCount = [];
+    var playerCount = [];
     for (i = 0; i < space.occupied.length; i++) {
       if (space.occupied[i].sprite.key.indexOf('monster') > -1) {
-        monsterCount += 1;
+        monsterCount.push(space.occupied[i]);
       } else if (playerNames.indexOf(space.occupied[i].sprite.key) > -1) {
-        playerCount += 1;
+        playerCount.push(space.occupied[i]);
       }
     }
-    if (monsterCount > 0 && playerCount > 0) {
+    if (monsterCount.length > 0 && playerCount.length > 0) {
       console.log("BATTLE!");
+      
       //game.paused = true;
        
     }
@@ -277,8 +286,8 @@ function attachClosestSpace(sprite,pointer) {
       console.log(closestSpaces);
     }
     for (i = 0; i < closestSpaces.selectedSpaces.length; i++) {
-        var spaceObjX = closestSpaces.selectedSpaces[i].x*C.bg.scale;
-        var spaceObjY = closestSpaces.selectedSpaces[i].y*C.bg.scale;
+        var spaceObjX = closestSpaces.selectedSpaces[i].x*C.bg.scale + game.bg.position.x;
+        var spaceObjY = closestSpaces.selectedSpaces[i].y*C.bg.scale + game.bg.position.y;
         if (distance(spaceObjX,spaceObjY,sprite.x,sprite.y) < closestDistance) {
           closest = closestSpaces.selectedSpaces[i];
           closestDistance = distance(spaceObjX,spaceObjY,sprite.x,sprite.y);
@@ -426,7 +435,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     console.log(condition);
   } while (condition === true);
 
-  random = game.add.sprite(space.selectedSpace.x*C.bg.scale,space.selectedSpace.y*C.bg.scale,object); 
+  random = game.add.sprite(space.selectedSpace.x*C.bg.scale + game.bg.position.x,space.selectedSpace.y*C.bg.scale + game.bg.position.y,object); 
   random.anchor.x = .5;
   random.anchor.y = .5;
   if (object === "purplecircle") {
@@ -436,8 +445,8 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     random.scale.x = C.mech.scale;
     random.scale.y = C.mech.scale;
   }
-
-  random.smoothed = false;
+  random.smoothed = true;
+  //random.scale.setTo(C.game.scaleRatio,C.game.scaleRatio)
   var obj =  {
     space: space.selectedSpace,
     key: space.key,
@@ -457,8 +466,11 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     obj.def = 3;
     obj.ratk = 4;
     obj.batk = 4;
+    obj.sprite.inputEnabled = true;
+    obj.sprite.input.enableDrag(true);
   } else if (object === "monster") {
     game.world.bringToTop(random);
+    obj.sprite.inputEnabled = true;
     if (monstersList.length <= 12) {
       obj.hp = 3;
       obj.atk = 3;
@@ -501,6 +513,23 @@ function spawnSpecific(object,space) {
   }
   if (object === "monster") {
     game.world.bringToTop(random);
+    obj.sprite.inputEnabled = true;
+    if (monstersList.length <= 12) {
+      obj.hp = 3;
+      obj.atk = 3;
+      obj.rp = 1;
+      obj.mr = 2;
+    } else if (monstersList.length <= 24) {
+      obj.hp = 4;
+      obj.atk = 4;
+      obj.rp = 2;
+      obj.mr = 3;
+    } else {
+      obj.hp = 5;
+      obj.atk = 5;
+      obj.rp = 3;
+      obj.mr = 4;
+    }
   }
   spawn.smoothed = false;
   addToOccupied(targetSpace,spawn);
@@ -512,8 +541,11 @@ function spawnSpecific(object,space) {
 }
 
 var game = new Phaser.Game(C.game.width,C.game.height);
+//game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;game.scale.minWidth = 320;game.scale.minHeight = 480;game.scale.maxWidth = 768;game.scale.maxHeight = 1152;
+//var game = new Phaser.Game(window.innerWidth * window.devicePixelRatio, window.innerHeight * window.devicePixelRatio, Phaser.CANVAS, 'gameArea');
 game.state.add("Boot",Boot);
 game.state.add("Load",Load);
 game.state.add("Setup",Setup);
 game.state.add("GameOver",GameOver);
 game.state.start("Boot");
+
