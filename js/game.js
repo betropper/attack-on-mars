@@ -249,12 +249,12 @@ function battle(player, monster) {
   if (player.hp === 0) {
     console.log("DED.");
     //playersList.splice(player.number, 1);
-    playersList[player.number] = undefined;
     removeFromList(player, focusSpace);
+    playersList[player.number] = player.number;
     player.sprite.destroy();
     var destroyedPlayers;
     for (var i = 1; i <= playersList.length; i++) {
-      if (playersList[i] === undefined) {
+      if (Number.isInteger(playersList[i])) {
         destroyedPlayers += 1;
       }
     }
@@ -358,15 +358,18 @@ function checkBattle(space) {
 function changeTurn() {
     actionPoints = 3;
     turn.sprite.input.enableDrag(false);
-    //turn.sprite.inputEnabled = false;
+    //turn.sprite.inputEnabled = false
     do {
       if (turn && turn.number && turn.number < playerCount) {
         turn = playersList[turn.number + 1];
-      } else if (turn !== undefined) {
+      } else if (turn && turn.number && turn.number <= playerCount || Number.isInteger(turn) && turn === playerCount) {
         moveMonsters();
         turn = playersList[1];
+      } else if (Number.isInteger(turn)) {
+        turn += 1;
+        turn = playersList[turn];
       }
-    } while (turn === undefined)
+    } while (Number.isInteger(turn))
       console.log("Switching to this turn:");
       console.log(turn);
     //if (turn.sprite.inputEnabled === false) {
