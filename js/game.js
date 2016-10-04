@@ -60,6 +60,7 @@ var battleStarting = false;
 var pendingBattles = [];
 var threatLevel = 0;
 
+
 class Boot {
   preload() {
     this.scale.pageAlignHorizontally = true;
@@ -83,15 +84,13 @@ class Load {
     this.load.image("redcircle", "assets/red-circle.png", 72, 72);
     this.load.image("purplecircle", "assets/purple-circle.png", 72, 72);
     this.load.image("monster", "assets/green-circle.png", C.monster.width, C.monster.height);
-    this.load.image("menubar","assets/greenishbar.jpg",1200,90);
+    this.load.image("menubar","assets/menubar.png",640,320);
   }
   create() {
     console.log("Loaded!");
     this.state.start("Setup");
   }
-
 }
-
 
 
 class Setup {
@@ -123,8 +122,14 @@ class Setup {
       occupiedRows.push(destroyedCityColumn.key.substring(0,2));
       playersList[i] = spawnRandom(playerNames[i-1], i, "0", true);
       playersList[i].number = i;
+      playersList[i].sprite.inputEnabled = true;
+      playersList[i].sprite.input.enableDrag(true);
+      closestSpaces = getClosestSpaces(playersList[i].key);
+      playersList[i].sprite.closestSpaces = closestSpaces;
+      playersList[i].sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
       monstersList[i-1] = spawnRandom("monster", i, "3", true);
       monstersList[i-1].number = i - 1;
+      
     }
   }
 
@@ -219,7 +224,6 @@ class Setup {
     } else {
       attributeDisplay.setText("Remaining Moves: " + actionPoints);
     }
-
   }
 
 }
@@ -230,7 +234,23 @@ class GameOver {
       console.log("YOU LOSE.");
       var gg = game.add.text(game.world.centerX, game.world.centerY, "GAME\nOVER\n\nRestart?",C.game.textStyle);
       gg.anchor.setTo(.5); 
+      zoomOut = true;
     }
+    update() {
+      if (zoomOut === true) {
+        worldScale -= 0.03;
+        if (game.world.pivot.x > 0 || game.world.pivot.y > 0) {
+          game.world.pivot.x -= 5;
+          game.world.pivot.y -= 5;
+          game.world.pivot.x = Phaser.Math.clamp(game.world.pivot.x, 0, 3000);
+          game.world.pivot.y = Phaser.Math.clamp(game.world.pivot.y, 0, 3000);
+        } else if (worldScale <= 1) {
+            zoomOut = false;
+        }
+        worldScale = Phaser.Math.clamp(worldScale, 1, 3);
+        game.world.scale.set(worldScale);
+    }
+   }
 }
 
 function changeValueScale(value) {
@@ -252,13 +272,15 @@ function battle(player, monster) {
     removeFromList(player, focusSpace);
     playersList[player.number] = player.number;
     player.sprite.destroy();
-    var destroyedPlayers;
+    var destroyedPlayers = 0;
     for (var i = 1; i <= playersList.length; i++) {
       if (Number.isInteger(playersList[i])) {
         destroyedPlayers += 1;
       }
     }
+    console.log("There are " + destroyedPlayers + " mechs destroyed.")
     if (destroyedPlayers === playerCount) {
+      zoomOut = true;
       game.state.start("GameOver");
     }
   } else {
@@ -357,7 +379,6 @@ function checkBattle(space) {
 
 function changeTurn() {
     actionPoints = 3;
-    turn.sprite.input.enableDrag(false);
     //turn.sprite.inputEnabled = false
     do {
       if (turn && turn.number && turn.number < playerCount) {
@@ -373,15 +394,8 @@ function changeTurn() {
       console.log("Switching to this turn:");
       console.log(turn);
     //if (turn.sprite.inputEnabled === false) {
-      turn.sprite.inputEnabled = true;
-      turn.sprite.input.enableDrag(true);
     //}
-    closestSpaces = getClosestSpaces(turn.key);
-    turn.sprite.closestSpaces = closestSpaces;
-    turn.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
 }
-
-
 
 
 function distance(x1, y1, x2, y2) {
@@ -475,7 +489,7 @@ function getClosestSpaces(spaceKey) {
     } 
    } else if (spaceKey !== "center") {
       counter_clockwise = spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) + 1) + spaceKey.charAt(2) ;
-      clockwise = spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) - 1) + spaceKey.charAt(2) ;
+      clockwise = spaceKey.charAt(0) + (parseInt(spaceKey.charAt(1)) - 1) + spaceKey.charAt(2);
    } 
 
   selectedSpaces = [];
