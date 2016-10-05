@@ -59,7 +59,7 @@ var battleMonster = null;
 var battleStarting = false;
 var pendingBattles = [];
 var threatLevel = 0;
-
+var menuBar;
 
 class Boot {
   preload() {
@@ -92,19 +92,13 @@ class Load {
   }
 }
 
-
 class Setup {
 
-  preload() {
+  create() {
     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
     console.log("Placing Board");
-    //game.bg = game.add.tileSprite(0,0,5574,5574,"gameboard");
     game.bg = game.add.sprite(0, game.world.centerY - game.height / 2, "gameboard");
     game.bg.scale.setTo(C.bg.scale, C.bg.scale);
-    //game.scale.scaleMode = Phaser.ScaleManager.RESIZE;
-    //game.scale.setResizeCallback(function() {
-    //game.scale.setMaximum();
-    //});
     playerCount = parseInt(prompt("How many will be playing?", "2")) || null;
     if (!playerCount || Number.isInteger(playerCount) == false || playerCount < 2) {
       playerCount = 2;
@@ -131,12 +125,13 @@ class Setup {
       monstersList[i-1].number = i - 1;
       
     }
-  }
 
-  create() {
     //Create a rectangle that will serve as our camera for zooming and battling purposes.
     //viewRect = new Phaser.Rectangle(0, 0, C.bg.width * C.bg.scale, C.bg.width * C.bg.scale); 
     viewRect = new Phaser.Rectangle(0, 0, game.width, game.height);
+    menuBar = game.add.sprite((game.width/worldScale)/2,(game.height/worldScale)/2,"menubar");
+    menuBar.anchor.x = .5;
+    menuBar.anchor.y = .5;
     turn = playersList[1];
     turn.sprite.inputEnabled = true;
     turn.sprite.input.enableDrag(true);
@@ -157,10 +152,16 @@ class Setup {
   update() {
     //Set ZoomIn to true or ZoomOut to false to enable zoom. It will
     //reset itself.
+    if (focusSpace && focusSpace.x) {
+      var xPivot = (focusSpace.x * C.bg.scale*C.bg.resize + game.bg.position.x) - (game.width/worldScale)/2;
+      var yPivot = (focusSpace.y * C.bg.scale*C.bg.resize + game.bg.position.y) - (game.height/worldScale)/2; 
+      var xMenu = changeValueScale(focusSpace.x); 
+      var yMenu = changeValueScale(focusSpace.y);
+    }
+    
+    
     if (zoomIn === true) {
         worldScale += 0.03;
-        var xPivot = (focusSpace.x * C.bg.scale*C.bg.resize + game.bg.position.x) - (game.width/worldScale)/2;
-        var yPivot = (focusSpace.y * C.bg.scale*C.bg.resize + game.bg.position.y) - (game.height/worldScale)/2; 
         if (yPivot < 0) {
           yPivot = 0
         }
@@ -169,13 +170,16 @@ class Setup {
         }
         if (game.world.pivot.x < xPivot && xPivot > 0) {
           game.world.pivot.x = Phaser.Math.clamp(game.world.pivot.x + 6, 0, xPivot);
+          menuBar.x = menuBar.x++;
+          menuBar.x = Phaser.Math.clamp(menuBar.x, 0, xMenu);
         }
         if (game.world.pivot.y < yPivot && yPivot > 0) {
           game.world.pivot.y = Phaser.Math.clamp(game.world.pivot.y + 6, 0, yPivot);
+          menuBar.x = menuBar.x++;
+          menuBar.y = Phaser.Math.clamp(menuBar.y, 0, yMenu);
         } 
        //console.log("x is " + xPivot);
        //console.log("y is " + yPivot);
-
     } else if (zoomOut === true) {
         worldScale -= 0.03;
         if (game.world.pivot.x > 0 || game.world.pivot.y > 0) {
@@ -189,7 +193,7 @@ class Setup {
               console.log("There are more battles.");
               focusSpace = pendingBattles[0].space;
               battleMonster = pendingBattles[0].pendingMonster;
-              battlePlayer = pendingBattles[0].pendingPlayer
+              battlePlayer = pendingBattles[0].pendingPlayer;
               zoomIn = true;
               battleStarting = true;
             }
@@ -203,7 +207,6 @@ class Setup {
         battle(battlePlayer,battleMonster);
       }
     }
-
     // set a minimum and maximum scale value
     worldScale = Phaser.Math.clamp(worldScale, 1, 3);
     game.world.scale.set(worldScale);
