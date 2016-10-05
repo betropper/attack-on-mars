@@ -61,6 +61,8 @@ var pendingBattles = [];
 var threatLevel = 0;
 var menuBar;
 
+//CHANGE THE CAMERA BOUNDS SO YOU CAN CHANGE EVERYTHING ELSE AHHHH
+
 class Boot {
   preload() {
     this.scale.pageAlignHorizontally = true;
@@ -128,7 +130,7 @@ class Setup {
 
     //Create a rectangle that will serve as our camera for zooming and battling purposes.
     //viewRect = new Phaser.Rectangle(0, 0, C.bg.width * C.bg.scale, C.bg.width * C.bg.scale); 
-    viewRect = new Phaser.Rectangle(0, 0, game.width, game.height);
+    //viewRect = new Phaser.Rectangle(0, 0, game.width, game.height);
     menuBar = game.add.sprite((game.width/worldScale)/2,(game.height/worldScale)/2,"menubar");
     menuBar.anchor.x = .5;
     menuBar.anchor.y = .5;
@@ -159,8 +161,14 @@ class Setup {
       var yMenu = changeValueScale(focusSpace.y);
     }
     
-    
-    if (zoomIn === true) {
+    var cursors = game.input.keyboard.createCursorKeys();
+    if (cursors.up.isDown) {
+      game.camera.y -= 4;
+      console.log(game.camera.y);
+    }
+
+     if (zoomIn === true) {
+
         worldScale += 0.03;
         if (yPivot < 0) {
           yPivot = 0
@@ -208,6 +216,7 @@ class Setup {
       }
     }
     // set a minimum and maximum scale value
+    
     worldScale = Phaser.Math.clamp(worldScale, 1, 3);
     game.world.scale.set(worldScale);
     if (spaceDisplay) {
