@@ -98,6 +98,7 @@ class Setup {
 
   create() {
     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+    game.camera.bounds = null;
     console.log("Placing Board");
     game.bg = game.add.sprite(0, game.world.centerY - game.height / 2, "gameboard");
     game.bg.scale.setTo(C.bg.scale, C.bg.scale);
@@ -124,8 +125,7 @@ class Setup {
       playersList[i].sprite.closestSpaces = closestSpaces;
       playersList[i].sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
       monstersList[i-1] = spawnRandom("monster", i, "3", true);
-      monstersList[i-1].number = i - 1;
-      
+      monstersList[i-1].number = i - 1; 
     }
 
     //Create a rectangle that will serve as our camera for zooming and battling purposes.
