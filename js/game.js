@@ -155,8 +155,8 @@ class Setup {
     //Set ZoomIn to true or ZoomOut to false to enable zoom. It will
     //reset itself.
     if (focusSpace && focusSpace.x) {
-      var xPivot = (focusSpace.x * C.bg.scale*C.bg.resize + game.bg.position.x) - (game.width/worldScale)/2;
-      var yPivot = (focusSpace.y * C.bg.scale*C.bg.resize + game.bg.position.y) - (game.height/worldScale)/2; 
+      var xPivot = (focusSpace.x * C.bg.scale*C.bg.resize + game.bg.position.x); //- (game.width/worldScale)/2;
+      var yPivot = (focusSpace.y * C.bg.scale*C.bg.resize + game.bg.position.y); //- (game.height/worldScale)/2; 
       var xMenu = changeValueScale(focusSpace.x); 
       var yMenu = changeValueScale(focusSpace.y);
     }
@@ -173,18 +173,18 @@ class Setup {
         if (yPivot < 0) {
           yPivot = 0
         }
-        if (yPivot === game.world.pivot.y && xPivot === game.world.pivot.x) {
+        if (yPivot === game.camera.y && xPivot === game.camera.x) {
           zoomIn = false;
         }
-        if (game.world.pivot.x < xPivot && xPivot > 0) {
-          game.world.pivot.x = Phaser.Math.clamp(game.world.pivot.x + 6, 0, xPivot);
-          menuBar.x = menuBar.x++;
-          menuBar.x = Phaser.Math.clamp(menuBar.x, 0, xMenu);
+        if (game.camera.x < xPivot && xPivot > 0) {
+          game.camera.x = Phaser.Math.clamp(game.camera.x + 16, 0, xPivot);
+          //menuBar.x = menuBar.x++;
+          //menuBar.x = Phaser.Math.clamp(menuBar.x, 0, xMenu);
         }
-        if (game.world.pivot.y < yPivot && yPivot > 0) {
-          game.world.pivot.y = Phaser.Math.clamp(game.world.pivot.y + 6, 0, yPivot);
-          menuBar.x = menuBar.x++;
-          menuBar.y = Phaser.Math.clamp(menuBar.y, 0, yMenu);
+        if (game.camera.y < yPivot && yPivot > 0) {
+          game.camera.y = Phaser.Math.clamp(game.camera.y + 16, 0, yPivot);
+          //menuBar.x = menuBar.x++;
+          //menuBar.y = Phaser.Math.clamp(menuBar.y, 0, yMenu);
         } 
        //console.log("x is " + xPivot);
        //console.log("y is " + yPivot);
