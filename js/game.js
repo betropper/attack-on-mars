@@ -19,16 +19,20 @@ var C = {
  "mech": {
    "width": 72,
    "height": 72,
-   "scale": .3
+   "scale": .4
  },
  "destroyed": {
-   "scale": .35
+   "scale": .55
  },
 
  "monster": {
    "width": 72,
    "height": 72,
-   "scale": .3
+   "scale": .4
+ },
+ "menuBar": {
+  "width": 640,
+  "height": 320
  }
 }
 
@@ -86,7 +90,7 @@ class Load {
     this.load.image("redcircle", "assets/red-circle.png", 72, 72);
     this.load.image("purplecircle", "assets/purple-circle.png", 72, 72);
     this.load.image("monster", "assets/green-circle.png", C.monster.width, C.monster.height);
-    this.load.image("menubar","assets/menubar.png",640,320);
+    this.load.image("menubar","assets/menubar.png",C.menuBar.width,C.menuBar.height);
   }
   create() {
     console.log("Loaded!");
@@ -127,13 +131,6 @@ class Setup {
       monstersList[i-1] = spawnRandom("monster", i, "3", true);
       monstersList[i-1].number = i - 1; 
     }
-
-    //Create a rectangle that will serve as our camera for zooming and battling purposes.
-    //viewRect = new Phaser.Rectangle(0, 0, C.bg.width * C.bg.scale, C.bg.width * C.bg.scale); 
-    //viewRect = new Phaser.Rectangle(0, 0, game.width, game.height);
-    menuBar = game.add.sprite((game.width/worldScale)/2,(game.height/worldScale)/2,"menubar");
-    menuBar.anchor.x = .5;
-    menuBar.anchor.y = .5;
     turn = playersList[1];
     turn.sprite.inputEnabled = true;
     turn.sprite.input.enableDrag(true);
@@ -150,13 +147,20 @@ class Setup {
     waitButton.anchor.x = .5;
     waitButton.anchor.y = .5;
     waitButton.scale.y = .6;
+    menuBar = game.add.sprite(0,(game.height/worldScale) - 320 + C.menuBar.height/4,"menubar");
+    menuBar.fixedToCamera = true;
+    game.world.bringToTop(menuBar);
   }
   update() {
     //Set ZoomIn to true or ZoomOut to false to enable zoom. It will
     //reset itself.
+    if (actionPoints === 0 && pendingBattles.length === 0 && zoomOut !== true && zoomOut !== true) {
+      changeTurn();
+      game.world.bringToTop(menuBar);
+    }
     if (focusSpace && focusSpace.x) {
-      var xPivot = (focusSpace.x * C.bg.scale*C.bg.resize + game.bg.position.x); //- (game.width/worldScale)/2;
-      var yPivot = (focusSpace.y * C.bg.scale*C.bg.resize + game.bg.position.y); //- (game.height/worldScale)/2; 
+      var xPivot = changeValueScale(focusSpace.x) * 3 - game.camera.view.halfWidth;
+      var yPivot = changeValueScale(focusSpace.y) * 3 - game.camera.view.halfHeight; 
       var xMenu = changeValueScale(focusSpace.x); 
       var yMenu = changeValueScale(focusSpace.y);
     }
@@ -168,43 +172,46 @@ class Setup {
     }
 
      if (zoomIn === true) {
-
         worldScale += 0.03;
+        console.log("Tick.");
+        menuBar.width = C.menuBar.width / worldScale;
+        menuBar.height = C.menuBar.height / worldScale;
+        menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/3, C.menuBar.width);
+        menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/3, C.menuBar.height);
         if (yPivot < 0) {
           yPivot = 0
         }
-        if (yPivot === game.camera.y && xPivot === game.camera.x) {
+        if (Math.floor(worldScale) === 3 && Math.floor(yPivot) === game.camera.y && Math.floor(xPivot) === game.camera.x) {
           zoomIn = false;
+          console.log("Done zooming");
         }
         if (game.camera.x < xPivot && xPivot > 0) {
-          game.camera.x = Phaser.Math.clamp(game.camera.x + 16, 0, xPivot);
-          //menuBar.x = menuBar.x++;
-          //menuBar.x = Phaser.Math.clamp(menuBar.x, 0, xMenu);
+          game.camera.x = Phaser.Math.clamp(game.camera.x + focusSpace.increment.x, 0, xPivot);
+        } else if (game.camera.x > xPivot && xPivot > 0) {
+          game.camera.x = Phaser.Math.clamp(game.camera.x - focusSpace.increment.x, xPivot, 9999);
         }
         if (game.camera.y < yPivot && yPivot > 0) {
-          game.camera.y = Phaser.Math.clamp(game.camera.y + 16, 0, yPivot);
-          //menuBar.x = menuBar.x++;
-          //menuBar.y = Phaser.Math.clamp(menuBar.y, 0, yMenu);
-        } 
+          game.camera.y = Phaser.Math.clamp(game.camera.y + focusSpace.increment.y, 0, yPivot);
+        } else if (game.camera.y > yPivot && yPivot > 0) {
+          game.camera.y = Phaser.Math.clamp(game.camera.y - focusSpace.increment.y, yPivot, 9999);
+        }
        //console.log("x is " + xPivot);
        //console.log("y is " + yPivot);
     } else if (zoomOut === true) {
         worldScale -= 0.03;
-        if (game.world.pivot.x > 0 || game.world.pivot.y > 0) {
-          game.world.pivot.x -= 5;
-          game.world.pivot.y -= 5;
-          game.world.pivot.x = Phaser.Math.clamp(game.world.pivot.x, 0, 3000);
-          game.world.pivot.y = Phaser.Math.clamp(game.world.pivot.y, 0, 3000);
+        menuBar.width = C.menuBar.width / worldScale;
+        menuBar.height = C.menuBar.height / worldScale;
+        menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/3, C.menuBar.width);
+        menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/3, C.menuBar.height);
+        if (game.camera.x > 0 || game.camera.y > 0) {
+          game.camera.x -= focusSpace.increment.x;
+          game.camera.y -= focusSpace.increment.y;
+          game.camera.x = Phaser.Math.clamp(game.camera.x, 0, 3000);
+          game.camera.y = Phaser.Math.clamp(game.camera.y, 0, 3000);
+
         } else if (worldScale <= 1) {
             zoomOut = false;
-            if (pendingBattles.length > 0) {
-              console.log("There are more battles.");
-              focusSpace = pendingBattles[0].space;
-              battleMonster = pendingBattles[0].pendingMonster;
-              battlePlayer = pendingBattles[0].pendingPlayer;
-              zoomIn = true;
-              battleStarting = true;
-            }
+
         }
     } if (battleStarting) {
       var lookAt = focusSpace.x * C.bg.scale*C.bg.resize + game.bg.position.x;
@@ -237,32 +244,34 @@ class Setup {
       attributeDisplay.setText("Remaining Moves: " + actionPoints);
     }
   }
-
 }
 
 
 class GameOver {
     create() {
-      console.log("YOU LOSE.");
-      var gg = game.add.text(game.world.centerX, game.world.centerY, "GAME\nOVER\n\nRestart?",C.game.textStyle);
-      gg.anchor.setTo(.5); 
-      zoomOut = true;
+        game.world.scale.set(1);
+        console.log("YOU LOSE.");
+        var gg = game.add.text(game.world.centerX, game.world.centerY, "GAME\nOVER\n\nRestart?",C.game.textStyle);
+        gg.anchor.setTo(.5);
+        game.world.pivot.x = 0;
+        game.world.pivot.y = 0;
+        game.camera.x = 0;
+        game.camera.y = 0;
+      }
+   
+}
+
+function attachToCamera(obj) {
+        /*
+        obj.width = C.obj.width / worldScale;
+        obj.height = C.obj.height / worldScale;
+        obj.width = Phaser.Math.clamp(obj.width, C.obj.width/3, C.obj.width);
+        obj.height = Phaser.Math.clamp(obj.height, C.obj.height/3, C.obj.height);
+        */
     }
-    update() {
-      if (zoomOut === true) {
-        worldScale -= 0.03;
-        if (game.world.pivot.x > 0 || game.world.pivot.y > 0) {
-          game.world.pivot.x -= 5;
-          game.world.pivot.y -= 5;
-          game.world.pivot.x = Phaser.Math.clamp(game.world.pivot.x, 0, 3000);
-          game.world.pivot.y = Phaser.Math.clamp(game.world.pivot.y, 0, 3000);
-        } else if (worldScale <= 1) {
-            zoomOut = false;
-        }
-        worldScale = Phaser.Math.clamp(worldScale, 1, 3);
-        game.world.scale.set(worldScale);
-    }
-   }
+
+function findIncrementsTo(space) {
+    space.increment = {x: (changeValueScale(space.x) * 3 - game.camera.view.halfWidth) / 67, y: (changeValueScale(space.y) * 3 - game.camera.view.halfHeight) / 67};
 }
 
 function changeValueScale(value) {
@@ -275,12 +284,12 @@ function battle(player, monster) {
   console.log(player);
   focusSpace.occupied = removeFromList(monster, focusSpace);
   monster.sprite.destroy();
+  
   monstersList.splice(monster.number, 1);
   pendingBattles.splice(0,1);
   player.hp -= 1;
   if (player.hp === 0) {
     console.log("DED.");
-    //playersList.splice(player.number, 1);
     removeFromList(player, focusSpace);
     playersList[player.number] = player.number;
     player.sprite.destroy();
@@ -298,31 +307,38 @@ function battle(player, monster) {
   } else {
     player.sprite.x = changeValueScale(focusSpace.x);
     player.sprite.y = changeValueScale(focusSpace.y);
+    }
+    if (pendingBattles.length > 0) {
+      console.log("There are more battles.");
+      focusSpace = pendingBattles[0].space;
+      findIncrementsTo(focusSpace);
+      battleMonster = pendingBattles[0].pendingMonster;
+      battlePlayer = pendingBattles[0].pendingPlayer;
+      zoomIn = true;
+      battleStarting = true;
+    } else {
+      zoomOut = true;
+    }
   }
-  zoomOut = true;
-}
 
-function waitOneAction() {
-  actionPoints -= 1;  
-  if (actionPoints === 0) {
-    changeTurn();
+  function waitOneAction() {
+    actionPoints -= 1;  
   }
-}
 
-function moveMonsters() {
-    for (var i = 0; i <= monstersList.length - 1; i++) {
-      monstersList[i].sprite.closestSpaces = getClosestSpaces(monstersList[i].key);
-      var newDestination = monstersList[i].key.substring(0,2) + (parseInt(monstersList[i].key.charAt(2)) - 1);
-      if (parseInt(monstersList[i].key.charAt(2)) !== 0 && parseInt(newDestination.charAt(2)) === 0) {
-        if (Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined) {
-          console.log("U R DED"); 
-          var destroyedCityColumn = spawnSpecific("purplecircle", newDestination);
-          destroyedCities.push(destroyedCityColumn);
-          occupiedRows.push(destroyedCityColumn.key.substring(0,2));
-        }
-      } else if (parseInt(monstersList[i].key.charAt(2)) === 0 )  {
-        newDestination = monstersList[i].sprite.closestSpaces.directions[1];
-        if (Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined) {
+  function moveMonsters() {
+      for (var i = 0; i <= monstersList.length - 1; i++) {
+        monstersList[i].sprite.closestSpaces = getClosestSpaces(monstersList[i].key);
+        var newDestination = monstersList[i].key.substring(0,2) + (parseInt(monstersList[i].key.charAt(2)) - 1);
+        if (parseInt(monstersList[i].key.charAt(2)) !== 0 && parseInt(newDestination.charAt(2)) === 0) {
+          if (Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined) {
+            console.log("U R DED"); 
+            var destroyedCityColumn = spawnSpecific("purplecircle", newDestination);
+            destroyedCities.push(destroyedCityColumn);
+            occupiedRows.push(destroyedCityColumn.key.substring(0,2));
+          }
+        } else if (parseInt(monstersList[i].key.charAt(2)) === 0 )  {
+          newDestination = monstersList[i].sprite.closestSpaces.directions[1];
+          if (Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined) {
           var destroyedCityColumn = spawnSpecific("purplecircle", newDestination);
           destroyedCities.push(destroyedCityColumn);
           occupiedRows.push(destroyedCityColumn.key.substring(0,2));
@@ -381,6 +397,7 @@ function checkBattle(space) {
         battlePlayer = pendingPlayer;
         battleMonster = pendingMonster;
         focusSpace = space;
+        findIncrementsTo(focusSpace);
         zoomIn = true;
         battleStarting = true;
       }
@@ -444,9 +461,6 @@ function attachClosestSpace(sprite,pointer) {
       move(obj, closestKey);
     } else { 
       move(turn, closestKey);
-    }
-    if (actionPoints === 0) {
-      changeTurn();
     }
 }
 
