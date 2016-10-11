@@ -7,6 +7,14 @@ var C = {
       fill: "#ffffff",
       font: '16px Poiret One'
    },
+   "smallStyle": {
+      align: 'center',
+      fill: "#ffffff",
+      font: '10px Poiret One',
+      "style": {
+        backgroundColor: 'black'
+      }
+   },
     "scaleRatio": window.devicePixelRatio / 3
  },
  "bg": {
@@ -60,11 +68,13 @@ var zoomOut;
 var focusSpace;
 var battlePlayer = null;
 var battleMonster = null;
+var battleTurn = null;
 var battleStarting = false;
 var pendingBattles = [];
 var threatLevel = 0;
 var menuBar;
-
+var battleState;
+var resultsList = [];
 //CHANGE THE CAMERA BOUNDS SO YOU CAN CHANGE EVERYTHING ELSE AHHHH
 
 class Boot {
@@ -218,30 +228,36 @@ class Setup {
       battlePlayer.sprite.x = Phaser.Math.clamp(battlePlayer.sprite.x + .2, 0, lookAt + 30);
       battleMonster.sprite.x = Phaser.Math.clamp(battleMonster.sprite.x - .2, lookAt - 30, 3000);
       if (battlePlayer.sprite.x === lookAt + 30 && battleMonster.sprite.x - 30) {
+        battlePlayer.sprite.events.onDragStop._bindings = [];
+        battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
         battleStarting = false;
-        battle(battlePlayer,battleMonster);
+        battleState = true;
       }
+    } else if (battleState === true) {
+      battle(battlePlayer,battleMonster);
+      // Change this, placeholder ending.
+
     }
     // set a minimum and maximum scale value
     
     worldScale = Phaser.Math.clamp(worldScale, 1, 3);
     game.world.scale.set(worldScale);
     if (spaceDisplay) {
-      spaceDisplay.setText("Valid Movements for " + turn.sprite.key + ":\n " + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
+      spaceDisplay.setText("Valid Movements for " + turn.sprite.key + ":\n " + turn.sprite.closestSpaces.keys.join(" ") + "\nRemaining Moves: " + actionPoints,C.game.textStyle);
     }
     for (var i = 0; i < globalList.length; i++) {
       if (globalList[i].sprite.input && globalList[i].sprite.input.pointerOver()) {
-        var over = globalList[i];
-      }
+        var over = globalList[i]; 
+      } 
     }
     if (over) { 
       if (playerNames.indexOf(over.sprite.key) > -1) {
-        attributeDisplay.setText("Name: " + over.sprite.key + "\nHP: " + over.hp + "\nResearch Points: " + over.rp)
+        attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + "\nResearch Points: " + over.rp)
       } else if (over.sprite.key = "monster") {
-        attributeDisplay.setText("Name: " + over.sprite.key + "\nHP: " + over.hp + "\nResearch Point Reward: " + over.rp)
+        attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + "\nResearch Point Reward: " + over.rp)
       }
     } else {
-      attributeDisplay.setText("Remaining Moves: " + actionPoints);
+      attributeDisplay.setText("\nName: " + turn.sprite.key + "\nHP: " + turn.hp + "\nResearch Points: " + turn.rp);
     }
   }
 }
@@ -278,46 +294,122 @@ function changeValueScale(value) {
   return value * C.bg.scale*C.bg.resize + game.bg.position.x; 
 }
 
-function battle(player, monster) {
-  //Simple Placeholder battle
-  console.log(monster);
-  console.log(player);
-  focusSpace.occupied = removeFromList(monster, focusSpace);
-  monster.sprite.destroy();
-  
-  monstersList.splice(monster.number, 1);
-  pendingBattles.splice(0,1);
-  player.hp -= 1;
-  if (player.hp === 0) {
-    console.log("DED.");
-    removeFromList(player, focusSpace);
-    playersList[player.number] = player.number;
-    player.sprite.destroy();
-    var destroyedPlayers = 0;
-    for (var i = 1; i <= playersList.length; i++) {
-      if (Number.isInteger(playersList[i])) {
-        destroyedPlayers += 1;
-      }
-    }
-    console.log("There are " + destroyedPlayers + " mechs destroyed.")
-    if (destroyedPlayers === playerCount) {
-      zoomOut = true;
-      game.state.start("GameOver");
-    }
+function checkAttack(sprite,pointer) {
+  if (sprite.overlap(battleMonster.sprite)) {
+    attack(battlePlayer,battleMonster)
+  }
+  sprite.x = changeValueScale(focusSpace.x) + 30;
+  sprite.y = changeValueScale(focusSpace.y);
+}
+
+function attack(attacker,defender) {
+  var bhits = rollDie(attacker.batk);                                                                                       
+  var rhits = 0;
+  if (attacker.ratk) {
+    rhits = rollDie(attacker.batk);                                                                                       
+  }
+  var successes = rhits + bhits;
+  console.log(attacker.sprite.key + " hit " +successes + " hit/hits!");
+  var defences = rollDie(defender.def);
+  console.log(defender.sprite.key + " defended " + defences + " hit/hits!");
+  if (successes > defences) {
+    defender.hp -= successes - defences;
+    var damaged = defender;
+    var damageTaken = successes - defences;
+    var text = defender.sprite.key + " took " + damageTaken + " damage from " + attacker.sprite.key + ".";
+  } else if (defences > successes) {
+    attacker.hp -= defences - successes;
+    var damaged = attacker;
+    var damageTaken = defences - successes;
+    var text = attacker.sprite.key + " took " + damageTaken + " damage from " + defender.sprite.key + "'s defences!";
   } else {
-    player.sprite.x = changeValueScale(focusSpace.x);
-    player.sprite.y = changeValueScale(focusSpace.y);
+    var damaged = null;
+    var damageTaken = null;
+    console.log("No damage.");
+    var text = defender.sprite.key + " blocked every hit from " + attacker.sprite.key + "!";
+  }
+    if (resultsList.length > 0) {
+      var battleResults = game.add.text(Math.round(changeValueScale(focusSpace.x)),Math.round(resultsList[resultsList.length - 1].y + 25), text, C.game.smallStyle);
+    } else { 
+      var battleResults = game.add.text(Math.round(changeValueScale(focusSpace.x)),Math.round(changeValueScale(focusSpace.y)) - 80, text, C.game.smallStyle);
     }
+    battleResults.anchor.x = .5;
+    battleResults.anchor.y = .5;
+    game.world.bringToTop(battleResults);
+    resultsList.push(battleResults);
+    game.time.events.add(Phaser.Timer.SECOND * 2, killResults, this, battleResults);
+  if (damaged && damaged.hp <= 0) {
+    console.log("DED with " + damaged.hp);
+    if (damaged === battlePlayer) {
+      playersList[damaged.number] = damaged.number;
+      removeFromList(playersList[damaged.number], focusSpace);
+      damaged.sprite.destroy();
+      var destroyedPlayers = 0;
+      for (var i = 1; i <= playersList.length; i++) {
+        if (Number.isInteger(playersList[i])) {
+          destroyedPlayers += 1;
+        }
+      }
+      console.log("There are " + destroyedPlayers + " mechs destroyed.")
+      if (destroyedPlayers === playerCount) {
+        zoomOut = true;
+        game.state.start("GameOver");
+      }
+    } else if (damaged === battleMonster) {
+      removeFromList(monstersList[damaged.number], focusSpace);
+      battlePlayer.rp += damaged.rp;
+      monstersList.splice(damaged.number, 1);
+      damaged.sprite.destroy();
+      battlePlayer.sprite.events.onDragStop._bindings = [];
+      battlePlayer.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
+      battlePlayer.sprite.x = changeValueScale(focusSpace.x);
+    }
+    pendingBattles.splice(0,1); 
     if (pendingBattles.length > 0) {
       console.log("There are more battles.");
-      focusSpace = pendingBattles[0].space;
-      findIncrementsTo(focusSpace);
       battleMonster = pendingBattles[0].pendingMonster;
       battlePlayer = pendingBattles[0].pendingPlayer;
+      focusSpace = pendingBattles[0].space;
+      findIncrementsTo(focusSpace);
       zoomIn = true;
       battleStarting = true;
     } else {
       zoomOut = true;
+      battleState = false;
+    }
+  } else if (damaged) {
+
+  }
+  if (!damaged || damaged.hp > 0) {
+    battleTurn = defender;
+  }
+
+}
+function killResults(results) {
+  results.destroy();
+  resultsList.splice(results,1);
+  console.log(results + " has been destroyed.");
+}
+
+
+function rollDie(count){ 
+  var hits = 0;
+  for (i = 1; i < count; i++) {
+    if (Math.floor(Math.random() * ((6-1)+1) + 1) >= 5) {
+      hits += 1;
+    }
+  }
+  return hits;
+} 
+
+function battle(player, monster) {
+  //Simple Placeholder battle
+    if (battleTurn === battleMonster && battleMonster.sprite) {
+      battleMonster.sprite.x += .3;
+      if (battleMonster.sprite.x >= changeValueScale(focusSpace.x)) {
+        attack(battleMonster,battlePlayer);
+        battleMonster.sprite.x = battlePlayer.sprite.x - 60;
+      }
     }
   }
 
