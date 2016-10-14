@@ -1,11 +1,11 @@
 var C = {
  "game": {
-   "width": 640,
-   "height": 1136,
+   "width": 1200,
+   "height": 640,
    "textStyle": {
       align: 'center',
       fill: "#ffffff",
-      font: '16px Poiret One'
+      font: '20px Poiret One'
    },
    "smallStyle": {
       align: 'center',
@@ -21,7 +21,7 @@ var C = {
    "resize": .25,
    "width": 1394,
    "height": 1394,
-   "scale": .46,
+   "scale": .40,
    "file": "assets/gameboard.png"
  },
  "mech": {
@@ -39,10 +39,15 @@ var C = {
    "scale": .4
  },
  "menuBar": {
-  "width": 640,
-  "height": 320
+  "width": 1200,
+  "height": 160
+ },
+ "wrench": {
+  "width": 200,
+  "height": 200
  }
 }
+var waitButton
 var lastClicked;
 var repairText;
 var worldScale = 1;
@@ -76,6 +81,7 @@ var threatLevel = 0;
 var menuBar;
 var battleState;
 var resultsList = [];
+var buttonsList = [];
 //CHANGE THE CAMERA BOUNDS SO YOU CAN CHANGE EVERYTHING ELSE AHHHH
 
 class Boot {
@@ -102,6 +108,7 @@ class Load {
     this.load.image("purplecircle", "assets/purple-circle.png", 72, 72);
     this.load.image("monster", "assets/green-circle.png", C.monster.width, C.monster.height);
     this.load.image("menubar","assets/menubar.png",C.menuBar.width,C.menuBar.height);
+    this.load.image("wrench","assets/wrench.png", C.wrench.width,C.wrench.height);
     game.load.bitmapFont('attackfont','assets/attackfont.png', 'assets/attackfont.fnt');
   }
   create() {
@@ -150,26 +157,30 @@ class Setup {
     closestSpaces = getClosestSpaces(turn.key);
     turn.sprite.closestSpaces = closestSpaces;
     // Add in text that is displayed.
-    spaceDisplay = game.add.text(game.world.centerX, game.world.centerY + 150,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
-    attributeDisplay = game.add.text(game.world.centerX, game.world.centerY + 230, "", C.game.textStyle);
+    spaceDisplay = game.add.text(900, 250,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
+    attributeDisplay = game.add.text(spaceDisplay.x, spaceDisplay.y + 230, "", C.game.textStyle);
     spaceDisplay.anchor.setTo(.5); 
     attributeDisplay.anchor.setTo(.5);
     turn.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
     // Temporary for testing. Change this later.
-    var waitButton = game.add.button(spaceDisplay.x, spaceDisplay.y - 70, 'purplecircle', waitOneAction);
+    menuBar = game.add.sprite(0,(game.height/worldScale) - 162 + C.menuBar.height/4,"menubar");
+    menuBar.width = C.menuBar.width;
+    menuBar.height = C.menuBar.height;
+    menuBar.fixedToCamera = true;
+    game.world.bringToTop(menuBar);
+    waitButton = game.add.button(80, menuBar.y + 80, 'purplecircle', waitOneAction);
     waitButton.anchor.x = .5;
     waitButton.anchor.y = .5;
     waitButton.scale.y = .6;
-    menuBar = game.add.sprite(0,(game.height/worldScale) - 320 + C.menuBar.height/4,"menubar");
-    menuBar.fixedToCamera = true;
-    game.world.bringToTop(menuBar);
+    buttonsList.push(waitButton);
+    game.world.bringToTop(waitButton);
   }
   update() {
     //Set ZoomIn to true or ZoomOut to false to enable zoom. It will
     //reset itself.
     if (actionPoints === 0 && pendingBattles.length === 0 && zoomOut !== true && zoomOut !== true) {
       changeTurn();
-      game.world.bringToTop(menuBar);
+
     }
     if (focusSpace && focusSpace.x) {
       var xPivot = changeValueScale(focusSpace.x) * 3 - game.camera.view.halfWidth;
@@ -191,6 +202,7 @@ class Setup {
         menuBar.height = C.menuBar.height / worldScale;
         menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/3, C.menuBar.width);
         menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/3, C.menuBar.height);
+        game.world.bringToTop(menuBar);
         if (yPivot < 0) {
           yPivot = 0
         }
@@ -216,6 +228,7 @@ class Setup {
         menuBar.height = C.menuBar.height / worldScale;
         menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/3, C.menuBar.width);
         menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/3, C.menuBar.height);
+        game.world.bringToTop(menuBar);
         if (game.camera.x > 0 || game.camera.y > 0) {
           if (focusSpace.increment.x > 0) {
             game.camera.x -= focusSpace.increment.x;
@@ -233,7 +246,9 @@ class Setup {
 
         } else if (worldScale <= 1) {
             zoomOut = false;
-
+            for (i = 0; i < buttonsList.length; i++) {
+              game.world.bringToTop(buttonsList[i]);
+            }
         }
     } if (battleStarting) {
       var lookAt = focusSpace.x * C.bg.scale*C.bg.resize + game.bg.position.x;
@@ -265,9 +280,9 @@ class Setup {
     if (over) { 
       if (playerNames.indexOf(over.sprite.key) > -1) {
         attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + "\nResearch Points: " + over.rp);
-        if (attributeDisplay.text && lastClicked !== undefined && repairText && attributeDisplay.text.indexOf(lastClicked.sprite.key) === -1) {
-          repairText.setText("Repair " + lastClicked.sprite.key);
-        }
+        /*if (attributeDisplay.text && lastClicked !== undefined && repairText && attributeDisplay.text.indexOf(lastClicked.sprite.key) === -1) {
+          repairText.text = "Repair " + lastClicked.sprite.key;
+        }*/
       } else if (over.sprite.key = "monster") {
         attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + "\nResearch Point Reward: " + over.rp)
       }
@@ -280,11 +295,21 @@ class Setup {
 
 function setLastClicked(sprite) {
   lastClicked = playersList[sprite.number]; 
-  if (lastClicked.key.indexOf("0") === 2) {
-    repairText = game.add.bitmapText(game.world.centerX, menuBar.y - 30, 'attackfont', "Repair " + sprite.key, 20);
+  if (lastClicked.key.indexOf("0") === 2 && !repairText) { 
+    repairText = game.add.bitmapText(1000, menuBar.y - 20, 'attackfont', "Repair " + sprite.key, 20);
     repairText.anchor.set(0.5);
     repairText.inputEnabled = true;
     repairText.events.onInputDown.add(repair, {repairing: lastClicked});
+    repairButton = game.add.sprite(repairText.x, repairText.y + 80, 'wrench');
+    repairButton.anchor.set(0.5);
+    repairButton.inputEnabled = true;
+    repairButton.events.onInputDown(repair, {repairing: lastClicked});
+  } else if (lastClicked.key.indexOf("0") === 2) {
+    repairText.setText("Repair " + sprite.key);
+    repairText.events.onInputDown._bindings = [];
+    repairText.events.onInputDown.add(repair, {repairing: lastClicked});
+    repairButton.events.onInputDown._bindings = [];
+    repairButton.events.onInputDown.add(repair, {repairing: lastClicked});
   }
 }
 
@@ -500,7 +525,6 @@ function move(object,destination) {
   addToOccupied(object, Space[destination]);
   game.world.bringToTop(object.sprite);
   checkBattle(Space[object.key]);
-
 }
 
 function repair() {
