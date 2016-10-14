@@ -43,7 +43,8 @@ var C = {
   "height": 320
  }
 }
-
+var lastClicked;
+var repairText;
 var worldScale = 1;
 var First = "red";
 var Second = "blue";
@@ -101,6 +102,7 @@ class Load {
     this.load.image("purplecircle", "assets/purple-circle.png", 72, 72);
     this.load.image("monster", "assets/green-circle.png", C.monster.width, C.monster.height);
     this.load.image("menubar","assets/menubar.png",C.menuBar.width,C.menuBar.height);
+    game.load.bitmapFont('attackfont','assets/attackfont.png', 'assets/attackfont.fnt');
   }
   create() {
     console.log("Loaded!");
@@ -132,14 +134,15 @@ class Setup {
       destroyedCities[i-1] = destroyedCityColumn;
       occupiedRows.push(destroyedCityColumn.key.substring(0,2));
       playersList[i] = spawnRandom(playerNames[i-1], i, "0", true);
-      playersList[i].number = i;
+      playersList[i].sprite.number = i;
       playersList[i].sprite.inputEnabled = true;
       playersList[i].sprite.input.enableDrag(true);
+      playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
       closestSpaces = getClosestSpaces(playersList[i].key);
       playersList[i].sprite.closestSpaces = closestSpaces;
       playersList[i].sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
       monstersList[i-1] = spawnRandom("monster", i, "3", true);
-      monstersList[i-1].number = i - 1; 
+      monstersList[i-1].sprite.number = i - 1; 
     }
     turn = playersList[1];
     turn.sprite.inputEnabled = true;
@@ -214,8 +217,17 @@ class Setup {
         menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/3, C.menuBar.width);
         menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/3, C.menuBar.height);
         if (game.camera.x > 0 || game.camera.y > 0) {
-          game.camera.x -= focusSpace.increment.x;
-          game.camera.y -= focusSpace.increment.y;
+          if (focusSpace.increment.x > 0) {
+            game.camera.x -= focusSpace.increment.x;
+          } else {
+            game.camera.x += focusSpace.increment.x;
+          }
+          if (focusSpace.increment.y > 0) {
+            game.camera.y -= focusSpace.increment.y;
+          } else {
+            game.camera.y += focusSpace.increment.y;
+          }
+
           game.camera.x = Phaser.Math.clamp(game.camera.x, 0, 3000);
           game.camera.y = Phaser.Math.clamp(game.camera.y, 0, 3000);
 
@@ -252,15 +264,30 @@ class Setup {
     }
     if (over) { 
       if (playerNames.indexOf(over.sprite.key) > -1) {
-        attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + "\nResearch Points: " + over.rp)
+        attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + "\nResearch Points: " + over.rp);
+        if (attributeDisplay.text && lastClicked !== undefined && repairText && attributeDisplay.text.indexOf(lastClicked.sprite.key) === -1) {
+          repairText.setText("Repair " + lastClicked.sprite.key);
+        }
       } else if (over.sprite.key = "monster") {
         attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + "\nResearch Point Reward: " + over.rp)
       }
     } else {
       attributeDisplay.setText("\nName: " + turn.sprite.key + "\nHP: " + turn.hp + "\nResearch Points: " + turn.rp);
     }
+
   }
 }
+
+function setLastClicked(sprite) {
+  lastClicked = playersList[sprite.number]; 
+  if (lastClicked.key.indexOf("0") === 2) {
+    repairText = game.add.bitmapText(game.world.centerX, menuBar.y - 30, 'attackfont', "Repair " + sprite.key, 20);
+    repairText.anchor.set(0.5);
+    repairText.inputEnabled = true;
+    repairText.events.onInputDown.add(repair, {repairing: lastClicked});
+  }
+}
+
 
 
 class GameOver {
@@ -275,6 +302,14 @@ class GameOver {
         game.camera.y = 0;
       }
    
+}
+
+function scrubGlobalList() {
+  for (i = 0; i < globalList.length; i++) {
+    if (globalList[1].hp && globalList[1].hp <= 0) {
+      globalList.splice(globalList[1],1);
+    }
+  }
 }
 
 function attachToCamera(obj) {
@@ -298,8 +333,10 @@ function checkAttack(sprite,pointer) {
   if (sprite.overlap(battleMonster.sprite)) {
     attack(battlePlayer,battleMonster)
   }
-  sprite.x = changeValueScale(focusSpace.x) + 30;
-  sprite.y = changeValueScale(focusSpace.y);
+  if (battleState === true) {
+    sprite.x = changeValueScale(focusSpace.x) + 30;
+    sprite.y = changeValueScale(focusSpace.y);
+  }
 }
 
 function attack(attacker,defender) {
@@ -316,22 +353,22 @@ function attack(attacker,defender) {
     defender.hp -= successes - defences;
     var damaged = defender;
     var damageTaken = successes - defences;
-    var text = defender.sprite.key + " took " + damageTaken + " damage from " + attacker.sprite.key + ".";
+    var text = defender.sprite.key + " took " + damageTaken.toString() + " damage from " + attacker.sprite.key + ".";
   } else if (defences > successes) {
     attacker.hp -= defences - successes;
     var damaged = attacker;
     var damageTaken = defences - successes;
-    var text = attacker.sprite.key + " took " + damageTaken + " damage from " + defender.sprite.key + "'s defences!";
+    var text = attacker.sprite.key + " took " + damageTaken.toString() + " damage from " + defender.sprite.key + " defences!";
   } else {
-    var damaged = null;
-    var damageTaken = null;
+    var damaged = undefined;
+    var damageTaken = undefined;
     console.log("No damage.");
     var text = defender.sprite.key + " blocked every hit from " + attacker.sprite.key + "!";
   }
     if (resultsList.length > 0) {
-      var battleResults = game.add.text(Math.round(changeValueScale(focusSpace.x)),Math.round(resultsList[resultsList.length - 1].y + 25), text, C.game.smallStyle);
+      var battleResults = game.add.bitmapText(Math.round(changeValueScale(focusSpace.x)),Math.round(resultsList[resultsList.length - 1].y + 25), 'attackfont', text, 10);
     } else { 
-      var battleResults = game.add.text(Math.round(changeValueScale(focusSpace.x)),Math.round(changeValueScale(focusSpace.y)) - 80, text, C.game.smallStyle);
+      var battleResults = game.add.bitmapText(Math.round(changeValueScale(focusSpace.x)),Math.round(changeValueScale(focusSpace.y)) - 80, 'attackfont', text, 10);
     }
     battleResults.anchor.x = .5;
     battleResults.anchor.y = .5;
@@ -340,13 +377,14 @@ function attack(attacker,defender) {
     game.time.events.add(Phaser.Timer.SECOND * 2, killResults, this, battleResults);
   if (damaged && damaged.hp <= 0) {
     console.log("DED with " + damaged.hp);
+    scrubGlobalList();
     if (damaged === battlePlayer) {
-      playersList[damaged.number] = damaged.number;
-      removeFromList(playersList[damaged.number], focusSpace);
+      playersList[damaged.sprite.number] = damaged.number;
+      removeFromList(playersList[damaged.sprite.number], focusSpace);
       damaged.sprite.destroy();
       var destroyedPlayers = 0;
       for (var i = 1; i <= playersList.length; i++) {
-        if (Number.isInteger(playersList[i])) {
+        if (sprite.number.isInteger(playersList[i])) {
           destroyedPlayers += 1;
         }
       }
@@ -356,13 +394,14 @@ function attack(attacker,defender) {
         game.state.start("GameOver");
       }
     } else if (damaged === battleMonster) {
-      removeFromList(monstersList[damaged.number], focusSpace);
+      focusSpace.occupied = removeFromList(monstersList[damaged.sprite.number], focusSpace);
       battlePlayer.rp += damaged.rp;
-      monstersList.splice(damaged.number, 1);
+      monstersList.splice(damaged.sprite.number, 1);
       damaged.sprite.destroy();
       battlePlayer.sprite.events.onDragStop._bindings = [];
       battlePlayer.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
       battlePlayer.sprite.x = changeValueScale(focusSpace.x);
+      console.log("Monster died, moving back to position " + changeValueScale(focusSpace.x) );
     }
     pendingBattles.splice(0,1); 
     if (pendingBattles.length > 0) {
@@ -372,15 +411,15 @@ function attack(attacker,defender) {
       focusSpace = pendingBattles[0].space;
       findIncrementsTo(focusSpace);
       zoomIn = true;
+      battleState = false;
       battleStarting = true;
     } else {
+      zoomIn = false;
       zoomOut = true;
       battleState = false;
     }
-  } else if (damaged) {
-
   }
-  if (!damaged || damaged.hp > 0) {
+    if (!damaged || damaged.hp > 0) {
     battleTurn = defender;
   }
 
@@ -461,6 +500,11 @@ function move(object,destination) {
   addToOccupied(object, Space[destination]);
   game.world.bringToTop(object.sprite);
   checkBattle(Space[object.key]);
+
+}
+
+function repair() {
+  this.repairing.hp += 1;
 }
 
 function checkBattle(space) {
@@ -499,13 +543,14 @@ function checkBattle(space) {
 
 
 function changeTurn() {
+    moveMonsters();
     actionPoints = 3;
     //turn.sprite.inputEnabled = false
     do {
-      if (turn && turn.number && turn.number < playerCount) {
-        turn = playersList[turn.number + 1];
-      } else if (turn && turn.number && turn.number <= playerCount || Number.isInteger(turn) && turn === playerCount) {
-        moveMonsters();
+      if (turn && turn.sprite.number && turn.number < playerCount) {
+        turn = playersList[turn.sprite.number + 1];
+      } else if (turn && turn.sprite.number && turn.number <= playerCount || Number.isInteger(turn) && turn === playerCount) {
+
         turn = playersList[1];
       } else if (Number.isInteger(turn)) {
         turn += 1;
@@ -557,9 +602,10 @@ function attachClosestSpace(sprite,pointer) {
 }
 
 function removeFromList(object,arrayName) {
- var x;
+ console.log(arrayName);
+  var x;
  var tmpArray = new Array();
- if (object) {
+ if (object && arrayName.occupied) {
     for(x = 0; x <= arrayName.occupied.length; x++) {
       if(arrayName.occupied[x] != undefined && arrayName.occupied[x].sprite.key != object.sprite.key ) { tmpArray[x] = arrayName.occupied[x]; }
     }
