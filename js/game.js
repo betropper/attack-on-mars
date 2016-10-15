@@ -158,7 +158,7 @@ class Setup {
     turn.sprite.closestSpaces = closestSpaces;
     // Add in text that is displayed.
     spaceDisplay = game.add.text(900, 250,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
-    attributeDisplay = game.add.text(spaceDisplay.x, spaceDisplay.y + 230, "", C.game.textStyle);
+    attributeDisplay = game.add.text(spaceDisplay.x, spaceDisplay.y + 160, "", C.game.textStyle);
     spaceDisplay.anchor.setTo(.5); 
     attributeDisplay.anchor.setTo(.5);
     turn.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
@@ -176,11 +176,11 @@ class Setup {
     game.world.bringToTop(waitButton);
   }
   update() {
+
     //Set ZoomIn to true or ZoomOut to false to enable zoom. It will
     //reset itself.
     if (actionPoints === 0 && pendingBattles.length === 0 && zoomOut !== true && zoomOut !== true) {
       changeTurn();
-
     }
     if (focusSpace && focusSpace.x) {
       var xPivot = changeValueScale(focusSpace.x) * 3 - game.camera.view.halfWidth;
@@ -196,6 +196,11 @@ class Setup {
     }
 
      if (zoomIn === true) {
+        for (i = 1; i < playersList.length; i++) {
+          if (playersList[i] !== battlePlayer) {
+            playersList[i].sprite.inputEnabled = false;
+          }
+        }
         worldScale += 0.03;
         console.log("Tick.");
         menuBar.width = C.menuBar.width / worldScale;
@@ -259,14 +264,13 @@ class Setup {
         battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
         battleStarting = false;
         battleState = true;
-      }
+        }
     } else if (battleState === true) {
       battle(battlePlayer,battleMonster);
       // Change this, placeholder ending.
 
     }
     // set a minimum and maximum scale value
-    
     worldScale = Phaser.Math.clamp(worldScale, 1, 3);
     game.world.scale.set(worldScale);
     if (spaceDisplay) {
@@ -295,21 +299,30 @@ class Setup {
 
 function setLastClicked(sprite) {
   lastClicked = playersList[sprite.number]; 
-  if (lastClicked.key.indexOf("0") === 2 && !repairText) { 
-    repairText = game.add.bitmapText(1000, menuBar.y - 20, 'attackfont', "Repair " + sprite.key, 20);
+  if (lastClicked.key.indexOf("0") === 2 && !repairText && lastClicked.hp < lastClicked.maxhp) { 
+    repairText = game.add.text(1050, menuBar.y, "Repair " + sprite.key, C.game.textStyle);
     repairText.anchor.set(0.5);
     repairText.inputEnabled = true;
     repairText.events.onInputDown.add(repair, {repairing: lastClicked});
-    repairButton = game.add.sprite(repairText.x, repairText.y + 80, 'wrench');
+    repairButton = game.add.sprite(repairText.x, repairText.y + 85, 'wrench');
     repairButton.anchor.set(0.5);
     repairButton.inputEnabled = true;
-    repairButton.events.onInputDown(repair, {repairing: lastClicked});
-  } else if (lastClicked.key.indexOf("0") === 2) {
+    repairButton.width = 40;
+    repairButton.height = 40;
+    buttonsList.push(repairButton);
+    repairButton.events.onInputDown.add(repair, {repairing: lastClicked});
+  } else if (lastClicked.key.indexOf("0") === 2 && lastClicked.hp < lastClicked.maxhp) {
+    repairText.reset(1050, menuBar.y);
     repairText.setText("Repair " + sprite.key);
     repairText.events.onInputDown._bindings = [];
     repairText.events.onInputDown.add(repair, {repairing: lastClicked});
+    repairButton.reset(repairText.x, repairText.y + 85);
     repairButton.events.onInputDown._bindings = [];
     repairButton.events.onInputDown.add(repair, {repairing: lastClicked});
+  } else if (repairText) {
+    repairText.kill();
+    buttonsList.splice(repairButton, 1);
+    repairButton.kill();
   }
 }
 
@@ -319,8 +332,12 @@ class GameOver {
     create() {
         game.world.scale.set(1);
         console.log("YOU LOSE.");
-        var gg = game.add.text(game.world.centerX, game.world.centerY, "GAME\nOVER\n\nRestart?",C.game.textStyle);
+        var gg = game.add.text(game.world.centerX, game.world.centerY, "GAME\nOVER",C.game.textStyle);
+        var restart = game.add.text(game.world.centerX, game.world.centerY + 100, "Restart?",C.game.textStyle);
         gg.anchor.setTo(.5);
+        restart.anchor.setTo(.5);
+        restart.inputEnabled = true;
+        restart.events.onInputDown.add(resetGame, this);
         game.world.pivot.x = 0;
         game.world.pivot.y = 0;
         game.camera.x = 0;
@@ -329,10 +346,49 @@ class GameOver {
    
 }
 
-function scrubGlobalList() {
-  for (i = 0; i < globalList.length; i++) {
-    if (globalList[1].hp && globalList[1].hp <= 0) {
-      globalList.splice(globalList[1],1);
+function resetGame() {
+  game.state.start("Setup");
+var waitButton
+var lastClicked;
+var repairText;
+var worldScale = 1;
+var First = "red";
+var Second = "blue";
+var Third = "green";
+var Fourth = "orange";
+var playersList = [];
+var occupiedRows = ['center'];
+var playerNames = [First,Second,Third,Fourth];
+var playerCount = 2;
+var turn;
+var actionPoints = 3;
+var closestSpaces;
+var monstersList = [];
+var globalList = [];
+var spaceDisplay;
+var attributeDisplay;
+var destroyedCities = [];
+var obj_keys = Object.keys(Space);
+var viewRect;
+var zoomIn;
+var zoomOut;
+var focusSpace;
+var battlePlayer = null;
+var battleMonster = null;
+var battleTurn = null;
+var battleStarting = false;
+var pendingBattles = [];
+var threatLevel = 0;
+var menuBar;
+var battleState;
+var resultsList = [];
+var buttonsList = [];
+}
+
+function scrubList(list) {
+  for (i = 0; i < list.length; i++) {
+    if (!list[i] || list[i].hp && list[i].hp <= 0) {
+      list.splice(list[1],1);
     }
   }
 }
@@ -402,7 +458,7 @@ function attack(attacker,defender) {
     game.time.events.add(Phaser.Timer.SECOND * 2, killResults, this, battleResults);
   if (damaged && damaged.hp <= 0) {
     console.log("DED with " + damaged.hp);
-    scrubGlobalList();
+    scrubList(globalList);
     if (damaged === battlePlayer) {
       playersList[damaged.sprite.number] = damaged.number;
       removeFromList(playersList[damaged.sprite.number], focusSpace);
@@ -428,7 +484,16 @@ function attack(attacker,defender) {
       battlePlayer.sprite.x = changeValueScale(focusSpace.x);
       console.log("Monster died, moving back to position " + changeValueScale(focusSpace.x) );
     }
-    pendingBattles.splice(0,1); 
+    pendingBattles.splice(0,1);
+    if (focusSpace.occupied && focusSpace.occupied !== false) {
+      scrubList(focusSpace.occupied);
+    }
+    for (i = 1; i < playersList.length; i++) {
+      playersList[i].sprite.inputEnabled = true;
+      playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
+      playersList
+    
+    }
     if (pendingBattles.length > 0) {
       console.log("There are more battles.");
       battleMonster = pendingBattles[0].pendingMonster;
@@ -482,7 +547,7 @@ function battle(player, monster) {
   }
 
   function moveMonsters() {
-      for (var i = 0; i <= monstersList.length - 1; i++) {
+      for (var i = 0; i < monstersList.length ; i++) {
         monstersList[i].sprite.closestSpaces = getClosestSpaces(monstersList[i].key);
         var newDestination = monstersList[i].key.substring(0,2) + (parseInt(monstersList[i].key.charAt(2)) - 1);
         if (parseInt(monstersList[i].key.charAt(2)) !== 0 && parseInt(newDestination.charAt(2)) === 0) {
@@ -501,7 +566,7 @@ function battle(player, monster) {
         } else {
         }
       }
-      console.log("Monster is moving to " + Space[newDestination].occupied);
+      console.log("Monster is moving to " + newDestination);
       move(monstersList[i], newDestination);
     }
     if (destroyedCities.length >= (playerCount * 4) - 4){
@@ -525,16 +590,27 @@ function move(object,destination) {
   addToOccupied(object, Space[destination]);
   game.world.bringToTop(object.sprite);
   checkBattle(Space[object.key]);
+  if (playersList.indexOf(object) > -1) {
+    setLastClicked(object.sprite);
+  }
 }
 
 function repair() {
-  this.repairing.hp += 1;
+  if (this.repairing.hp < this.repairing.maxhp) {
+    this.repairing.hp += 1;
+    actionPoints -= 1;
+  } 
+  if (this.repairing.hp >= this.repairing.maxhp) {
+    repairText.kill();
+    repairButton.kill();
+  }
 }
 
 function checkBattle(space) {
   //Takes a space, and if there are both monsters and players on that
   //space, battle happens
-  
+  scrubList(globalList);
+  scrubList(space.occupied);
   var pendingMonster = null;
   var pendingPlayer = null;
   if (space.occupied != false) {
@@ -776,6 +852,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
   if (playerNames.indexOf(object) > -1) {
     obj.rp = 3;
     obj.hp = 4;
+    obj.maxhp = 4;
     obj.def = 3;
     obj.ratk = 4;
     obj.batk = 4;
@@ -787,17 +864,17 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     obj.sprite.inputEnabled = true;
     if (threatLevel <= 12) {
       obj.hp = 3;
-      obj.atk = 3;
+      obj.batk = 3;
       obj.rp = 1;
       obj.mr = 2;
     } else if (threatLevel <= 24) {
       obj.hp = 4;
-      obj.atk = 4;
+      obj.batk = 4;
       obj.rp = 2;
       obj.mr = 3;
     } else {
       obj.hp = 5;
-      obj.atk = 5;
+      obj.batk = 5;
       obj.rp = 3;
       obj.mr = 4;
     }
@@ -830,17 +907,17 @@ function spawnSpecific(object,space) {
     obj.sprite.inputEnabled = true;
     if (monstersList.length <= 12) {
       obj.hp = 3;
-      obj.atk = 3;
+      obj.batk = 3;
       obj.rp = 1;
       obj.mr = 2;
     } else if (monstersList.length <= 24) {
       obj.hp = 4;
-      obj.atk = 4;
+      obj.batk = 4;
       obj.rp = 2;
       obj.mr = 3;
     } else {
       obj.hp = 5;
-      obj.atk = 5;
+      obj.batk = 5;
       obj.rp = 3;
       obj.mr = 4;
     }
