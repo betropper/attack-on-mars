@@ -45,6 +45,10 @@ var C = {
  "wrench": {
   "width": 200,
   "height": 200
+ },
+ "arrow": {
+  "width": 512,
+  "height": 512
  }
 }
 var waitButton
@@ -83,6 +87,7 @@ var menuBar;
 var battleState;
 var resultsList = [];
 var buttonsList = [];
+var buttonsTextList = [];
 //CHANGE THE CAMERA BOUNDS SO YOU CAN CHANGE EVERYTHING ELSE AHHHH
 
 class Boot {
@@ -110,6 +115,7 @@ class Load {
     this.load.image("monster", "assets/green-circle.png", C.monster.width, C.monster.height);
     this.load.image("menubar","assets/menubar.png",C.menuBar.width,C.menuBar.height);
     this.load.image("wrench","assets/wrench.png", C.wrench.width,C.wrench.height);
+    this.load.image("arrow","assets/arrow.png", C.arrow.width,C.arrow.height);
     game.load.bitmapFont('attackfont','assets/attackfont.png', 'assets/attackfont.fnt');
   }
   create() {
@@ -140,8 +146,7 @@ class Setup {
       console.log(i);
       var destroyedCityColumn = spawnRandom("purplecircle", i, "0", false);
       destroyedCities[i-1] = destroyedCityColumn;
-      occupiedRows.push(destroyedCityColumn.key.substring(0,2));
-      playersList[i] = spawnRandom(playerNames[i-1], i, "0", true);
+      playersList[i] = spawnRandom(playerNames[i-1], i, "0", true); 
       playersList[i].sprite.number = i;
       playersList[i].sprite.inputEnabled = true;
       playersList[i].sprite.input.enableDrag(true);
@@ -175,6 +180,7 @@ class Setup {
     waitButton.anchor.x = .5;
     waitButton.anchor.y = .5;
     waitButton.scale.y = .6;
+    waitButton.battleButton = false;
     buttonsList.push(waitButton);
     game.world.bringToTop(waitButton);
   }
@@ -199,6 +205,9 @@ class Setup {
     }
 
      if (zoomIn === true) {
+       for (i = 0; i < buttonsTextList.length; i++) {
+        buttonsTextList[0].kill();
+       }
         for (i = 1; i < playersList.length; i++) {
           if (playersList[i] !== battlePlayer) {
             playersList[i].sprite.inputEnabled = false;
@@ -257,6 +266,10 @@ class Setup {
             for (i = 0; i < buttonsList.length; i++) {
               game.world.bringToTop(buttonsList[i]);
             }
+
+            for (i = 0; i < buttonsTextList.length; i++) {
+              buttonsTextList[0].reset(buttonsTextList[0].x,buttonsTextList[0].y);
+            }
         }
     } if (battleStarting) {
       var lookAt = focusSpace.x * C.bg.scale*C.bg.resize + game.bg.position.x;
@@ -313,7 +326,9 @@ function setLastClicked(sprite) {
       repairButton.inputEnabled = true;
       repairButton.width = 40;
       repairButton.height = 40;
+      repairButton.battleButton = false;
       buttonsList.push(repairButton);
+      buttonsTextLit.push(repairText);
       repairButton.events.onInputDown.add(repair, {repairing: lastClicked});
     } else if (lastClicked.key.indexOf("0") === 2 && lastClicked.hp < lastClicked.maxhp) {
       repairText.reset(1050, menuBar.y);
@@ -339,7 +354,9 @@ function setLastClicked(sprite) {
       upgradeButton.inputEnabled = true;
       upgradeButton.width = 40;
       upgradeButton.height = 40;
+      upgradeButton.battleButton = false;
       buttonsList.push(upgradeButton);
+      buttonsTextList.push(upgradeText);
       upgradeButton.events.onInputDown.add(upgrade, {upgrading: lastClicked});
     } else {
       upgradeText.reset(950, menuBar.y);
@@ -349,7 +366,30 @@ function setLastClicked(sprite) {
       upgradeButton.reset(upgradeText.x, upgradeText.y + 85);
       upgradeButton.events.onInputDown._bindings = [];
       upgradeButton.events.onInputDown.add(upgrade, {upgrading: lastClicked});
-    }    
+    }
+
+    if (arrows = []) {
+      var directions = [{direction: "counter_clockwise", angle: 180},{direction: "outward", angle: -90}, {direction: "inward", angle: 90}, {direction: "clockwise", angle:0}];
+      for (i = 0; i < directions.length; i++) {
+        arrowButton = game.add.sprite(menuBar.x + 85 + i*50, menuBar.y + 85, 'arrow');
+        arrowButton.anchor.set(0.5);
+        arrowButton.inputEnabled = true;
+        arrowButton.width = 40;
+        arrowButton.height = 40;
+        arrowButton.battleButton = false;
+        arrowButton.attributes = directions[i];
+        arrowButton.angle = arrowButton.attributes.angle; 
+        arrows.push(arrowButton);
+        buttonsList.push(arrowButton);
+        arrowButton.events.onInputDown.add(arrowMove, {moving: lastClicked, direction: arrows[i].attributes.direction});
+      }
+    } else {
+      for (i = 0; i < arrows.length; i++) {
+        arrows[i].reset(arrows[i].x, arrows[i].y);
+        arrows[i].events.onInputDown._bindings = [];
+        arrows[i].events.onInputDown.add(arrowMove, {moving: lastClicked, direction: arrows[i].attributes.direction});
+      } 
+    }
   } else if (sprite.key === "monster") {
     if (repairText) {
       repairText.kill();
@@ -364,6 +404,8 @@ function setLastClicked(sprite) {
   }
   
 }
+
+
 
 
 class GameOver {
@@ -646,6 +688,17 @@ function upgrade() {
   console.log("Upgrading " + this.upgrading.sprite.key);
 }
 
+
+function arrowMove() {
+  var directions = this.moving.sprite.closestSpaces.directions;
+  for (i = 0; i < this.moving.sprite.closestSpaces.directions; i++) {
+    if (this.direction === directions[i]) {
+      move(moving, this.moving.sprite.closestSpaces.keys[i]);
+      break;
+    }
+  }
+}
+
 function checkBattle(space) {
   //Takes a space, and if there are both monsters and players on that
   //space, battle happens
@@ -815,6 +868,18 @@ function getClosestSpaces(spaceKey) {
     inward = findPreviousLetter(spaceKey);
     outward = findNextLetter(spaceKey);
   }
+  if (clockwise) {
+    clockwise.direction = "clockwise";
+  }
+  if (counter_clockwise) {
+    counter_clockwise.direction = "counter_clockwise";
+  }
+  if (inward) {
+    inward.direction = "inward";
+  }
+  if (outward) {
+    outward.direction = "outward";
+  }
   var directions = [clockwise,counter_clockwise,inward,outward]
   directions.forEach(function(direction) {
     if (direction !== undefined) {
@@ -971,7 +1036,13 @@ function spawnSpecific(object,space) {
   }
 }
 
-var game = new Phaser.Game(C.game.width,C.game.height);
+var game = new Phaser.Game(C.game.width,C.game.height, Phaser.AUTO, '', {
+    init: function () {
+
+        //Load the plugin
+        game.stateTransition = this.game.plugins.add(Phaser.Plugin.StateTransition);
+    }
+});
 //game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;game.scale.minWidth = 320;game.scale.minHeight = 480;game.scale.maxWidth = 768;game.scale.maxHeight = 1152;
 //var game = new Phaser.Game(window.innerWidth * window.devicePixelRatio, window.innerHeight * window.devicePixelRatio, Phaser.CANVAS, 'gameArea');
 game.state.add("Boot",Boot);
