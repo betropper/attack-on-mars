@@ -892,8 +892,10 @@ function repair() {
 function upgrade() {
   console.log("Upgrading " + this.upgrading.sprite.key);
   game.paused = true;
-  upgradeMenu = game.add.sprite(attributeText.x, attributeText.y, 'upgradeMenu');
+  upgradeMenu = game.add.sprite(spaceDisplay.x, spaceDisplay.y, 'upgradeMat');
   upgradeMenu.anchor.setTo(.5,.5);
+  upgradeMenu.scale.x = .3;
+  upgradeMenu.scale.y = .3;
   game.input.onDown.add(finishUpgrade, self);
 }
 
