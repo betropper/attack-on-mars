@@ -55,11 +55,12 @@ var waitButton
 var lastClicked;
 var repairText;
 var upgradeText;
+var upgradeMenu;
 var worldScale = 1;
 var First = "red";
 var Second = "blue";
 var Third = "green";
-var Fourth = "orange";
+var Fourth = "yellow";
 var playersList = [];
 var occupiedRows = ['center'];
 var playerNames = [First,Second,Third,Fourth];
@@ -104,15 +105,18 @@ class Boot {
 class Load {
   preload() {
     console.log("Loading.");
+    this.load.image("upgradeMat","assets/UpgradeMat.png",469,676);
     this.load.image("gameboard",C.bg.file,C.bg.width,C.bg.height);
-    this.load.image("blue", "assets/bluesquare.png",C.mech.width,C.mech.height);
-    this.load.image("red", "assets/redsquare.png",C.mech.width,C.mech.height);
-    this.load.image("green", "assets/greensquare.png",C.mech.width,C.mech.height);
-    this.load.image("orange", "assets/orangesquare.png",C.mech.width,C.mech.height);
+    this.load.image("blue", "assets/PlayerIcon1.png",C.mech.width,C.mech.height);
+    this.load.image("red", "assets/PlayerIcon2.png",C.mech.width,C.mech.height);
+    this.load.image("green", "assets/PlayerIcon3.png",C.mech.width,C.mech.height);
+    this.load.image("yellow", "assets/PlayerIcon4.png",C.mech.width,C.mech.height);
     this.load.image("bluecircle", "assets/blue-circle.png", 72, 72);
     this.load.image("redcircle", "assets/red-circle.png", 72, 72);
     this.load.image("purplecircle", "assets/purple-circle.png", 72, 72);
-    this.load.image("monster", "assets/green-circle.png", C.monster.width, C.monster.height);
+    this.load.image("initialMonster", "assets/InitialIcon.png", C.monster.width, C.monster.height);
+    this.load.image("growingMonster", "assets/GrowingIcon.png", C.monster.width, C.monster.height);
+    this.load.image("extinctionMonster", "assets/ExtinctionIcon.png", C.monster.width, C.monster.height);
     this.load.image("menubar","assets/menubar.png",C.menuBar.width,C.menuBar.height);
     this.load.image("wrench","assets/wrench.png", C.wrench.width,C.wrench.height);
     this.load.image("arrow","assets/arrow.png", C.arrow.width,C.arrow.height);
@@ -124,47 +128,37 @@ class Load {
   }
 }
 
-class Setup {
 
-  create() {
-    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-    game.camera.bounds = null;
-    console.log("Placing Board");
+/*class Reload {
+    create() {
+
     game.bg = game.add.sprite(0, game.world.centerY - game.height / 2, "gameboard");
     game.bg.scale.setTo(C.bg.scale, C.bg.scale);
-    playerCount = parseInt(prompt("How many will be playing?", "2")) || null;
-    if (!playerCount || Number.isInteger(playerCount) == false || playerCount < 2) {
-      playerCount = 2;
-    } else if (playerCount > 4) {
-      playerCount = 4;
-    }
     for (var i = 0; i < obj_keys.length; i++) {
       Space[obj_keys[i]].occupied = false;
     }   
 
     for (var i = 1; i <= playerCount; i++) {
-      console.log(i);
-      var destroyedCityColumn = spawnRandom("purplecircle", i, "0", false);
-      destroyedCities[i-1] = destroyedCityColumn;
-      playersList[i] = spawnRandom(playerNames[i-1], i, "0", true); 
-      playersList[i].sprite.number = i;
-      playersList[i].sprite.inputEnabled = true;
-      playersList[i].sprite.input.enableDrag(true);
-      playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
-      closestSpaces = getClosestSpaces(playersList[i].key);
-      playersList[i].sprite.closestSpaces = closestSpaces;
-      playersList[i].sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
-      monstersList[i-1] = spawnRandom("monster", i, "3", true);
-      monstersList[i-1].sprite.number = i - 1;
-      monstersList[i-1].sprite.inputEnabled = true;
-      monstersList[i-1].sprite.events.onInputDown.add(setLastClicked, this);
+      if (!Number.isInteger(playersList[i])) {
+        playersList[i].sprite = game.add.sprite(playersList[i].sprite.x, playersList[i].sprite.y, playerNames[i]);
+        playersList[i].sprite.number = i;
+        playersList[i].sprite.inputEnabled = true;
+        playersList[i].sprite.input.enableDrag(true);
+        playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
+        closestSpaces = getClosestSpaces(playersList[i].key);
+        playersList[i].sprite.closestSpaces = closestSpaces;
+        playersList[i].sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
+      }
     }
-    turn = playersList[1];
-    turn.sprite.inputEnabled = true;
-    turn.sprite.input.enableDrag(true);
-    closestSpaces = getClosestSpaces(turn.key);
-    turn.sprite.closestSpaces = closestSpaces;
-    // Add in text that is displayed.
+    for (var i = 0; i < monstersList; i++) {
+      if (monstersList[i].hp > 0) {
+        monstersList[i].sprite = game.add.sprite(monstersList[i].sprite.x, monstersList[i].sprite.y, monstersList[i].sprite.spriteName);
+        monstersList[i].sprite.number = i;
+        monstersList[i].sprite.inputEnabled = true;
+        monstersList[i].sprite.events.onInputDown.add(setLastClicked, this);
+      }
+    }
+
     spaceDisplay = game.add.text(900, 250,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
     attributeDisplay = game.add.text(spaceDisplay.x, spaceDisplay.y + 160, "", C.game.textStyle);
     spaceDisplay.anchor.setTo(.5); 
@@ -184,6 +178,7 @@ class Setup {
     buttonsList.push(waitButton);
     game.world.bringToTop(waitButton);
   }
+
   update() {
 
     //Set ZoomIn to true or ZoomOut to false to enable zoom. It will
@@ -192,8 +187,8 @@ class Setup {
       changeTurn();
     }
     if (focusSpace && focusSpace.x) {
-      var xPivot = changeValueScale(focusSpace.x) * 3 - game.camera.view.halfWidth;
-      var yPivot = changeValueScale(focusSpace.y) * 3 - game.camera.view.halfHeight; 
+      var xPivot = changeValueScale(focusSpace.x) * 4 - game.camera.view.halfWidth;
+      var yPivot = changeValueScale(focusSpace.y) * 4 - game.camera.view.halfHeight; 
       var xMenu = changeValueScale(focusSpace.x); 
       var yMenu = changeValueScale(focusSpace.y);
     }
@@ -217,13 +212,13 @@ class Setup {
         console.log("Tick.");
         menuBar.width = C.menuBar.width / worldScale;
         menuBar.height = C.menuBar.height / worldScale;
-        menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/3, C.menuBar.width);
-        menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/3, C.menuBar.height);
+        menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/4, C.menuBar.width);
+        menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/4, C.menuBar.height);
         game.world.bringToTop(menuBar);
         if (yPivot < 0) {
           yPivot = 0
         }
-        if (Math.floor(worldScale) === 3 && Math.floor(yPivot) === game.camera.y && Math.floor(xPivot) === game.camera.x) {
+        if (Math.floor(worldScale) === 4 && Math.floor(yPivot) === game.camera.y && Math.floor(xPivot) === game.camera.x) {
           zoomIn = false;
           console.log("Done zooming");
         }
@@ -243,8 +238,8 @@ class Setup {
         worldScale -= 0.03;
         menuBar.width = C.menuBar.width / worldScale;
         menuBar.height = C.menuBar.height / worldScale;
-        menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/3, C.menuBar.width);
-        menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/3, C.menuBar.height);
+        menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/4, C.menuBar.width);
+        menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/4, C.menuBar.height);
         game.world.bringToTop(menuBar);
         if (game.camera.x > 0 || game.camera.y > 0) {
           if (focusSpace.increment.x > 0) {
@@ -287,7 +282,205 @@ class Setup {
 
     }
     // set a minimum and maximum scale value
-    worldScale = Phaser.Math.clamp(worldScale, 1, 3);
+    worldScale = Phaser.Math.clamp(worldScale, 1, 4);
+    game.world.scale.set(worldScale);
+    if (spaceDisplay) {
+      spaceDisplay.setText("Valid Movements for " + turn.sprite.key + ":\n " + turn.sprite.closestSpaces.keys.join(" ") + "\nRemaining Moves: " + actionPoints,C.game.textStyle);
+    }
+    for (var i = 0; i < globalList.length; i++) {
+      if (globalList[i].sprite.input && globalList[i].sprite.input.pointerOver()) {
+        var over = globalList[i]; 
+      } 
+    }
+    if (over) { 
+      if (playerNames.indexOf(over.sprite.key) > -1) {
+        attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + "\nResearch Points: " + over.rp);
+        /*if (attributeDisplay.text && lastClicked !== undefined && repairText && attributeDisplay.text.indexOf(lastClicked.sprite.key) === -1) {
+          repairText.text = "Repair " + lastClicked.sprite.key;
+        }
+      } else if (over.sprite.key === "monster") {
+        attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + "\nResearch Point Reward: " + over.rp)
+      }
+    } else {
+      attributeDisplay.setText("\nName: " + turn.sprite.key + "\nHP: " + turn.hp + "\nResearch Points: " + turn.rp);
+    }
+
+  }
+}*/
+
+
+class Setup {
+
+  create() {
+    console.log(playersList);
+    //if (playersList.length === 0) {
+    console.log("memes");
+    for (var i = 0; i < obj_keys.length; i++) {
+      Space[obj_keys[i]].occupied = false;
+    }   
+  
+    if (playersList.length === 0) {
+    playerCount = parseInt(prompt("How many will be playing?", "2")) || null;
+    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+    game.camera.bounds = null;
+    console.log("Placing Board");
+    game.bg = game.add.sprite(0, game.world.centerY - game.height / 2, "gameboard");
+    game.bg.scale.setTo(C.bg.scale, C.bg.scale);
+    if (!playerCount || Number.isInteger(playerCount) == false || playerCount < 2) {
+      playerCount = 2;
+    } else if (playerCount > 4) {
+      playerCount = 4;
+    }
+
+    for (var i = 1; i <= playerCount; i++) {
+      console.log(i);
+      var destroyedCityColumn = spawnRandom("purplecircle", i, "0", false);
+      destroyedCities[i-1] = destroyedCityColumn;
+      playersList[i] = spawnRandom(playerNames[i-1], i, "0", true); 
+      playersList[i].sprite.number = i;
+      playersList[i].sprite.inputEnabled = true;
+      playersList[i].sprite.input.enableDrag(true);
+      playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
+      closestSpaces = getClosestSpaces(playersList[i].key);
+      playersList[i].sprite.closestSpaces = closestSpaces;
+      playersList[i].sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
+      monstersList[i-1] = spawnRandom("monster", i, "3", true);
+      monstersList[i-1].sprite.number = i - 1;
+      monstersList[i-1].sprite.inputEnabled = true;
+      monstersList[i-1].sprite.events.onInputDown.add(setLastClicked, this);
+    }
+    turn = playersList[1];
+    turn.sprite.inputEnabled = true;
+    turn.sprite.input.enableDrag(true);
+    closestSpaces = getClosestSpaces(turn.key);
+    turn.sprite.closestSpaces = closestSpaces;
+    // Add in text that is displayed.
+    spaceDisplay = game.add.text(900, 250,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
+    attributeDisplay = game.add.text(spaceDisplay.x, spaceDisplay.y + 160, "", C.game.textStyle);
+    spaceDisplay.anchor.setTo(.5); 
+    attributeDisplay.anchor.setTo(.5);
+    turn.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
+    // Temporary for testing. Change this later.
+    menuBar = game.add.sprite(0,(game.height/worldScale) - 162 + C.menuBar.height/4,"menubar");
+    menuBar.width = C.menuBar.width;
+    menuBar.height = C.menuBar.height;
+    menuBar.fixedToCamera = true;
+    game.world.bringToTop(menuBar);
+    waitButton = game.add.button(80, menuBar.y + 80, 'purplecircle', waitOneAction);
+    waitButton.anchor.x = .5;
+    waitButton.anchor.y = .5;
+    waitButton.scale.y = .6;
+    waitButton.battleButton = false;
+    buttonsList.push(waitButton);
+    game.world.bringToTop(waitButton);
+    } else {
+    
+    }
+    }
+  update() {
+
+    //Set ZoomIn to true or ZoomOut to false to enable zoom. It will
+    //reset itself.
+    if (actionPoints === 0 && pendingBattles.length === 0 && zoomOut !== true && zoomOut !== true) {
+      changeTurn();
+    }
+    if (focusSpace && focusSpace.x) {
+      var xPivot = changeValueScale(focusSpace.x) * 4 - game.camera.view.halfWidth;
+      var yPivot = changeValueScale(focusSpace.y) * 4 - game.camera.view.halfHeight; 
+      var xMenu = changeValueScale(focusSpace.x); 
+      var yMenu = changeValueScale(focusSpace.y);
+    }
+    
+    var cursors = game.input.keyboard.createCursorKeys();
+    if (cursors.up.isDown) {
+      game.camera.y -= 4;
+      console.log(game.camera.y);
+    }
+
+     if (zoomIn === true) {
+       for (i = 0; i < buttonsTextList.length; i++) {
+        buttonsTextList[0].kill();
+       }
+        for (i = 1; i < playersList.length; i++) {
+          if (playersList[i] !== battlePlayer) {
+            playersList[i].sprite.inputEnabled = false;
+          }
+        }
+        worldScale += 0.03;
+        console.log("Tick.");
+        menuBar.width = C.menuBar.width / worldScale;
+        menuBar.height = C.menuBar.height / worldScale;
+        menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/4, C.menuBar.width);
+        menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/4, C.menuBar.height);
+        game.world.bringToTop(menuBar);
+        if (yPivot < 0) {
+          yPivot = 0
+        }
+        if (Math.floor(worldScale) === 4 && Math.floor(yPivot) === game.camera.y && Math.floor(xPivot) === game.camera.x) {
+          zoomIn = false;
+          console.log("Done zooming");
+        }
+        if (game.camera.x < xPivot && xPivot > 0) {
+          game.camera.x = Phaser.Math.clamp(game.camera.x + focusSpace.increment.x, 0, xPivot);
+        } else if (game.camera.x > xPivot && xPivot > 0) {
+          game.camera.x = Phaser.Math.clamp(game.camera.x - focusSpace.increment.x, xPivot, 9999);
+        }
+        if (game.camera.y < yPivot && yPivot > 0) {
+          game.camera.y = Phaser.Math.clamp(game.camera.y + focusSpace.increment.y, 0, yPivot);
+        } else if (game.camera.y > yPivot && yPivot > 0) {
+          game.camera.y = Phaser.Math.clamp(game.camera.y - focusSpace.increment.y, yPivot, 9999);
+        }
+       //console.log("x is " + xPivot);
+       //console.log("y is " + yPivot);
+    } else if (zoomOut === true) {
+        worldScale -= 0.03;
+        menuBar.width = C.menuBar.width / worldScale;
+        menuBar.height = C.menuBar.height / worldScale;
+        menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/4, C.menuBar.width);
+        menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/4, C.menuBar.height);
+        game.world.bringToTop(menuBar);
+        if (game.camera.x > 0 || game.camera.y > 0) {
+          if (focusSpace.increment.x > 0) {
+            game.camera.x -= focusSpace.increment.x;
+          } else {
+            game.camera.x += focusSpace.increment.x;
+          }
+          if (focusSpace.increment.y > 0) {
+            game.camera.y -= focusSpace.increment.y;
+          } else {
+            game.camera.y += focusSpace.increment.y;
+          }
+
+          game.camera.x = Phaser.Math.clamp(game.camera.x, 0, 3000);
+          game.camera.y = Phaser.Math.clamp(game.camera.y, 0, 3000);
+
+        } else if (worldScale <= 1) {
+            zoomOut = false;
+            for (i = 0; i < buttonsList.length; i++) {
+              game.world.bringToTop(buttonsList[i]);
+            }
+
+            for (i = 0; i < buttonsTextList.length; i++) {
+              buttonsTextList[0].reset(buttonsTextList[0].x,buttonsTextList[0].y);
+            }
+        }
+    } if (battleStarting) {
+      var lookAt = focusSpace.x * C.bg.scale*C.bg.resize + game.bg.position.x;
+      battlePlayer.sprite.x = Phaser.Math.clamp(battlePlayer.sprite.x + .2, 0, lookAt + 30);
+      battleMonster.sprite.x = Phaser.Math.clamp(battleMonster.sprite.x - .2, lookAt - 30, 3000);
+      if (battlePlayer.sprite.x === lookAt + 30 && battleMonster.sprite.x - 30) {
+        battlePlayer.sprite.events.onDragStop._bindings = [];
+        battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
+        battleStarting = false;
+        battleState = true;
+        }
+    } else if (battleState === true) {
+      battle(battlePlayer,battleMonster);
+      // Change this, placeholder ending.
+
+    }
+    // set a minimum and maximum scale value
+    worldScale = Phaser.Math.clamp(worldScale, 1, 4);
     game.world.scale.set(worldScale);
     if (spaceDisplay) {
       spaceDisplay.setText("Valid Movements for " + turn.sprite.key + ":\n " + turn.sprite.closestSpaces.keys.join(" ") + "\nRemaining Moves: " + actionPoints,C.game.textStyle);
@@ -315,8 +508,9 @@ class Setup {
 
 function setLastClicked(sprite) {
   if (playerNames.indexOf(sprite.key) > -1) {
-    lastClicked = playersList[sprite.number]; 
-    if (lastClicked.key.indexOf("0") === 2 && !repairText && lastClicked.hp < lastClicked.maxhp) { 
+    lastClicked = playersList[sprite.number];
+    var normalState = battleState !== false && zoomIn !== false && zoomOut !== false;
+    if (lastClicked.key.indexOf("0") === 2 && !repairText && lastClicked.hp < lastClicked.maxhp && normalState) { 
       repairText = game.add.text(1050, menuBar.y, "Repair " + sprite.key, C.game.textStyle);
       repairText.anchor.set(0.5);
       repairText.inputEnabled = true;
@@ -330,7 +524,7 @@ function setLastClicked(sprite) {
       buttonsList.push(repairButton);
       buttonsTextLit.push(repairText);
       repairButton.events.onInputDown.add(repair, {repairing: lastClicked});
-    } else if (lastClicked.key.indexOf("0") === 2 && lastClicked.hp < lastClicked.maxhp) {
+    } else if (lastClicked.key.indexOf("0") === 2 && lastClicked.hp < lastClicked.maxhp && normalState) {
       repairText.reset(1050, menuBar.y);
       repairText.setText("Repair " + sprite.key);
       repairText.events.onInputDown._bindings = [];
@@ -344,7 +538,7 @@ function setLastClicked(sprite) {
       repairButton.kill();
     }
     
-    if (!upgradeText) { 
+    if (!upgradeText && normalState) { 
       upgradeText = game.add.text(950, menuBar.y, "Upgrade " + sprite.key, C.game.textStyle);
       upgradeText.anchor.set(0.5);
       upgradeText.inputEnabled = true;
@@ -358,7 +552,7 @@ function setLastClicked(sprite) {
       buttonsList.push(upgradeButton);
       buttonsTextList.push(upgradeText);
       upgradeButton.events.onInputDown.add(upgrade, {upgrading: lastClicked});
-    } else {
+    } else if (normalState) {
       upgradeText.reset(950, menuBar.y);
       upgradeText.setText("Upgrade " + sprite.key);
       upgradeText.events.onInputDown._bindings = [];
@@ -369,9 +563,9 @@ function setLastClicked(sprite) {
     }
 
     if (arrows = []) {
-      var directions = [{direction: "counter_clockwise", angle: 180},{direction: "outward", angle: -90}, {direction: "inward", angle: 90}, {direction: "clockwise", angle:0}];
+      var directions = [{direction: "left", angle: 180},{direction: "up", angle: -90}, {direction: "inward", angle: 90}, {direction: "right", angle:0}];
       for (i = 0; i < directions.length; i++) {
-        arrowButton = game.add.sprite(menuBar.x + 85 + i*50, menuBar.y + 85, 'arrow');
+        arrowButton = game.add.sprite(menuBar.x + 200 + i*50, menuBar.y + 85, 'arrow');
         arrowButton.anchor.set(0.5);
         arrowButton.inputEnabled = true;
         arrowButton.width = 40;
@@ -406,7 +600,18 @@ function setLastClicked(sprite) {
 }
 
 
+class Upgrade {
+  create() {
+    var returnText = game.add.text(game.world.centerX, game.world.centerY, 'Return to Game',C.game.textStyle);
+    returnText.anchor.set(0.5);
+    returnText.inputEnabled = true;
+    returnText.events.onInputDown.add(reloadGame,this);
+  }
+}
 
+function reloadGame() {
+  game.state.start("Setup");
+}
 
 class GameOver {
     create() {
@@ -483,7 +688,7 @@ function attachToCamera(obj) {
     }
 
 function findIncrementsTo(space) {
-    space.increment = {x: (changeValueScale(space.x) * 3 - game.camera.view.halfWidth) / 67, y: (changeValueScale(space.y) * 3 - game.camera.view.halfHeight) / 67};
+    space.increment = {x: (changeValueScale(space.x) * 4 - game.camera.view.halfWidth) / 101, y: (changeValueScale(space.y) * 4 - game.camera.view.halfHeight) / 101};
 }
 
 function changeValueScale(value) {
@@ -686,22 +891,38 @@ function repair() {
 
 function upgrade() {
   console.log("Upgrading " + this.upgrading.sprite.key);
+  game.paused = true;
+  upgradeMenu = game.add.sprite(attributeText.x, attributeText.y, 'upgradeMenu');
+  upgradeMenu.anchor.setTo(.5,.5);
+  game.input.onDown.add(finishUpgrade, self);
+}
+
+
+function finishUpgrade() {
+  if (game.paused) {
+    game.paused = false;
+    upgradeMenu.destroy();
+  }
 }
 
 
 function arrowMove() {
-  var directions = this.moving.sprite.closestSpaces.directions;
-  for (i = 0; i < this.moving.sprite.closestSpaces.directions; i++) {
-    if (this.direction === directions[i]) {
-      move(moving, this.moving.sprite.closestSpaces.keys[i]);
-      break;
+  console.log(this.direction);
+  var directions = this.moving.sprite.closestSpaces.directionObjects;
+  console.log(directions);
+  for (i = 0; i < directions.length; i++) {
+    console.log("Tick.");
+    if (this.direction === directions[i].direction) {
+      console.log("Ding!");
+      move(this.moving, this.moving.sprite.closestSpaces.directionObjects[i].spaceKey);
     }
   }
 }
 
 function checkBattle(space) {
   //Takes a space, and if there are both monsters and players on that
-  //space, battle happens
+  //space, battle 
+  //happens
   scrubList(globalList);
   scrubList(space.occupied);
   var pendingMonster = null;
@@ -868,31 +1089,37 @@ function getClosestSpaces(spaceKey) {
     inward = findPreviousLetter(spaceKey);
     outward = findNextLetter(spaceKey);
   }
-  if (clockwise) {
-    clockwise.direction = "clockwise";
-  }
-  if (counter_clockwise) {
-    counter_clockwise.direction = "counter_clockwise";
-  }
-  if (inward) {
-    inward.direction = "inward";
-  }
-  if (outward) {
-    outward.direction = "outward";
-  }
-  var directions = [clockwise,counter_clockwise,inward,outward]
+  var directionObjects = [];
+
+  var directions = [clockwise,counter_clockwise,inward,outward];
   directions.forEach(function(direction) {
-    if (direction !== undefined) {
-      selectedSpaces.push(Space[direction]);
+  if (direction !== undefined) {
+    selectedSpaces.push(Space[direction]);
+    var directionValue = Space[direction];
+    var spaceValue = Space[spaceKey];
+    if ((spaceValue.x > directionValue.x) && (diff(spaceValue.x, directionValue.x) > diff(spaceValue.y,directionValue.y))) {
+        directionObjects.push({direction: "left", spaceKey: direction});
+      }
+    if ((spaceValue.x < directionValue.x) && (diff(spaceValue.x, directionValue.x) > diff(spaceValue.y,directionValue.y))) {
+        directionObjects.push({direction: "right", spaceKey: direction});
+      }
+    if ((spaceValue.y > directionValue.y) && (diff(spaceValue.x, directionValue.x) < diff(spaceValue.y,directionValue.y))) {
+        directionObjects.push({direction: "up", spaceKey: inward});
+      }
+    if ((spaceValue.y < directionValue.y) && (diff(spaceValue.x, directionValue.x) < diff(spaceValue.y,directionValue.y))) {
+        directionObjects.push({direction: "down", spaceKey: outward});
+      }
       close_keys.push(direction);
-    }
-  });
+     }
+   });
   return {
     selectedSpaces: selectedSpaces,
     keys: close_keys,
-    directions: directions
+    directions: directions,
+    directionObjects: directionObjects
   }
 }
+function diff(a,b){return Math.abs(a-b);}
 
 function getRandomSpace() {
   var obj_keys = Object.keys(Space);
@@ -928,8 +1155,19 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     }
     console.log(condition);
   } while (condition === true);
-
+  if (object !== "monster") {
   random = game.add.sprite(space.selectedSpace.x*C.bg.scale*C.bg.resize + game.bg.position.x,space.selectedSpace.y*C.bg.scale*C.bg.resize + game.bg.position.y,object); 
+  } else {
+    if (threatLevel <= 12) {
+  random = game.add.sprite(space.selectedSpace.x*C.bg.scale*C.bg.resize + game.bg.position.x,space.selectedSpace.y*C.bg.scale*C.bg.resize + game.bg.position.y,"initialMonster"); 
+    } else if (threatLevel <= 24) {
+  random = game.add.sprite(space.selectedSpace.x*C.bg.scale*C.bg.resize + game.bg.position.x,space.selectedSpace.y*C.bg.scale*C.bg.resize + game.bg.position.y,"growingMonster"); 
+    } else {
+  random = game.add.sprite(space.selectedSpace.x*C.bg.scale*C.bg.resize + game.bg.position.x,space.selectedSpace.y*C.bg.scale*C.bg.resize + game.bg.position.y,"extinctionMonster"); 
+    }
+    random.spriteName = random.key;
+    random.key = "monster";
+  }
   random.anchor.x = .5;
   random.anchor.y = .5;
   if (object === "purplecircle") {
@@ -1049,5 +1287,7 @@ game.state.add("Boot",Boot);
 game.state.add("Load",Load);
 game.state.add("Setup",Setup);
 game.state.add("GameOver",GameOver);
+game.state.add("Upgrade",Upgrade);
+//game.state.add("Reload",Reload);
 game.state.start("Boot");
 
