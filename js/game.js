@@ -931,12 +931,14 @@ function repair() {
 
 function upgrade() {
   console.log("Upgrading " + this.upgrading.sprite.key);
+  actionPoints -= 1;
   game.paused = true;
   upgradeMenu = game.add.sprite(spaceDisplay.x, spaceDisplay.y + 160, 'upgradeMat');
   upgradeMenu.anchor.setTo(.5,.5);
   upgradeMenu.scale.x = .37;
   upgradeMenu.scale.y = .37;
   game.input.onDown.add(finishUpgrade, {menu: upgradeMenu});
+  
 }
 
 
@@ -949,7 +951,7 @@ function finishUpgrade(event) {
       var options = ["electric_fists"]
       var x = event.x - x1,
           y = event.y - y1;
-      var choice = Math.floor(x / 90) + 3*Math.floor(y / 90);
+      var choice = Math.floor(x / ) + 3*Math.floor(y / 90);
       console.log(choice);
     } 
     game.paused = false;
