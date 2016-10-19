@@ -51,7 +51,8 @@ var C = {
   "height": 512
  }
 }
-var waitButton
+var attackText;
+var waitButton;
 var lastClicked;
 var repairText;
 var upgradeText;
@@ -468,7 +469,12 @@ class Setup {
       var lookAt = focusSpace.x * C.bg.scale*C.bg.resize + game.bg.position.x;
       battlePlayer.sprite.x = Phaser.Math.clamp(battlePlayer.sprite.x + .2, 0, lookAt + 30);
       battleMonster.sprite.x = Phaser.Math.clamp(battleMonster.sprite.x - .2, lookAt - 30, 3000);
-      if (battlePlayer.sprite.x === lookAt + 30 && battleMonster.sprite.x - 30) {
+      if (battlePlayer.sprite.x === lookAt + 30 && battleMonster.sprite.x - 35 && zoomIn === false) {
+        battleTurn = battlePlayer;
+        attackText = game.add.bitmapText(menuBar.x + 30, menuBar.y + 20, 'attackfont', "Attack!", 10);
+        attackText.anchor.set(0.5);
+        attackText.inputEnabled = true;
+        attackText.events.onInputDown.add(queAttack, {attacker: battlePlayer});
         battlePlayer.sprite.events.onDragStop._bindings = [];
         battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
         battleStarting = false;
@@ -503,6 +509,12 @@ class Setup {
       attributeDisplay.setText("\nName: " + turn.sprite.key + "\nHP: " + turn.hp + "\nResearch Points: " + turn.rp);
     }
 
+  }
+}
+
+function queAttack() {
+  if (battleTurn === this.attacker) {
+    this.attacker.attacking = true;
   }
 }
 
@@ -819,10 +831,38 @@ function rollDie(count){
 function battle(player, monster) {
   //Simple Placeholder battle
     if (battleTurn === battleMonster && battleMonster.sprite) {
+      if (attackText) {
+        attackText.kill();
+        battlePlayer.sprite.events.onDragStop._bindings = [];
+        battlePlayer.sprite.inputEnabled = false;
+      }
       battleMonster.sprite.x += .3;
       if (battleMonster.sprite.x >= changeValueScale(focusSpace.x)) {
         attack(battleMonster,battlePlayer);
-        battleMonster.sprite.x = battlePlayer.sprite.x - 60;
+        if (battleState === true) {
+          battleMonster.sprite.x = battlePlayer.sprite.x - 60;
+          attackText.reset(menuBar.x + 20, menuBar.y + 20);
+          battlePlayer.sprite.inputEnabled = true;
+          battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
+        }
+      }
+    } else if (battleTurn === battlePlayer && battlePlayer.attacking === true) {
+      if (attackText) {
+        attackText.kill();
+        battlePlayer.sprite.events.onDragStop._bindings = [];
+        battlePlayer.sprite.inputEnabled = false;
+      }
+
+      battlePlayer.sprite.x -= .3;
+      if (battlePlayer.sprite.x <= changeValueScale(focusSpace.x)) {
+        attack(battlePlayer,battleMonster);
+        if (battleState === true) {
+          battlePlayer.sprite.x = changeValueScale(focusSpace.x) + 30;
+          attackText.reset(menuBar.x + 20, menuBar.y + 15);
+          battlePlayer.sprite.inputEnabled = true;
+          battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
+          battlePlayer.attacking = false;
+        }
       }
     }
   }
@@ -892,16 +932,26 @@ function repair() {
 function upgrade() {
   console.log("Upgrading " + this.upgrading.sprite.key);
   game.paused = true;
-  upgradeMenu = game.add.sprite(spaceDisplay.x, spaceDisplay.y, 'upgradeMat');
+  upgradeMenu = game.add.sprite(spaceDisplay.x, spaceDisplay.y + 160, 'upgradeMat');
   upgradeMenu.anchor.setTo(.5,.5);
-  upgradeMenu.scale.x = .3;
-  upgradeMenu.scale.y = .3;
-  game.input.onDown.add(finishUpgrade, self);
+  upgradeMenu.scale.x = .37;
+  upgradeMenu.scale.y = .37;
+  game.input.onDown.add(finishUpgrade, {menu: upgradeMenu});
 }
 
 
-function finishUpgrade() {
+function finishUpgrade(event) {
   if (game.paused) {
+    console.log(event);
+    var x1 = this.menu.x - this.menu.width/2, x2 = this.menu.x + this.menu.width/2,
+    y1 = this.menu.y - this.menu.y/2, y2 = this.menu.y + this.menu.height/2;
+    if (event.x > x1 && event.x < x2 && event.y > y1 && event.y < y2 ){
+      var options = ["electric_fists"]
+      var x = event.x - x1,
+          y = event.y - y1;
+      var choice = Math.floor(x / 90) + 3*Math.floor(y / 90);
+      console.log(choice);
+    } 
     game.paused = false;
     upgradeMenu.destroy();
   }
