@@ -51,6 +51,7 @@ var C = {
   "height": 512
  }
 }
+var upgradeState;
 var attackText;
 var waitButton;
 var lastClicked;
@@ -119,7 +120,7 @@ class Load {
       verticalWheel: true,
       deltaWheel: 40
   });
-  game.kineticScrolling.start();
+
     console.log("Loading.");
     this.load.image("upgradeMat","assets/UpgradeMat.png",469,676);
     this.load.image("gameboard",C.bg.file,C.bg.width,C.bg.height);
@@ -399,6 +400,15 @@ class Setup {
     //reset itself.
     if (actionPoints === 0 && pendingBattles.length === 0 && zoomOut !== true && zoomOut !== true) {
       changeTurn();
+    }
+    if (upgradeState === true && game.camera.y <= 0) {
+      game.camera.y = 0;
+      upgradeState = false;
+      if (boughtBool === true) {
+        actionPoints -= 1;
+        boughtBool = false;
+      }
+      game.kineticScrolling.stop();
     }
     if (focusSpace && focusSpace.x) {
       var xPivot = changeValueScale(focusSpace.x) * 4 - game.camera.view.halfWidth;
@@ -946,19 +956,19 @@ function repair() {
 
 function upgrade() {
   console.log("Upgrading " + this.upgrading.sprite.key);
-  actionPoints -= 1;
-  game.paused = true;
-  upgradeMenu = game.add.sprite(spaceDisplay.x, spaceDisplay.y + 160, 'upgradeMat');
+  upgradeMenu = game.add.sprite(game.world.centerX, game.world.centerY + 350, 'upgradeMat');
   upgradeMenu.anchor.setTo(.5,.5);
-  upgradeMenu.scale.x = .37;
-  upgradeMenu.scale.y = .37;
+  upgradeMenu.scale.x = .6;
+  upgradeMenu.scale.y = .6;
+  game.kineticScrolling.start();
   game.input.onDown.add(finishUpgrade, {menu: upgradeMenu});
-  
+  game.camera += 10;
+  upgradeState = true;
 }
 
 
 function finishUpgrade(event) {
-  if (game.paused) {
+  if (game.camera.y > 0) {
     console.log(event);
     var x1 = this.menu.x - this.menu.width/2, x2 = this.menu.x + this.menu.width/2,
     y1 = this.menu.y - this.menu.y/2, y2 = this.menu.y + this.menu.height/2;
@@ -968,9 +978,10 @@ function finishUpgrade(event) {
           y = event.y - y1;
       var choice = Math.floor(x / 90) + 3*Math.floor(y / 90);
       console.log(choice);
+      boughtBool = true;
     } 
-    game.paused = false;
     upgradeMenu.destroy();
+
   }
 }
 
