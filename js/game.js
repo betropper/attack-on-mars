@@ -93,6 +93,9 @@ var buttonsTextList = [];
 //CHANGE THE CAMERA BOUNDS SO YOU CAN CHANGE EVERYTHING ELSE AHHHH
 
 class Boot {
+  init() {
+
+  }
   preload() {
     this.scale.pageAlignHorizontally = true;
     game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
@@ -105,6 +108,18 @@ class Boot {
 
 class Load {
   preload() {
+
+  game.kineticScrolling = this.game.plugins.add(Phaser.Plugin.KineticScrolling);
+  game.kineticScrolling.configure({
+      kineticMovement: true,
+      timeConstantScroll: 325, //really mimic iOS
+      horizontalScroll: false,
+      verticalScroll: true,
+      horizontalWheel: false,
+      verticalWheel: true,
+      deltaWheel: 40
+  });
+  game.kineticScrolling.start();
     console.log("Loading.");
     this.load.image("upgradeMat","assets/UpgradeMat.png",469,676);
     this.load.image("gameboard",C.bg.file,C.bg.width,C.bg.height);
@@ -951,7 +966,7 @@ function finishUpgrade(event) {
       var options = ["electric_fists"]
       var x = event.x - x1,
           y = event.y - y1;
-      var choice = Math.floor(x / ) + 3*Math.floor(y / 90);
+      var choice = Math.floor(x / 90) + 3*Math.floor(y / 90);
       console.log(choice);
     } 
     game.paused = false;
