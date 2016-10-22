@@ -5,7 +5,7 @@ var C = {
    "textStyle": {
       align: 'center',
       fill: "#ffffff",
-      font: '20px Poiret One'
+      font: '30px Poiret One'
    },
    "smallStyle": {
       align: 'center',
@@ -15,7 +15,16 @@ var C = {
         backgroundColor: 'black'
       }
    },
-    "scaleRatio": window.devicePixelRatio / 3
+
+   "ynStyle": {
+      align: 'center',
+      fill: "#ffffff",
+      font: '40px Poiret One',
+      "style": {
+        backgroundColor: 'black'
+      }
+   },
+   "scaleRatio": window.devicePixelRatio / 3
  },
  "bg": {
    "resize": .25,
@@ -820,11 +829,12 @@ function upgrade(upgrading) {
   var upgrading = this.upgrading || upgrading 
   if (this.yn) {
       confirmState = false;
+      var boughtUpgrade = U[this.boughtUpgrade];
       if (this.yn === "yes") {
-        if (this.boughtUpgrade && this.boughtUpgrade.passive) {
-          this.boughtUpgrade.passive(lastClicked);
+        if (boughtUpgrade && boughtUpgrade.passive) {
+          boughtUpgrade.passive(lastClicked);
         }
-        lastClicked.upgrades.push(this.boughtUpgrade.constructor.name);
+        lastClicked.upgrades.push(this.boughtUpgrade);
         boughtBool = true;
       }
   }
@@ -883,11 +893,11 @@ function confirmUpgrade(player,upgradeName) {
         confirmText = game.add.text(game.camera.x + game.camera.width/2,game.camera.y + game.camera.height/2 - 230,"Are you sure you would like to purchase " + upgradeName + " on " + lastClicked.sprite.key +"?", C.game.textStyle);
         confirmText.anchor.setTo(.5,.5);
       }
-      var yes = game.add.text(confirmText.x - 150, confirmText.y + 300, "Yes", C.game.textStyle);
+      var yes = game.add.text(confirmText.x - 150, confirmText.y + 300, "Yes", C.game.ynStyle);
       yes.anchor.setTo(.5,.5);
       yes.inputEnabled = true;
-      yes.events.onInputDown.add(upgrade, {upgrading: lastClicked, yn: "yes", boughtUpgrade: U[upgradeName]});
-      var no = game.add.text(confirmText.x + 150, confirmText.y + 300, "No", C.game.textStyle);
+      yes.events.onInputDown.add(upgrade, {upgrading: lastClicked, yn: "yes", boughtUpgrade: upgradeName});
+      var no = game.add.text(confirmText.x + 150, confirmText.y + 300, "No", C.game.ynStyle);
       no.anchor.setTo(.5,.5);
       no.inputEnabled = true;
       no.events.onInputDown.add(upgrade, {upgrading: lastClicked, yn: "no"});
