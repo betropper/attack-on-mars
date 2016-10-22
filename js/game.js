@@ -10,7 +10,7 @@ var C = {
    "smallStyle": {
       align: 'center',
       fill: "#ffffff",
-      font: '10px Poiret One',
+      font: '25px Poiret One',
       "style": {
         backgroundColor: 'black'
       }
@@ -105,6 +105,7 @@ var battleState;
 var resultsList = [];
 var buttonsList = [];
 var buttonsTextList = [];
+var priceText;
 //CHANGE THE CAMERA BOUNDS SO YOU CAN CHANGE EVERYTHING ELSE AHHHH
 
 class Boot {
@@ -450,7 +451,7 @@ function setLastClicked(sprite) {
     }
 
     if (!mineButton && normalState && lastClicked.upgrades.indexOf("Mines") > -1) { 
-      mineButton = game.add.sprite(200, menuBar.y + 75, 'mine');
+      mineButton = game.add.sprite(200, menuBar.y + 77, 'mine');
       mineButton.anchor.set(0.5);
       mineButton.inputEnabled = true;
       mineButton.battleButton = false;
@@ -651,6 +652,7 @@ function attack(attacker,defender) {
     battlePlayer.attacking = false;
     console.log("DED with " + damaged.hp);
     scrubList(globalList);
+    attackText.kill();
     if (damaged === battlePlayer) {
       playersList[damaged.sprite.number] = damaged.sprite.number;
       removeFromList(playersList[damaged.sprite.number], focusSpace);
@@ -907,11 +909,24 @@ function confirmUpgrade(player,upgradeName) {
         confirmText = game.add.text(game.camera.x + game.camera.width/2,game.camera.y + game.camera.height/2 - 230,"Are you sure you would like to purchase " + upgradeName + " on " + lastClicked.sprite.key +"?", C.game.textStyle);
         confirmText.anchor.setTo(.5,.5);
       }
-      var yes = game.add.text(confirmText.x - 150, confirmText.y + 300, "Yes", C.game.ynStyle);
+      var consideredUpgrade = U[upgradeName];
+      for (i = 0; i < player.colorDiscounts.length; i++) {
+        if (player.colorDiscounts[i].color === consideredUpgrade.color) {
+          var discountValue = player.colorDiscounts[i].discount;
+          break
+        }
+      }
+      if (priceText) {
+        priceText.setText(upgradeName + " is a tier " + consideredUpgrade.cost + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue));
+      } else {
+      priceText = game.add.text(confirmText.x, confirmText.y + 400, upgradeName + " is a tier " + consideredUpgrade.cost + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue),C.game.smallStyle)
+      priceText.anchor.setTo(.5,.5);
+      }
+      var yes = game.add.text(confirmText.x - 150, priceText.y + 100, "Yes", C.game.ynStyle);
       yes.anchor.setTo(.5,.5);
       yes.inputEnabled = true;
       yes.events.onInputDown.add(upgrade, {upgrading: lastClicked, yn: "yes", boughtUpgrade: upgradeName});
-      var no = game.add.text(confirmText.x + 150, confirmText.y + 300, "No", C.game.ynStyle);
+      var no = game.add.text(confirmText.x + 150, priceText.y + 100, "No", C.game.ynStyle);
       no.anchor.setTo(.5,.5);
       no.inputEnabled = true;
       no.events.onInputDown.add(upgrade, {upgrading: lastClicked, yn: "no"});
