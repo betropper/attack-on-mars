@@ -51,13 +51,18 @@ var C = {
   "height": 512
  }
 }
+var boughtBool;
 var upgradeState;
+var confirmState;
+var confirmText;
 var attackText;
 var waitButton;
+var mineButton;
 var lastClicked;
 var repairText;
 var upgradeText;
 var upgradeMenu;
+var upgradeDisplay;
 var worldScale = 1;
 var First = "red";
 var Second = "blue";
@@ -137,6 +142,7 @@ class Load {
     this.load.image("menubar","assets/menubar.png",C.menuBar.width,C.menuBar.height);
     this.load.image("wrench","assets/wrench.png", C.wrench.width,C.wrench.height);
     this.load.image("arrow","assets/arrow.png", C.arrow.width,C.arrow.height);
+    this.load.image("mine","assets/Mines.png", 72,72);
     game.load.bitmapFont('attackfont','assets/attackfont.png', 'assets/attackfont.fnt');
   }
   create() {
@@ -144,187 +150,6 @@ class Load {
     this.state.start("Setup");
   }
 }
-
-
-/*class Reload {
-    create() {
-
-    game.bg = game.add.sprite(0, game.world.centerY - game.height / 2, "gameboard");
-    game.bg.scale.setTo(C.bg.scale, C.bg.scale);
-    for (var i = 0; i < obj_keys.length; i++) {
-      Space[obj_keys[i]].occupied = false;
-    }   
-
-    for (var i = 1; i <= playerCount; i++) {
-      if (!Number.isInteger(playersList[i])) {
-        playersList[i].sprite = game.add.sprite(playersList[i].sprite.x, playersList[i].sprite.y, playerNames[i]);
-        playersList[i].sprite.number = i;
-        playersList[i].sprite.inputEnabled = true;
-        playersList[i].sprite.input.enableDrag(true);
-        playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
-        closestSpaces = getClosestSpaces(playersList[i].key);
-        playersList[i].sprite.closestSpaces = closestSpaces;
-        playersList[i].sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
-      }
-    }
-    for (var i = 0; i < monstersList; i++) {
-      if (monstersList[i].hp > 0) {
-        monstersList[i].sprite = game.add.sprite(monstersList[i].sprite.x, monstersList[i].sprite.y, monstersList[i].sprite.spriteName);
-        monstersList[i].sprite.number = i;
-        monstersList[i].sprite.inputEnabled = true;
-        monstersList[i].sprite.events.onInputDown.add(setLastClicked, this);
-      }
-    }
-
-    spaceDisplay = game.add.text(900, 250,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
-    attributeDisplay = game.add.text(spaceDisplay.x, spaceDisplay.y + 160, "", C.game.textStyle);
-    spaceDisplay.anchor.setTo(.5); 
-    attributeDisplay.anchor.setTo(.5);
-    turn.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
-    // Temporary for testing. Change this later.
-    menuBar = game.add.sprite(0,(game.height/worldScale) - 162 + C.menuBar.height/4,"menubar");
-    menuBar.width = C.menuBar.width;
-    menuBar.height = C.menuBar.height;
-    menuBar.fixedToCamera = true;
-    game.world.bringToTop(menuBar);
-    waitButton = game.add.button(80, menuBar.y + 80, 'purplecircle', waitOneAction);
-    waitButton.anchor.x = .5;
-    waitButton.anchor.y = .5;
-    waitButton.scale.y = .6;
-    waitButton.battleButton = false;
-    buttonsList.push(waitButton);
-    game.world.bringToTop(waitButton);
-  }
-
-  update() {
-
-    //Set ZoomIn to true or ZoomOut to false to enable zoom. It will
-    //reset itself.
-    if (actionPoints === 0 && pendingBattles.length === 0 && zoomOut !== true && zoomOut !== true) {
-      changeTurn();
-    }
-    if (focusSpace && focusSpace.x) {
-      var xPivot = changeValueScale(focusSpace.x) * 4 - game.camera.view.halfWidth;
-      var yPivot = changeValueScale(focusSpace.y) * 4 - game.camera.view.halfHeight; 
-      var xMenu = changeValueScale(focusSpace.x); 
-      var yMenu = changeValueScale(focusSpace.y);
-    }
-    
-    var cursors = game.input.keyboard.createCursorKeys();
-    if (cursors.up.isDown) {
-      game.camera.y -= 4;
-      console.log(game.camera.y);
-    }
-
-     if (zoomIn === true) {
-       for (i = 0; i < buttonsTextList.length; i++) {
-        buttonsTextList[0].kill();
-       }
-        for (i = 1; i < playersList.length; i++) {
-          if (playersList[i] !== battlePlayer) {
-            playersList[i].sprite.inputEnabled = false;
-          }
-        }
-        worldScale += 0.03;
-        console.log("Tick.");
-        menuBar.width = C.menuBar.width / worldScale;
-        menuBar.height = C.menuBar.height / worldScale;
-        menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/4, C.menuBar.width);
-        menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/4, C.menuBar.height);
-        game.world.bringToTop(menuBar);
-        if (yPivot < 0) {
-          yPivot = 0
-        }
-        if (Math.floor(worldScale) === 4 && Math.floor(yPivot) === game.camera.y && Math.floor(xPivot) === game.camera.x) {
-          zoomIn = false;
-          console.log("Done zooming");
-        }
-        if (game.camera.x < xPivot && xPivot > 0) {
-          game.camera.x = Phaser.Math.clamp(game.camera.x + focusSpace.increment.x, 0, xPivot);
-        } else if (game.camera.x > xPivot && xPivot > 0) {
-          game.camera.x = Phaser.Math.clamp(game.camera.x - focusSpace.increment.x, xPivot, 9999);
-        }
-        if (game.camera.y < yPivot && yPivot > 0) {
-          game.camera.y = Phaser.Math.clamp(game.camera.y + focusSpace.increment.y, 0, yPivot);
-        } else if (game.camera.y > yPivot && yPivot > 0) {
-          game.camera.y = Phaser.Math.clamp(game.camera.y - focusSpace.increment.y, yPivot, 9999);
-        }
-       //console.log("x is " + xPivot);
-       //console.log("y is " + yPivot);
-    } else if (zoomOut === true) {
-        worldScale -= 0.03;
-        menuBar.width = C.menuBar.width / worldScale;
-        menuBar.height = C.menuBar.height / worldScale;
-        menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/4, C.menuBar.width);
-        menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/4, C.menuBar.height);
-        game.world.bringToTop(menuBar);
-        if (game.camera.x > 0 || game.camera.y > 0) {
-          if (focusSpace.increment.x > 0) {
-            game.camera.x -= focusSpace.increment.x;
-          } else {
-            game.camera.x += focusSpace.increment.x;
-          }
-          if (focusSpace.increment.y > 0) {
-            game.camera.y -= focusSpace.increment.y;
-          } else {
-            game.camera.y += focusSpace.increment.y;
-          }
-
-          game.camera.x = Phaser.Math.clamp(game.camera.x, 0, 3000);
-          game.camera.y = Phaser.Math.clamp(game.camera.y, 0, 3000);
-
-        } else if (worldScale <= 1) {
-            zoomOut = false;
-            for (i = 0; i < buttonsList.length; i++) {
-              game.world.bringToTop(buttonsList[i]);
-            }
-
-            for (i = 0; i < buttonsTextList.length; i++) {
-              buttonsTextList[0].reset(buttonsTextList[0].x,buttonsTextList[0].y);
-            }
-        }
-    } if (battleStarting) {
-      var lookAt = focusSpace.x * C.bg.scale*C.bg.resize + game.bg.position.x;
-      battlePlayer.sprite.x = Phaser.Math.clamp(battlePlayer.sprite.x + .2, 0, lookAt + 30);
-      battleMonster.sprite.x = Phaser.Math.clamp(battleMonster.sprite.x - .2, lookAt - 30, 3000);
-      if (battlePlayer.sprite.x === lookAt + 30 && battleMonster.sprite.x - 30) {
-        battlePlayer.sprite.events.onDragStop._bindings = [];
-        battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
-        battleStarting = false;
-        battleState = true;
-        }
-    } else if (battleState === true) {
-      battle(battlePlayer,battleMonster);
-      // Change this, placeholder ending.
-
-    }
-    // set a minimum and maximum scale value
-    worldScale = Phaser.Math.clamp(worldScale, 1, 4);
-    game.world.scale.set(worldScale);
-    if (spaceDisplay) {
-      spaceDisplay.setText("Valid Movements for " + turn.sprite.key + ":\n " + turn.sprite.closestSpaces.keys.join(" ") + "\nRemaining Moves: " + actionPoints,C.game.textStyle);
-    }
-    for (var i = 0; i < globalList.length; i++) {
-      if (globalList[i].sprite.input && globalList[i].sprite.input.pointerOver()) {
-        var over = globalList[i]; 
-      } 
-    }
-    if (over) { 
-      if (playerNames.indexOf(over.sprite.key) > -1) {
-        attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + "\nResearch Points: " + over.rp);
-        /*if (attributeDisplay.text && lastClicked !== undefined && repairText && attributeDisplay.text.indexOf(lastClicked.sprite.key) === -1) {
-          repairText.text = "Repair " + lastClicked.sprite.key;
-        }
-      } else if (over.sprite.key === "monster") {
-        attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + "\nResearch Point Reward: " + over.rp)
-      }
-    } else {
-      attributeDisplay.setText("\nName: " + turn.sprite.key + "\nHP: " + turn.hp + "\nResearch Points: " + turn.rp);
-    }
-
-  }
-}*/
-
 
 class Setup {
 
@@ -336,7 +161,6 @@ class Setup {
       Space[obj_keys[i]].occupied = false;
     }   
   
-    if (playersList.length === 0) {
     playerCount = parseInt(prompt("How many will be playing?", "2")) || null;
     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
     game.camera.bounds = null;
@@ -355,6 +179,7 @@ class Setup {
       destroyedCities[i-1] = destroyedCityColumn;
       playersList[i] = spawnRandom(playerNames[i-1], i, "0", true); 
       playersList[i].sprite.number = i;
+      playersList[i].upgrades = [];
       playersList[i].sprite.inputEnabled = true;
       playersList[i].sprite.input.enableDrag(true);
       playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
@@ -372,10 +197,12 @@ class Setup {
     closestSpaces = getClosestSpaces(turn.key);
     turn.sprite.closestSpaces = closestSpaces;
     // Add in text that is displayed.
-    spaceDisplay = game.add.text(900, 250,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
+    spaceDisplay = game.add.text(900, 100,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
     attributeDisplay = game.add.text(spaceDisplay.x, spaceDisplay.y + 160, "", C.game.textStyle);
     spaceDisplay.anchor.setTo(.5); 
     attributeDisplay.anchor.setTo(.5);
+    upgradeDisplay = game.add.text(attributeDisplay.x, attributeDisplay.y + 160, "", C.game.textStyle);
+    upgradeDisplay.anchor.setTo(.5);
     turn.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
     // Temporary for testing. Change this later.
     menuBar = game.add.sprite(0,(game.height/worldScale) - 162 + C.menuBar.height/4,"menubar");
@@ -390,26 +217,36 @@ class Setup {
     waitButton.battleButton = false;
     buttonsList.push(waitButton);
     game.world.bringToTop(waitButton);
-    } else {
     
-    }
     }
   update() {
 
     //Set ZoomIn to true or ZoomOut to false to enable zoom. It will
     //reset itself.
+    //
+    //Disables scrolling when upgrading is done
+    if (game.camera.y < 0) {
+      game.camera.y = 0;
+      if (upgradeState === true) {
+        upgradeState = false;
+        if (boughtBool === true) {
+          actionPoints -= 1;
+          boughtBool = false;
+        }
+        game.kineticScrolling.stop();
+        game.camera.y = 0;
+        menuBar.reset(menuBar.x,menuBar.y);
+      }
+    }
+    if (upgradeState && !confirmState && game.camera.y >= 1480) {
+      game.camera.y = 1480;
+    } else if (confirmState === true) {
+      game.camera.y = 2140 
+    }
     if (actionPoints === 0 && pendingBattles.length === 0 && zoomOut !== true && zoomOut !== true) {
       changeTurn();
     }
-    if (upgradeState === true && game.camera.y <= 0) {
-      game.camera.y = 0;
-      upgradeState = false;
-      if (boughtBool === true) {
-        actionPoints -= 1;
-        boughtBool = false;
-      }
-      game.kineticScrolling.stop();
-    }
+
     if (focusSpace && focusSpace.x) {
       var xPivot = changeValueScale(focusSpace.x) * 4 - game.camera.view.halfWidth;
       var yPivot = changeValueScale(focusSpace.y) * 4 - game.camera.view.halfHeight; 
@@ -527,11 +364,13 @@ class Setup {
         /*if (attributeDisplay.text && lastClicked !== undefined && repairText && attributeDisplay.text.indexOf(lastClicked.sprite.key) === -1) {
           repairText.text = "Repair " + lastClicked.sprite.key;
         }*/
+       upgradeDisplay.setText("Upgrades for " + over.sprite.key +":\n" + over.upgrades.join(",\n"));
       } else if (over.sprite.key === "monster") {
         attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + "\nResearch Point Reward: " + over.rp)
       }
-    } else {
-      attributeDisplay.setText("\nName: " + turn.sprite.key + "\nHP: " + turn.hp + "\nResearch Points: " + turn.rp);
+    } else if (lastClicked) {
+      attributeDisplay.setText("\nName: " + lastClicked.sprite.key + "\nHP: " + turn.hp + "\nResearch Points: " + turn.rp);
+      upgradeDisplay.setText("Upgrades for " + lastClicked.sprite.key + ":\n" + lastClicked.upgrades.join(",\n"));
     }
 
   }
@@ -599,6 +438,23 @@ function setLastClicked(sprite) {
       upgradeButton.events.onInputDown.add(upgrade, {upgrading: lastClicked});
     }
 
+    if (!mineButton && normalState && lastClicked.canBuildMines) { 
+      mineButton = game.add.sprite(200, menuBar.y + 85, 'mine');
+      mineButton.anchor.set(0.5);
+      mineButton.inputEnabled = true;
+      mineButton.battleButton = false;
+      buttonsList.push(mineButton);
+      mineButton.events.onInputDown.add(U.Mines.active, {player: lastClicked});
+    } else if (normalState && lastClicked.canBuildMines) {
+      mineButton.reset(mineButton.x, mineButton.y);
+      mineButton.events.onInputDown._bindings = [];
+      mineButton.events.onInputDown.add(U.Mines.active, {player: lastClicked});
+      buttonsList.push(mineButton);
+    } else {
+      buttonsList.splice(mineButton, 1);
+      mineButton.kill();
+    }
+    /*
     if (arrows = []) {
       var directions = [{direction: "left", angle: 180},{direction: "up", angle: -90}, {direction: "inward", angle: 90}, {direction: "right", angle:0}];
       for (i = 0; i < directions.length; i++) {
@@ -620,7 +476,7 @@ function setLastClicked(sprite) {
         arrows[i].events.onInputDown._bindings = [];
         arrows[i].events.onInputDown.add(arrowMove, {moving: lastClicked, direction: arrows[i].attributes.direction});
       } 
-    }
+    }*/
   } else if (sprite.key === "monster") {
     if (repairText) {
       repairText.kill();
@@ -954,35 +810,79 @@ function repair() {
   }
 }
 
-function upgrade() {
-  console.log("Upgrading " + this.upgrading.sprite.key);
-  upgradeMenu = game.add.sprite(game.world.centerX, game.world.centerY + 350, 'upgradeMat');
-  upgradeMenu.anchor.setTo(.5,.5);
-  upgradeMenu.scale.x = .6;
-  upgradeMenu.scale.y = .6;
+function upgrade(upgrading) {
+  var upgrading = this.upgrading || upgrading 
+  if (this.yn) {
+      confirmState = false;
+      if (this.yn = "yes") {
+        this.boughtUpgrade.passive(lastClicked);
+        lastClicked.upgrades.push(this.boughtUpgrade);
+        boughtBool = true;
+      }
+  }
+  console.log("Upgrading " + upgrading.sprite.key);
+  upgradeText.kill();
+  upgradeButton.kill();
+  menuBar.kill();
+  if (!upgradeMenu) {
+    upgradeMenu = game.add.sprite(game.world.centerX, game.world.centerY + 1100, 'upgradeMat');
+    upgradeMenu.anchor.setTo(.5,.5);
+    upgradeMenu.scale.x = .6;
+    upgradeMenu.scale.y = .6;
+console.log(upgradeDescription);
+  }
+    var upgradeDescription = game.add.text(game.world.centerX, game.world.centerY + 660 - game.height/2, "Click on an upgrade to see its details, scroll up to return to the game", C.game.textStyle);
+    upgradeDescription.anchor.setTo(.5,.5);
   game.kineticScrolling.start();
-  game.input.onDown.add(finishUpgrade, {menu: upgradeMenu});
-  game.camera += 10;
+  game.input.onDown.add(chooseUpgrade, {menu: upgradeMenu});
+  game.camera.y = 630;
   upgradeState = true;
 }
 
 
-function finishUpgrade(event) {
-  if (game.camera.y > 0) {
+function chooseUpgrade(event) {
+  if (game.camera.y >= 430) {
     console.log(event);
-    var x1 = this.menu.x - this.menu.width/2, x2 = this.menu.x + this.menu.width/2,
-    y1 = this.menu.y - this.menu.y/2, y2 = this.menu.y + this.menu.height/2;
-    if (event.x > x1 && event.x < x2 && event.y > y1 && event.y < y2 ){
-      var options = ["electric_fists"]
-      var x = event.x - x1,
-          y = event.y - y1;
-      var choice = Math.floor(x / 90) + 3*Math.floor(y / 90);
+    var x1 = 111, x2 = 1073,
+    y1 = 746, y2 = 1718;
+    console.log("Points are at " + x1 + "," + x2 + "," + y1 + "," + y2 + ".");
+    console.log(event.worldX + " " + event.worldY);
+    if (event.worldX > x1 && event.worldX < x2 && event.worldY > y1 && event.worldY < y2 ){
+      var options = ["Electric Fists","Targeting Computer","Siege Mode","Nullifier Shield","The Payload",
+        "Bigger Fists","Weakpoint Analysis","Weaponized Research","Nullifier Shield","The Payload",
+        "Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Gast",
+        "More Armor","Field Repair","Even More Armor","Obliteration Ray","Super Go Fast",
+        "5d Accelerators","Autododge","Emergency Jump Jets","Fusion Cannon","Mind-Machine Interface",
+        "Hyper Caffeine","Monster Bait","Chaos Systems","Fusion Cannon","Mind-Machine Interface"
+      ]
+      var x = event.worldX - x1,
+          y = event.worldY - y1;
+      var choice = options[Math.floor(x / (192)) + 5*Math.floor(y /(162))];
       console.log(choice);
-      boughtBool = true;
+      console.log("Event was at " + x + " " + y);
+      confirmUpgrade(lastClicked,choice);
     } 
-    upgradeMenu.destroy();
-
   }
+}
+
+function confirmUpgrade(player,upgradeName) {
+      game.kineticScrolling.stop();
+      confirmState = true;
+      game.camera.y = 1500 + game.height;
+      if (confirmText) {
+        confirmText.setText("Are you sure you would like to purchase " + upgradeName + " on " + lastClicked.sprite.key +"?");
+      } else {
+        confirmText = game.add.text(game.camera.x + game.camera.width/2,game.camera.y + game.camera.height/2 - 230,"Are you sure you would like to purchase " + upgradeName + " on " + lastClicked.sprite.key +"?", C.game.textStyle);
+        confirmText.anchor.setTo(.5,.5);
+      }
+      var yes = game.add.text(confirmText.x - 150, confirmText.y + 300, "Yes", C.game.textStyle);
+      yes.anchor.setTo(.5,.5);
+      yes.inputEnabled = true;
+      yes.events.onInputDown.add(upgrade, {upgrading: lastClicked, yn: "yes", boughtUpgrade: upgradeName});
+      var no = game.add.text(confirmText.x + 150, confirmText.y + 300, "No", C.game.textStyle);
+      no.anchor.setTo(.5,.5);
+      no.inputEnabled = true;
+      no.events.onInputDown.add(upgrade, {upgrading: lastClicked, yn: "no"});
 }
 
 
@@ -1010,7 +910,7 @@ function checkBattle(space) {
   if (space.occupied != false) {
     for (i = 0; i < space.occupied.length; i++) {
       if (space.occupied[i] && space.occupied[i].sprite.key.indexOf('monster') > -1) {
-        pendingMonster = space.occupied[i];
+          pendingMonster = space.occupied[i];
       } else if (space.occupied[i] && playerNames.indexOf(space.occupied[i].sprite.key) > -1) {
         pendingPlayer = space.occupied[i];
       }
@@ -1213,8 +1113,8 @@ function getRandomSpace() {
 
 
 function spawnRandom(object,quadrant,row,occupiedCheck) {
-  var condition;
-  do {
+  var condition = true;
+  while (condition === true) {
       var space = getRandomSpace();
     if (quadrant === "random" && occupiedCheck === true) {
         condition = space.key.indexOf("0") || selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1; 
@@ -1234,7 +1134,9 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
         condition = false;
     }
     console.log(condition);
-  } while (condition === true);
+  } 
+  
+  console.log(object + " found a home");
   if (object !== "monster") {
   random = game.add.sprite(space.selectedSpace.x*C.bg.scale*C.bg.resize + game.bg.position.x,space.selectedSpace.y*C.bg.scale*C.bg.resize + game.bg.position.y,object); 
   } else {
@@ -1253,6 +1155,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
   if (object === "purplecircle") {
     random.scale.x = C.destroyed.scale;
     random.scale.y = C.destroyed.scale;
+    occupiedRows.push(space.key.substring(0,2));
   } else {
     random.scale.x = C.mech.scale;
     random.scale.y = C.mech.scale;
