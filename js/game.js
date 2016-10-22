@@ -821,7 +821,7 @@ function upgrade(upgrading) {
   if (this.yn) {
       confirmState = false;
       if (this.yn === "yes") {
-        if (this.boughtUpgrade.passive) {
+        if (this.boughtUpgrade && this.boughtUpgrade.passive) {
           this.boughtUpgrade.passive(lastClicked);
         }
         lastClicked.upgrades.push(this.boughtUpgrade.constructor.name);
