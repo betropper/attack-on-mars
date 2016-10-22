@@ -443,6 +443,8 @@ function setLastClicked(sprite) {
       mineButton.anchor.set(0.5);
       mineButton.inputEnabled = true;
       mineButton.battleButton = false;
+      mineButton.height = 42;
+      mineButton.width = 42;
       buttonsList.push(mineButton);
       mineButton.events.onInputDown.add(U.Mines.active, {player: lastClicked});
     } else if (normalState && lastClicked.canBuildMines) {
@@ -450,7 +452,7 @@ function setLastClicked(sprite) {
       mineButton.events.onInputDown._bindings = [];
       mineButton.events.onInputDown.add(U.Mines.active, {player: lastClicked});
       buttonsList.push(mineButton);
-    } else {
+    } else if (mineButton) {
       buttonsList.splice(mineButton, 1);
       mineButton.kill();
     }
@@ -798,6 +800,10 @@ function move(object,destination) {
   checkBattle(Space[object.key]);
   if (playersList.indexOf(object) > -1) {
     setLastClicked(object.sprite);
+  } else if (monstersList.indexOf(object) > -1 && Space[destination].mine) {
+    Space[destination].mine.destroy();
+    object.hp -= 1;
+    console.log("BOOM!");
   }
 }
 
@@ -814,9 +820,11 @@ function upgrade(upgrading) {
   var upgrading = this.upgrading || upgrading 
   if (this.yn) {
       confirmState = false;
-      if (this.yn = "yes") {
-        this.boughtUpgrade.passive(lastClicked);
-        lastClicked.upgrades.push(this.boughtUpgrade);
+      if (this.yn === "yes") {
+        if (this.boughtUpgrade.passive) {
+          this.boughtUpgrade.passive(lastClicked);
+        }
+        lastClicked.upgrades.push(this.boughtUpgrade.constructor.name);
         boughtBool = true;
       }
   }
@@ -878,7 +886,7 @@ function confirmUpgrade(player,upgradeName) {
       var yes = game.add.text(confirmText.x - 150, confirmText.y + 300, "Yes", C.game.textStyle);
       yes.anchor.setTo(.5,.5);
       yes.inputEnabled = true;
-      yes.events.onInputDown.add(upgrade, {upgrading: lastClicked, yn: "yes", boughtUpgrade: upgradeName});
+      yes.events.onInputDown.add(upgrade, {upgrading: lastClicked, yn: "yes", boughtUpgrade: U[upgradeName]});
       var no = game.add.text(confirmText.x + 150, confirmText.y + 300, "No", C.game.textStyle);
       no.anchor.setTo(.5,.5);
       no.inputEnabled = true;
@@ -907,6 +915,7 @@ function checkBattle(space) {
   scrubList(space.occupied);
   var pendingMonster = null;
   var pendingPlayer = null;
+
   if (space.occupied != false) {
     for (i = 0; i < space.occupied.length; i++) {
       if (space.occupied[i] && space.occupied[i].sprite.key.indexOf('monster') > -1) {
@@ -918,6 +927,7 @@ function checkBattle(space) {
     if (pendingPlayer === null || pendingMonster === null) {
       pendingMonster = null;
       pendingPlayer = null;
+
     } else {
       console.log("BATTLE with " + pendingPlayer.sprite.key + pendingMonster.sprite.key);
       if (pendingBattles.length > 0) {

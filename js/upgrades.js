@@ -10,11 +10,18 @@ var U = {
   "Mines": {
     "desc": "Allows player to set a mine that deals one damage to a single monster.",
     passive: function(player) { player.canBuildMines = true },
-    active: function(player) {
+    active: function() {
+      var player = this.player;
+      console.log(player);
       if (player.canBuildMines && !Space[player.key].mine) {
         var mine = game.add.sprite(changeValueScale(player.space.x), changeValueScale(player.space.y), "mine");
+        mine.anchor.setTo(.5);
+        mine.scale.setTo(C.mech.scale);
+        console.log(mine);
         Space[player.key].mine = mine;
         actionPoints -= 1;
+      } else {
+        console.log("Failed to build a mine.");
       }
     }
   }
