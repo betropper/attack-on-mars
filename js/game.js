@@ -189,6 +189,7 @@ class Setup {
       playersList[i] = spawnRandom(playerNames[i-1], i, "0", true); 
       playersList[i].sprite.number = i;
       playersList[i].upgrades = [];
+      playersList[i].colorDiscounts = [{color: "red", discount: 0 },{color: "blue", discount: 0},{color: "green", discount: 0},{color: "yellow",discount: 0},{color: "purple", discount: 0},{color: "black", discount: 0}]
       playersList[i].sprite.inputEnabled = true;
       playersList[i].sprite.input.enableDrag(true);
       playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
@@ -238,6 +239,7 @@ class Setup {
       game.camera.y = 0;
       if (upgradeState === true) {
         upgradeState = false;
+        game.input.onDown._bindings = [];  
         if (boughtBool === true) {
           actionPoints -= 1;
           boughtBool = false;
@@ -447,16 +449,16 @@ function setLastClicked(sprite) {
       upgradeButton.events.onInputDown.add(upgrade, {upgrading: lastClicked});
     }
 
-    if (!mineButton && normalState && lastClicked.canBuildMines) { 
-      mineButton = game.add.sprite(200, menuBar.y + 85, 'mine');
+    if (!mineButton && normalState && lastClicked.upgrades.indexOf("Mines") > -1) { 
+      mineButton = game.add.sprite(200, menuBar.y + 75, 'mine');
       mineButton.anchor.set(0.5);
       mineButton.inputEnabled = true;
       mineButton.battleButton = false;
-      mineButton.height = 42;
-      mineButton.width = 42;
+      mineButton.height = 80;
+      mineButton.width = 80;
       buttonsList.push(mineButton);
       mineButton.events.onInputDown.add(U.Mines.active, {player: lastClicked});
-    } else if (normalState && lastClicked.canBuildMines) {
+    } else if (normalState && lastClicked.upgrades.indexOf("Mines") > -1) {
       mineButton.reset(mineButton.x, mineButton.y);
       mineButton.events.onInputDown._bindings = [];
       mineButton.events.onInputDown.add(U.Mines.active, {player: lastClicked});
@@ -577,7 +579,7 @@ var buttonsList = [];
 function scrubList(list) {
   for (i = 0; i < list.length; i++) {
     if (!list[i] || list[i].hp && list[i].hp <= 0) {
-      list.splice(list[1],1);
+      list.splice(list[i],1);
     }
   }
 }
@@ -610,10 +612,10 @@ function checkAttack(sprite,pointer) {
 }
 
 function attack(attacker,defender) {
-  var bhits = rollDie(attacker.batk);                                                                                       
+  var bhits = rollDie(attacker.batk - (defender.batkDecrease || 0)); 
   var rhits = 0;
   if (attacker.ratk) {
-    rhits = rollDie(attacker.batk);                                                                                       
+    rhits = rollDie(attacker.ratk - (defender.ratkDecrease || 0));
   }
   var successes = rhits + bhits;
   console.log(attacker.sprite.key + " hit " +successes + " hit/hits!");
@@ -646,15 +648,16 @@ function attack(attacker,defender) {
     resultsList.push(battleResults);
     game.time.events.add(Phaser.Timer.SECOND * 2, killResults, this, battleResults);
   if (damaged && damaged.hp <= 0) {
+    battlePlayer.attacking = false;
     console.log("DED with " + damaged.hp);
     scrubList(globalList);
     if (damaged === battlePlayer) {
-      playersList[damaged.sprite.number] = damaged.number;
+      playersList[damaged.sprite.number] = damaged.sprite.number;
       removeFromList(playersList[damaged.sprite.number], focusSpace);
       damaged.sprite.destroy();
       var destroyedPlayers = 0;
       for (var i = 1; i <= playersList.length; i++) {
-        if (sprite.number.isInteger(playersList[i])) {
+        if (Number.isInteger(playersList[i])) {
           destroyedPlayers += 1;
         }
       }
@@ -680,8 +683,6 @@ function attack(attacker,defender) {
     for (i = 1; i < playersList.length; i++) {
       playersList[i].sprite.inputEnabled = true;
       playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
-      playersList
-    
     }
     if (pendingBattles.length > 0) {
       console.log("There are more battles.");
@@ -827,12 +828,25 @@ function repair() {
 
 function upgrade(upgrading) {
   var upgrading = this.upgrading || upgrading 
+  confirmState = false;
   if (this.yn) {
-      confirmState = false;
       var boughtUpgrade = U[this.boughtUpgrade];
-      if (this.yn === "yes") {
-        if (boughtUpgrade && boughtUpgrade.passive) {
-          boughtUpgrade.passive(lastClicked);
+      if (this.yn === "yes" && boughtUpgrade) {
+        if (boughtUpgrade.passive) {
+          boughtUpgrade.passive(upgrading);
+        }
+        if (boughtUpgrade.color) {
+            for (i = 0; i < upgrading.colorDiscounts.length; i++) {
+              if (upgrading.colorDiscounts[i].color === boughtUpgrade.color) {
+                upgrading.colorDiscounts[i].discount += 1;
+                var discountValue = upgrading.colorDiscounts[i].discount - 1;
+                break
+              }
+          }
+        }
+        if ((boughtUpgrade.cost - discountValue) > 0) {
+          upgrading.rp -= (boughtUpgrade.cost - discountValue);
+          console.log("cost was " + (boughtUpgrade.cost-discountValue));
         }
         lastClicked.upgrades.push(this.boughtUpgrade);
         boughtBool = true;
@@ -870,7 +884,7 @@ function chooseUpgrade(event) {
         "Bigger Fists","Weakpoint Analysis","Weaponized Research","Nullifier Shield","The Payload",
         "Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Gast",
         "More Armor","Field Repair","Even More Armor","Obliteration Ray","Super Go Fast",
-        "5d Accelerators","Autododge","Emergency Jump Jets","Fusion Cannon","Mind-Machine Interface",
+        "5D Accelerators","Autododge","Emergency Jump Jets","Fusion Cannon","Mind-Machine Interface",
         "Hyper Caffeine","Monster Bait","Chaos Systems","Fusion Cannon","Mind-Machine Interface"
       ]
       var x = event.worldX - x1,
@@ -929,9 +943,14 @@ function checkBattle(space) {
   if (space.occupied != false) {
     for (i = 0; i < space.occupied.length; i++) {
       if (space.occupied[i] && space.occupied[i].sprite.key.indexOf('monster') > -1) {
-          pendingMonster = space.occupied[i];
+          if (space.occupied[i].hp > 0) {
+            pendingMonster = space.occupied[i];
+          }
       } else if (space.occupied[i] && playerNames.indexOf(space.occupied[i].sprite.key) > -1) {
-        pendingPlayer = space.occupied[i];
+          if (space.occupied[i].hp > 0) {
+            pendingPlayer = space.occupied[i];
+          }
+      
       }
     }
     if (pendingPlayer === null || pendingMonster === null) {
@@ -973,6 +992,9 @@ function changeTurn() {
     } while (Number.isInteger(turn))
       console.log("Switching to this turn:");
       console.log(turn);
+      if (turn.rpPerTurn) {
+        turn.rp += turn.rpPerTurn;
+      }
     //if (turn.sprite.inputEnabled === false) {
     //}
 }
@@ -1181,6 +1203,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     random.scale.y = C.mech.scale;
   }
   random.smoothed = true;
+  random.prototype = Object.create(Phaser.Sprite.prototype);
   //random.scale.setTo(C.game.scaleRatio,C.game.scaleRatio)
   var obj =  {
     space: space.selectedSpace,
