@@ -58,6 +58,10 @@ var C = {
  "arrow": {
   "width": 512,
   "height": 512
+ },
+ "extras": {
+  "width": 72,
+  "height": 72
  }
 }
 var boughtBool;
@@ -152,7 +156,9 @@ class Load {
     this.load.image("menubar","assets/menubar.png",C.menuBar.width,C.menuBar.height);
     this.load.image("wrench","assets/wrench.png", C.wrench.width,C.wrench.height);
     this.load.image("arrow","assets/arrow.png", C.arrow.width,C.arrow.height);
-    this.load.image("mine","assets/Mines.png", 72,72);
+    this.load.image("mine","assets/Mines.png", C.extras.width,C.extras.height);
+    this.load.image("dropwall", "assets/DropWall.png", C.extras.width, C.extras.height);
+    this.load.image("obliterationray", "assets/ObliterationRay.png", C.extras.width, C.extras.height);
     game.load.bitmapFont('attackfont','assets/attackfont.png', 'assets/attackfont.fnt');
   }
   create() {
@@ -240,7 +246,7 @@ class Setup {
       game.camera.y = 0;
       if (upgradeState === true) {
         upgradeState = false;
-        game.input.onDown._bindings = [];  
+        game.input.onTap._bindings = [];  
         if (boughtBool === true) {
           actionPoints -= 1;
           boughtBool = false;
@@ -430,7 +436,7 @@ function setLastClicked(sprite) {
       upgradeText = game.add.text(950, menuBar.y, "Upgrade " + sprite.key, C.game.textStyle);
       upgradeText.anchor.set(0.5);
       upgradeText.inputEnabled = true;
-      upgradeText.events.onInputDown.add(upgrade, {upgrading: lastClicked});
+      upgradeText.events.onInputUp.add(upgrade, {upgrading: lastClicked});
       upgradeButton = game.add.sprite(upgradeText.x, upgradeText.y + 85, 'wrench');
       upgradeButton.anchor.set(0.5);
       upgradeButton.inputEnabled = true;
@@ -439,15 +445,15 @@ function setLastClicked(sprite) {
       upgradeButton.battleButton = false;
       buttonsList.push(upgradeButton);
       buttonsTextList.push(upgradeText);
-      upgradeButton.events.onInputDown.add(upgrade, {upgrading: lastClicked});
+      upgradeButton.events.onInputUp.add(upgrade, {upgrading: lastClicked});
     } else if (normalState) {
       upgradeText.reset(950, menuBar.y);
       upgradeText.setText("Upgrade " + sprite.key);
-      upgradeText.events.onInputDown._bindings = [];
-      upgradeText.events.onInputDown.add(upgrade, {upgrading: lastClicked});
+      upgradeText.events.onInputUp._bindings = [];
+      upgradeText.events.onInputUp.add(upgrade, {upgrading: lastClicked});
       upgradeButton.reset(upgradeText.x, upgradeText.y + 85);
-      upgradeButton.events.onInputDown._bindings = [];
-      upgradeButton.events.onInputDown.add(upgrade, {upgrading: lastClicked});
+      upgradeButton.events.onInputUp._bindings = [];
+      upgradeButton.events.onInputUp.add(upgrade, {upgrading: lastClicked});
     }
 
     if (!mineButton && normalState && lastClicked.upgrades.indexOf("Mines") > -1) { 
@@ -504,16 +510,6 @@ function setLastClicked(sprite) {
     }
   }
   
-}
-
-
-class Upgrade {
-  create() {
-    var returnText = game.add.text(game.world.centerX, game.world.centerY, 'Return to Game',C.game.textStyle);
-    returnText.anchor.set(0.5);
-    returnText.inputEnabled = true;
-    returnText.events.onInputDown.add(reloadGame,this);
-  }
 }
 
 function reloadGame() {
@@ -868,7 +864,7 @@ console.log(upgradeDescription);
     var upgradeDescription = game.add.text(game.world.centerX, game.world.centerY + 660 - game.height/2, "Click on an upgrade to see its details, scroll up to return to the game", C.game.textStyle);
     upgradeDescription.anchor.setTo(.5,.5);
   game.kineticScrolling.start();
-  game.input.onDown.add(chooseUpgrade, {menu: upgradeMenu});
+  game.input.onTap.add(chooseUpgrade, {menu: upgradeMenu});
   game.camera.y = 630;
   upgradeState = true;
 }
@@ -925,11 +921,11 @@ function confirmUpgrade(player,upgradeName) {
       var yes = game.add.text(confirmText.x - 150, priceText.y + 100, "Yes", C.game.ynStyle);
       yes.anchor.setTo(.5,.5);
       yes.inputEnabled = true;
-      yes.events.onInputDown.add(upgrade, {upgrading: lastClicked, yn: "yes", boughtUpgrade: upgradeName});
+      yes.events.onInputUp.add(upgrade, {upgrading: lastClicked, yn: "yes", boughtUpgrade: upgradeName});
       var no = game.add.text(confirmText.x + 150, priceText.y + 100, "No", C.game.ynStyle);
       no.anchor.setTo(.5,.5);
       no.inputEnabled = true;
-      no.events.onInputDown.add(upgrade, {upgrading: lastClicked, yn: "no"});
+      no.events.onInputUp.add(upgrade, {upgrading: lastClicked, yn: "no"});
 }
 
 
@@ -1328,7 +1324,6 @@ game.state.add("Boot",Boot);
 game.state.add("Load",Load);
 game.state.add("Setup",Setup);
 game.state.add("GameOver",GameOver);
-game.state.add("Upgrade",Upgrade);
 //game.state.add("Reload",Reload);
 game.state.start("Boot");
 
