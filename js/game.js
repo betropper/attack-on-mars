@@ -71,6 +71,7 @@ var confirmText;
 var attackText;
 var waitButton;
 var mineButton;
+var wallButton;
 var lastClicked;
 var repairText;
 var upgradeText;
@@ -456,6 +457,25 @@ function setLastClicked(sprite) {
       upgradeButton.events.onInputUp.add(upgrade, {upgrading: lastClicked});
     }
 
+    if (!wallButton && normalState && lastClicked.upgrades.indexOf("Drop Wall") > -1) { 
+      wallButton = game.add.sprite(300, menuBar.y + 77, 'dropwall');
+      wallButton.anchor.set(0.5);
+      wallButton.inputEnabled = true;
+      wallButton.battleButton = false;
+      wallButton.height = 80;
+      wallButton.width = 80;
+      buttonsList.push(wallButton);
+      wallButton.events.onInputDown.add(U["Drop Wall"].active, {player: lastClicked});
+    } else if (normalState && lastClicked.upgrades.indexOf("Drop Wall") > -1) {
+      wallButton.reset(wallButton.x, wallButton.y);
+      wallButton.events.onInputDown._bindings = [];
+      wallButton.events.onInputDown.add(U["Drop Wall"].active, {player: lastClicked});
+      buttonsList.push(wallButton);
+    } else if (wallButton) {
+      buttonsList.splice(wallButton, 1);
+      wallButton.kill();
+    }
+
     if (!mineButton && normalState && lastClicked.upgrades.indexOf("Mines") > -1) { 
       mineButton = game.add.sprite(200, menuBar.y + 77, 'mine');
       mineButton.anchor.set(0.5);
@@ -474,6 +494,7 @@ function setLastClicked(sprite) {
       buttonsList.splice(mineButton, 1);
       mineButton.kill();
     }
+
     /*
     if (arrows = []) {
       var directions = [{direction: "left", angle: 180},{direction: "up", angle: -90}, {direction: "inward", angle: 90}, {direction: "right", angle:0}];
@@ -766,24 +787,39 @@ function battle(player, monster) {
       for (var i = 0; i < monstersList.length ; i++) {
         monstersList[i].sprite.closestSpaces = getClosestSpaces(monstersList[i].key);
         var newDestination = monstersList[i].key.substring(0,2) + (parseInt(monstersList[i].key.charAt(2)) - 1);
-        if (parseInt(monstersList[i].key.charAt(2)) !== 0 && parseInt(newDestination.charAt(2)) === 0) {
-          if (Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined) {
-            console.log("U R DED"); 
+        if (Space[newDestination]) {
+          if (Space[newDestination].occupied) {
+            for (i = 0; i < Space[newDestination].occupied.length; i++) {
+              if (monstersList.indexOf(Space[newDestination].occupied[i]) > -1) {
+                var containsMonsters = true;
+              } else if (playersList.indexOf(Space[newDestination].occupied[i]) > -1) {
+                var containsPlayers = true;
+              }
+            }
+          }
+          
+          if (parseInt(monstersList[i].key.charAt(2)) !== 0 && parseInt(newDestination.charAt(2)) === 0) {
+            if (Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined) {
+              console.log("U R DED"); 
+              var destroyedCityColumn = spawnSpecific("purplecircle", newDestination);
+              destroyedCities.push(destroyedCityColumn);
+              occupiedRows.push(destroyedCityColumn.key.substring(0,2));
+            }
+          } else if (parseInt(monstersList[i].key.charAt(2)) === 0 )  {
+            newDestination = monstersList[i].sprite.closestSpaces.directions[1];
+            if (Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined) {
             var destroyedCityColumn = spawnSpecific("purplecircle", newDestination);
             destroyedCities.push(destroyedCityColumn);
             occupiedRows.push(destroyedCityColumn.key.substring(0,2));
+          } else if (containsMonsters) {
+            var newDestination = monstersList[i].key;
           }
-        } else if (parseInt(monstersList[i].key.charAt(2)) === 0 )  {
-          newDestination = monstersList[i].sprite.closestSpaces.directions[1];
-          if (Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined) {
-          var destroyedCityColumn = spawnSpecific("purplecircle", newDestination);
-          destroyedCities.push(destroyedCityColumn);
-          occupiedRows.push(destroyedCityColumn.key.substring(0,2));
-        } else {
         }
+        console.log("Monster is moving to " + newDestination);
+        move(monstersList[i], newDestination);
+      } else {
+        console.log("Broken destination was " + newDestination);
       }
-      console.log("Monster is moving to " + newDestination);
-      move(monstersList[i], newDestination);
     }
     if (destroyedCities.length >= (playerCount * 4) - 4){
       game.state.start("GameOver");
@@ -797,6 +833,20 @@ function battle(player, monster) {
 
 function move(object,destination) {
   console.log(object);
+  if (playersList.indexOf(object) > -1) {
+    setLastClicked(object.sprite);
+  } else if (monstersList.indexOf(object) > -1) {
+    if (Space[destination].wall) {
+      Space[destination].wall.destroy();
+      Space[destination].wall = false;
+      return
+    } else if (Space[destination].mine) {
+      Space[destination].mine.destroy();
+      Space[destination].mine = false;
+      object.hp -= 1;
+      console.log("BOOM!");
+    }
+  }
   object.sprite.x = Space[destination].x*C.bg.scale*C.bg.resize + game.bg.position.x;
   object.sprite.y = Space[destination].y*C.bg.scale*C.bg.resize + game.bg.position.y;
   removeFromList(object, Space[object.key]);
@@ -806,13 +856,7 @@ function move(object,destination) {
   addToOccupied(object, Space[destination]);
   game.world.bringToTop(object.sprite);
   checkBattle(Space[object.key]);
-  if (playersList.indexOf(object) > -1) {
-    setLastClicked(object.sprite);
-  } else if (monstersList.indexOf(object) > -1 && Space[destination].mine) {
-    Space[destination].mine.destroy();
-    object.hp -= 1;
-    console.log("BOOM!");
-  }
+
 }
 
 function repair() {

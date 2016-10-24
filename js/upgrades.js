@@ -77,6 +77,26 @@ var U = {
         player.batkDecrease = 1;
       }
     }
+  },
+  "Drop Wall": {
+    "desc": "Allows player to drop a wall on a space that a monster must destroy before moving to.",
+    "color": "purple",
+    "cost": 2,
+    passive: function(player) { },
+    active: function() {
+      var player = this.player;
+      console.log(player);
+      if (player.upgrades.indexOf("Drop Wall") > -1 && !Space[player.key].wall) {
+        var wall = game.add.sprite(changeValueScale(player.space.x), changeValueScale(player.space.y), "dropwall");
+        wall.anchor.setTo(.5);
+        wall.scale.setTo(.6);
+        Space[player.key].wall = wall;
+        actionPoints -= 1;
+      } else {
+        console.log("Failed to build a wall.");
+      }
+    }
+
   }
 
 
