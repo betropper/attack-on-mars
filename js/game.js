@@ -111,7 +111,8 @@ var resultsList = [];
 var buttonsList = [];
 var buttonsTextList = [];
 var priceText;
-//CHANGE THE CAMERA BOUNDS SO YOU CAN CHANGE EVERYTHING ELSE AHHHH
+var jaja = null;
+var donovank = "White";
 
 class Boot {
   init() {
@@ -179,6 +180,7 @@ class Setup {
     }   
   
     playerCount = parseInt(prompt("How many will be playing?", "2")) || null;
+    game.stage.smoothed = false;
     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
     game.camera.bounds = null;
     console.log("Placing Board");
@@ -429,7 +431,7 @@ function setLastClicked(sprite) {
       repairButton.events.onInputDown.add(repair, {repairing: lastClicked});
     } else if (repairText) {
       repairText.kill();
-      buttonsList.splice(repairButton, 1);
+      //buttonsList.splice(repairButton, 1);
       repairButton.kill();
     }
     
@@ -453,6 +455,7 @@ function setLastClicked(sprite) {
       upgradeText.events.onInputUp._bindings = [];
       upgradeText.events.onInputUp.add(upgrade, {upgrading: lastClicked});
       upgradeButton.reset(upgradeText.x, upgradeText.y + 85);
+      game.world.bringToTop(upgradeButton);
       upgradeButton.events.onInputUp._bindings = [];
       upgradeButton.events.onInputUp.add(upgrade, {upgrading: lastClicked});
     }
@@ -470,9 +473,9 @@ function setLastClicked(sprite) {
       wallButton.reset(wallButton.x, wallButton.y);
       wallButton.events.onInputDown._bindings = [];
       wallButton.events.onInputDown.add(U["Drop Wall"].active, {player: lastClicked});
-      buttonsList.push(wallButton);
+      //buttonsList.push(wallButton);
     } else if (wallButton) {
-      buttonsList.splice(wallButton, 1);
+      //buttonsList.splice(wallButton, 1);
       wallButton.kill();
     }
 
@@ -489,9 +492,9 @@ function setLastClicked(sprite) {
       mineButton.reset(mineButton.x, mineButton.y);
       mineButton.events.onInputDown._bindings = [];
       mineButton.events.onInputDown.add(U.Mines.active, {player: lastClicked});
-      buttonsList.push(mineButton);
+      //buttonsList.push(mineButton);
     } else if (mineButton) {
-      buttonsList.splice(mineButton, 1);
+      //buttonsList.splice(mineButton, 1);
       mineButton.kill();
     }
 
@@ -521,12 +524,12 @@ function setLastClicked(sprite) {
   } else if (sprite.key === "monster") {
     if (repairText) {
       repairText.kill();
-      buttonsList.splice(repairButton, 1);
+      //buttonsList.splice(repairButton, 1);
       repairButton.kill();
     }
     if (upgradeText) {
       upgradeText.kill();
-      buttonsList.splice(upgradeButton, 1);
+      //buttonsList.splice(upgradeButton, 1);
       upgradeButton.kill();
     }
   }
@@ -635,7 +638,7 @@ function attack(attacker,defender) {
   if (attacker.ratk) {
     rhits = rollDie(attacker.ratk - (defender.ratkDecrease || 0));
   }
-  var successes = rhits + bhits;
+  var successes = rhits + bhits - (defender.guarenteedDef || 0);
   console.log(attacker.sprite.key + " hit " +successes + " hit/hits!");
   var defences = rollDie(defender.def);
   console.log(defender.sprite.key + " defended " + defences + " hit/hits!");
@@ -780,7 +783,10 @@ function battle(player, monster) {
   }
 
   function waitOneAction() {
-    actionPoints -= 1;  
+    actionPoints -= 1;
+    if (lastClicked && lastClicked.canRepair) {
+      repair(lastClicked); 
+    }
   }
 
   function moveMonsters() {
@@ -859,9 +865,10 @@ function move(object,destination) {
 
 }
 
-function repair() {
-  if (this.repairing.hp < this.repairing.maxhp) {
-    this.repairing.hp = this.repairing.maxhp;
+function repair(repairing) {
+  var repairing = repairing || repairing;
+  if (repairing.hp < repairing.maxhp) {
+    repairing.hp = repairing.maxhp;
     actionPoints -= 1;
     repairText.kill();
     repairButton.kill();
@@ -943,13 +950,13 @@ function confirmUpgrade(player,upgradeName) {
       game.kineticScrolling.stop();
       confirmState = true;
       game.camera.y = 1500 + game.height;
+      var consideredUpgrade = U[upgradeName];
       if (confirmText) {
-        confirmText.setText("Are you sure you would like to purchase " + upgradeName + " on " + lastClicked.sprite.key +"?");
+        confirmText.setText("Are you sure you would like to purchase " + upgradeName + " on " + lastClicked.sprite.key +"?\n\n" + consideredUpgrade.desc);
       } else {
-        confirmText = game.add.text(game.camera.x + game.camera.width/2,game.camera.y + game.camera.height/2 - 230,"Are you sure you would like to purchase " + upgradeName + " on " + lastClicked.sprite.key +"?", C.game.textStyle);
+        confirmText = game.add.text(game.camera.x + game.camera.width/2,game.camera.y + game.camera.height/2 - 230,"Are you sure you would like to purchase " + upgradeName + " on " + lastClicked.sprite.key +"?\n\n" + consideredUpgrade.desc, C.game.textStyle);
         confirmText.anchor.setTo(.5,.5);
       }
-      var consideredUpgrade = U[upgradeName];
       for (i = 0; i < player.colorDiscounts.length; i++) {
         if (player.colorDiscounts[i].color === consideredUpgrade.color) {
           var discountValue = player.colorDiscounts[i].discount;
