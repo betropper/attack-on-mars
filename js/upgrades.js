@@ -95,6 +95,7 @@ var U = {
       } else {
         console.log("Failed to build a wall.");
       }
+    }
     },
     "Field Repair": {
       "desc": "Gain the ability to spend one action to repair one point of damage.\nHit the wait button after selecting this mech to activate.",
@@ -108,16 +109,19 @@ var U = {
     "desc": "Decreases target number of green die by one.",
     "color": "green",
     "cost": 2,
-    passive: function(player) { }
-      if (player.guarenteedDef) {
-        player.guarenteedDef += 1 
-      } else {
-        player.guarenteedDef = 1;
+    passive: function(player) { 
+        if (player.guarenteedDef) {
+          player.guarenteedDef += 1 
+        }   else {
+          player.guarenteedDef = 1;
+        }
       }
+    },
+    "Monster Bait": {
+    "desc": "Player attracts monsters from two spaces away instead of one.",
+    "color": "black",
+    "cost": 2,
+    passive: function(player) { }
     }
-
-  }
-
-
 
 }

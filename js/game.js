@@ -637,8 +637,11 @@ function attack(attacker,defender) {
   var rhits = 0;
   if (attacker.ratk) {
     rhits = rollDie(attacker.ratk - (defender.ratkDecrease || 0));
+  } 
+  var successes = rhits + bhits;
+  if (defender.guarenteedDef && successes > 0) {
+    successes -= defender.guarenteedDef;
   }
-  var successes = rhits + bhits - (defender.guarenteedDef || 0);
   console.log(attacker.sprite.key + " hit " +successes + " hit/hits!");
   var defences = rollDie(defender.def);
   console.log(defender.sprite.key + " defended " + defences + " hit/hits!");
@@ -791,14 +794,42 @@ function battle(player, monster) {
 
   function moveMonsters() {
       for (var i = 0; i < monstersList.length ; i++) {
-        monstersList[i].sprite.closestSpaces = getClosestSpaces(monstersList[i].key);
         var newDestination = monstersList[i].key.substring(0,2) + (parseInt(monstersList[i].key.charAt(2)) - 1);
+        monstersList[i].sprite.closestSpaces = getClosestSpaces(monstersList[i].key);
+        var twoAwayList = [];
+        for (m = 0; m < monstersList[i].sprite.closestSpaces.keys.length; m++) {
+            //monstersList[i].sprite.closestSpaces.selectedSpaces[m].closestSpaces = getClosestSpaces(monstersList[i].sprite.closestSpaces.keys[m]) 
+            var checkKeys = getClosestSpaces(monstersList[i].sprite.closestSpaces.keys[m]).keys;
+            for (l = 0; l < checkKeys.length; l++) {
+              checkKeys[l] = {key: checkKeys[l], parent: monstersList[i].sprite.closestSpaces.keys[m]}
+              twoAwayList.push(checkKeys[l]);
+            }
+          }
+        console.log(twoAwayList);
+        for (m = 0; m < twoAwayList.length; m++) {
+          if (Space[twoAwayList[m].key].occupied) {
+            for (l = 0; l < Space[twoAwayList[m].key].occupied.length; l++) {
+              if (playersList.indexOf(Space[twoAwayList[m].key].occupied[l]) > -1 && Space[twoAwayList[m].key].occupied[l].upgrades.indexOf("Monster Bait") > -1) {
+                var newDestination = twoAwayList[m].parent;
+              }
+            }
+          }
+        }
+        for (y = 0; y < monstersList[i].sprite.closestSpaces.selectedSpaces.length; y++) {
+          for (o = 0; o < monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied.length; o++) {
+            if (playersList.indexOf(monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied[o]) > -1) {
+              var newDestination = monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied[o].key;
+              console.log("Moving to player at " + newDestination);
+            }
+          }
+        }
+          
         if (Space[newDestination]) {
           if (Space[newDestination].occupied) {
-            for (i = 0; i < Space[newDestination].occupied.length; i++) {
-              if (monstersList.indexOf(Space[newDestination].occupied[i]) > -1) {
+            for (x = 0; x < Space[newDestination].occupied.length; x++) {
+              if (monstersList.indexOf(Space[newDestination].occupied[x]) > -1) {
                 var containsMonsters = true;
-              } else if (playersList.indexOf(Space[newDestination].occupied[i]) > -1) {
+              } else if (playersList.indexOf(Space[newDestination].occupied[x]) > -1) {
                 var containsPlayers = true;
               }
             }
@@ -817,7 +848,8 @@ function battle(player, monster) {
             var destroyedCityColumn = spawnSpecific("purplecircle", newDestination);
             destroyedCities.push(destroyedCityColumn);
             occupiedRows.push(destroyedCityColumn.key.substring(0,2));
-          } else if (containsMonsters) {
+          } 
+          if (containsMonsters && !containsPlayers) {
             var newDestination = monstersList[i].key;
           }
         }
