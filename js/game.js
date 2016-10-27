@@ -1,6 +1,6 @@
 var C = {
  "game": {
-   "zoomScale": 4,
+   "zoomScale": 3,
    "width": 2400,
    "height": 1280,
    "textStyle": {
@@ -30,15 +30,17 @@ var C = {
  "bg": {
    "width": 3300,
    "height": 2787,
-   "resizeX": C.bg.width/5574,
-   "resizeY" C.bg.height/5574:
-   "scale": .8,
+   "resizeX": 3300/5574,
+   "resizeY": 2787/5574,
+   "scale": .5,
    "file": "assets/gameboard.jpg"
  },
  "mech": {
    "width": 72,
    "height": 72,
-   "scale": 1
+   "scale": 1,
+   "battleSpacing": 100,
+   "battleSpeed": 1
  },
  "destroyed": {
    "scale": .55
@@ -273,17 +275,17 @@ class Setup {
     }
 
     if (focusSpace && focusSpace.x) {
-      var xPivot = changeValueScale(focusSpace.x) * 4 - game.camera.view.halfWidth;
-      var yPivot = changeValueScale(focusSpace.y) * 4 - game.camera.view.halfHeight; 
-      var xMenu = changeValueScale(focusSpace.x); 
-      var yMenu = changeValueScale(focusSpace.y);
+      var xPivot = focusSpace.x * C.game.zoomScale - game.camera.view.halfWidth;
+      var yPivot = focusSpace.y * C.game.zoomScale - game.camera.view.halfHeight; 
+      var xMenu = focusSpace.x; 
+      var yMenu = focusSpace.y;
     }
     
     var cursors = game.input.keyboard.createCursorKeys();
-    if (cursors.up.isDown) {
+    /*if (cursors.up.isDown) {
       game.camera.y -= 4;
       console.log(game.camera.y);
-    }
+    }*/
 
      if (zoomIn === true) {
        for (i = 0; i < buttonsTextList.length; i++) {
@@ -294,17 +296,17 @@ class Setup {
             playersList[i].sprite.inputEnabled = false;
           }
         }
-        worldScale += 0.03;
+        worldScale += 0.04;
         console.log("Tick.");
         menuBar.width = C.menuBar.width / worldScale;
         menuBar.height = C.menuBar.height / worldScale;
-        menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/4, C.menuBar.width);
-        menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/4, C.menuBar.height);
+        menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/C.game.zoomScale, C.menuBar.width);
+        menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/C.game.zoomScale, C.menuBar.height);
         game.world.bringToTop(menuBar);
         if (yPivot < 0) {
           yPivot = 0
         }
-        if (Math.floor(worldScale) === 4 && Math.floor(yPivot) === game.camera.y && Math.floor(xPivot) === game.camera.x) {
+        if (Math.floor(worldScale) === C.game.zoomScale && Math.floor(yPivot) === game.camera.y && Math.floor(xPivot) === game.camera.x) {
           zoomIn = false;
           console.log("Done zooming");
         }
@@ -321,11 +323,11 @@ class Setup {
        //console.log("x is " + xPivot);
        //console.log("y is " + yPivot);
     } else if (zoomOut === true) {
-        worldScale -= 0.03;
+        worldScale -= 0.04;
         menuBar.width = C.menuBar.width / worldScale;
         menuBar.height = C.menuBar.height / worldScale;
-        menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/4, C.menuBar.width);
-        menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/4, C.menuBar.height);
+        menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/C.game.zoomScale, C.menuBar.width);
+        menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/C.game.zoomScale, C.menuBar.height);
         game.world.bringToTop(menuBar);
         if (game.camera.x > 0 || game.camera.y > 0) {
           if (focusSpace.increment.x > 0) {
@@ -353,10 +355,10 @@ class Setup {
             }
         }
     } if (battleStarting) {
-      var lookAt = focusSpace.x * C.bg.scale*C.bg.resizeX + game.bg.position.x;
-      battlePlayer.sprite.x = Phaser.Math.clamp(battlePlayer.sprite.x + .2, 0, lookAt + 30);
-      battleMonster.sprite.x = Phaser.Math.clamp(battleMonster.sprite.x - .2, lookAt - 30, 3000);
-      if (battlePlayer.sprite.x === lookAt + 30 && battleMonster.sprite.x - 35 && zoomIn === false) {
+      var lookAt = focusSpace.x; 
+      battlePlayer.sprite.x = Phaser.Math.clamp(battlePlayer.sprite.x + C.mech.battleSpeed, 0, lookAt + C.mech.battleSpacing);
+      battleMonster.sprite.x = Phaser.Math.clamp(battleMonster.sprite.x - C.mech.battleSpeed, lookAt - C.mech.battleSpacing, 3000);
+      if (battlePlayer.sprite.x === lookAt + C.mech.battleSpacing && battleMonster.sprite.x - 35 && zoomIn === false) {
         battleTurn = battlePlayer;
         attackText = game.add.bitmapText(menuBar.x + 30, menuBar.y + 20, 'attackfont', "Attack!", 10);
         attackText.anchor.set(0.5);
@@ -630,14 +632,14 @@ function attachToCamera(obj) {
     }
 
 function findIncrementsTo(space) {
-    space.increment = {x: (changeValueScale(space.x) * 4 - game.camera.view.halfWidth) / 101, y: (changeValueScale(space.y) * 4 - game.camera.view.halfHeight) / 101};
+    space.increment = {x: (space.x * 6 - game.camera.view.halfWidth) / 110, y: (space.y * 6 - game.camera.view.halfHeight) / 110};
 }
 
 function changeValueScale(value,xory) {
   if (xory === "x") {
     return value * C.bg.scale*C.bg.resizeX + game.bg.position.x; 
   } else if (xory === "y") {
-    return value * C.bg.scale*C.bg.resizeY + game.bg.position.x; 
+    return value * C.bg.scale*C.bg.resizeY + game.bg.position.y; 
   }
 }
 
@@ -646,8 +648,8 @@ function checkAttack(sprite,pointer) {
     attack(battlePlayer,battleMonster)
   }
   if (battleState === true) {
-    sprite.x = changeValueScale(focusSpace.x) + 30;
-    sprite.y = changeValueScale(focusSpace.y);
+    sprite.x = focusSpace.x + C.mech.battleSpacing;
+    sprite.y = focusSpace.y;
   }
 }
 
@@ -686,9 +688,9 @@ function attack(attacker,defender) {
     var text = defender.sprite.key + " blocked every hit from " + attacker.sprite.key + "!";
   }
     if (resultsList.length > 0) {
-      var battleResults = game.add.bitmapText(Math.round(changeValueScale(focusSpace.x)),Math.round(resultsList[resultsList.length - 1].y + 25), 'attackfont', text, 10);
+      var battleResults = game.add.bitmapText(Math.round(focusSpace.x),Math.round(resultsList[resultsList.length - 1].y + 25), 'attackfont', text, 10);
     } else { 
-      var battleResults = game.add.bitmapText(Math.round(changeValueScale(focusSpace.x)),Math.round(changeValueScale(focusSpace.y)) - 80, 'attackfont', text, 10);
+      var battleResults = game.add.bitmapText(Math.round(focusSpace.x),Math.round(focusSpace.y) - 80, 'attackfont', text, 10);
     }
     battleResults.anchor.x = .5;
     battleResults.anchor.y = .5;
@@ -729,9 +731,9 @@ function attack(attacker,defender) {
       damaged.sprite.destroy();
       battlePlayer.sprite.events.onDragStop._bindings = [];
       battlePlayer.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
-      battlePlayer.sprite.x = changeValueScale(focusSpace.x);
+      battlePlayer.sprite.x = focusSpace.x;
 
-      console.log("Monster died, moving back to position " + changeValueScale(focusSpace.x) );
+      console.log("Monster died, moving back to position " + focusSpace.x );
     }
     pendingBattles.splice(0,1);
     if (focusSpace.occupied && focusSpace.occupied !== false) {
@@ -746,6 +748,8 @@ function attack(attacker,defender) {
       battleMonster = pendingBattles[0].pendingMonster;
       battlePlayer = pendingBattles[0].pendingPlayer;
       focusSpace = pendingBattles[0].space;
+      focusSpace.x = changeValueScale(focusSpace.x,"x");
+      focusSpace.y = changeValueScale(focusSpace.y,"y");
       findIncrementsTo(focusSpace);
       zoomIn = true;
       battleState = false;
@@ -789,11 +793,11 @@ function battle(player, monster) {
         battlePlayer.sprite.events.onDragStop._bindings = [];
         battlePlayer.sprite.inputEnabled = false;
       }
-      battleMonster.sprite.x += .3;
-      if (battleMonster.sprite.x >= changeValueScale(focusSpace.x)) {
+      battleMonster.sprite.x += C.mech.battleSpeed + .2;
+      if (battleMonster.sprite.x >= focusSpace.x) {
         attack(battleMonster,battlePlayer);
         if (battleState === true) {
-          battleMonster.sprite.x = battlePlayer.sprite.x - 60;
+          battleMonster.sprite.x = focusSpace.x - C.mech.battleSpacing;
           for (i = 0; i < battleTexts.length; i++) {
             battleTexts[i].reset(battleTexts[i].x, battleTexts[i].y);
           }
@@ -810,11 +814,11 @@ function battle(player, monster) {
         battlePlayer.sprite.inputEnabled = false;
       }
 
-      battlePlayer.sprite.x -= .3;
-      if (battlePlayer.sprite.x <= changeValueScale(focusSpace.x)) {
+      battlePlayer.sprite.x -= C.mech.battleSpeed + .2;
+      if (battlePlayer.sprite.x <= focusSpace.x) {
         attack(battlePlayer,battleMonster);
         if (battleState === true) {
-          battlePlayer.sprite.x = changeValueScale(focusSpace.x) + 30;
+          battlePlayer.sprite.x = focusSpace.x + C.mech.battleSpacing;
           for (i = 0; i < battleTexts.length; i++) {
             battleTexts[i].reset(battleTexts[i].x, battleTexts[i].y);
           }
@@ -1103,6 +1107,8 @@ function checkBattle(space) {
         battlePlayer = pendingPlayer;
         battleMonster = pendingMonster;
         focusSpace = space;
+        focusSpace.x = changeValueScale(focusSpace.x,"x");
+        focusSpace.y = changeValueScale(focusSpace.y,"y");
         findIncrementsTo(focusSpace);
         zoomIn = true;
         battleStarting = true;
