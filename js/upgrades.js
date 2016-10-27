@@ -122,6 +122,13 @@ var U = {
     "color": "black",
     "cost": 2,
     passive: function(player) { }
-    }
+    },
+    
+    "Siege Mode": {
+      "desc": "Once per round, while attacking, you can spend one green (defence) die to get one guarenteed hit.",
+      "color": "red",
+      "cost": 3,
+      passive: function(player) { player.canSiege = true; }
 
+    }
 }

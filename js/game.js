@@ -68,7 +68,9 @@ var boughtBool;
 var upgradeState;
 var confirmState;
 var confirmText;
+var battleTexts = [];
 var attackText;
+var siegeText;
 var waitButton;
 var mineButton;
 var wallButton;
@@ -358,6 +360,14 @@ class Setup {
         attackText.anchor.set(0.5);
         attackText.inputEnabled = true;
         attackText.events.onInputDown.add(queAttack, {attacker: battlePlayer});
+        battleTexts.push(attackText);
+        if (battlePlayer.canSiege) {
+          siegeText = game.add.bitmapText(battleTexts[battleTexts.length - 1].x + 60, menuBar.y + 20, 'attackfont', "Siege Mode", 10);
+          siegeText.anchor.set(0.5);
+          siegeText.inputEnabled = true;
+          siegeText.events.onInputDown.add(queAttack, {attacker: battlePlayer, modifier: "Siege Mode"});
+          battleTexts.push(siegeText);
+        }
         battlePlayer.sprite.events.onDragStop._bindings = [];
         battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
         battleStarting = false;
@@ -400,6 +410,9 @@ class Setup {
 function queAttack() {
   if (battleTurn === this.attacker) {
     this.attacker.attacking = true;
+    if (this.modifier && this.modifier === "Siege Mode") {
+      this.attacker.siegeMode = true;
+    }
   }
 }
 
@@ -639,6 +652,11 @@ function attack(attacker,defender) {
     rhits = rollDie(attacker.ratk - (defender.ratkDecrease || 0));
   } 
   var successes = rhits + bhits;
+  if (attacker.siegeMode) {
+    successes += 1;
+    attacker.def -= 1;
+    attacker.canSiege = false;
+  }
   if (defender.guarenteedDef && successes > 0) {
     successes -= defender.guarenteedDef;
   }
@@ -675,7 +693,14 @@ function attack(attacker,defender) {
     battlePlayer.attacking = false;
     console.log("DED with " + damaged.hp);
     scrubList(globalList);
-    attackText.kill();
+    if (attacker.siegeMode) {
+      attacker.siegeMode = false;
+      attacker.def += 1;
+    }
+    for (i = 0; i < battleTexts.length; i++) {
+      battleTexts[i].kill();
+      battleTexts.splice(battleTexts[i],1);
+    }
     if (damaged === battlePlayer) {
       playersList[damaged.sprite.number] = damaged.sprite.number;
       removeFromList(playersList[damaged.sprite.number], focusSpace);
@@ -699,6 +724,7 @@ function attack(attacker,defender) {
       battlePlayer.sprite.events.onDragStop._bindings = [];
       battlePlayer.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
       battlePlayer.sprite.x = changeValueScale(focusSpace.x);
+
       console.log("Monster died, moving back to position " + changeValueScale(focusSpace.x) );
     }
     pendingBattles.splice(0,1);
@@ -728,6 +754,7 @@ function attack(attacker,defender) {
     battleTurn = defender;
   }
 
+
 }
 function killResults(results) {
   results.destroy();
@@ -750,7 +777,9 @@ function battle(player, monster) {
   //Simple Placeholder battle
     if (battleTurn === battleMonster && battleMonster.sprite) {
       if (attackText) {
-        attackText.kill();
+        for (i = 0; i < battleTexts.length; i++) {
+          battleTexts[i].kill();
+        }
         battlePlayer.sprite.events.onDragStop._bindings = [];
         battlePlayer.sprite.inputEnabled = false;
       }
@@ -759,14 +788,18 @@ function battle(player, monster) {
         attack(battleMonster,battlePlayer);
         if (battleState === true) {
           battleMonster.sprite.x = battlePlayer.sprite.x - 60;
-          attackText.reset(menuBar.x + 20, menuBar.y + 20);
+          for (i = 0; i < battleTexts.length; i++) {
+            battleTexts[i].reset(battleTexts[i].x, battleTexts[i].y);
+          }
           battlePlayer.sprite.inputEnabled = true;
           battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
         }
       }
     } else if (battleTurn === battlePlayer && battlePlayer.attacking === true) {
       if (attackText) {
-        attackText.kill();
+        for (i = 0; i < battleTexts.length; i++) {
+          battleTexts[i].kill();
+        }
         battlePlayer.sprite.events.onDragStop._bindings = [];
         battlePlayer.sprite.inputEnabled = false;
       }
@@ -776,7 +809,9 @@ function battle(player, monster) {
         attack(battlePlayer,battleMonster);
         if (battleState === true) {
           battlePlayer.sprite.x = changeValueScale(focusSpace.x) + 30;
-          attackText.reset(menuBar.x + 20, menuBar.y + 15);
+          for (i = 0; i < battleTexts.length; i++) {
+            battleTexts[i].reset(battleTexts[i].x, battleTexts[i].y);
+          }
           battlePlayer.sprite.inputEnabled = true;
           battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
           battlePlayer.attacking = false;
@@ -1077,7 +1112,11 @@ function changeTurn() {
       if (turn && turn.sprite.number && turn.number < playerCount) {
         turn = playersList[turn.sprite.number + 1];
       } else if (turn && turn.sprite.number && turn.number <= playerCount || Number.isInteger(turn) && turn === playerCount) {
-
+        for (i = 1; i < playersList.length; i++) {
+          if (playersList[i].upgrades.indexOf("Siege Mode") && playersList[i].canSiege === false) {
+            playersList[i].canSiege = true;
+          }
+        }
         turn = playersList[1];
       } else if (Number.isInteger(turn)) {
         turn += 1;
