@@ -1,5 +1,6 @@
 var C = {
  "game": {
+   "zoomScale": 4,
    "width": 2400,
    "height": 1280,
    "textStyle": {
@@ -27,11 +28,11 @@ var C = {
    "scaleRatio": window.devicePixelRatio / 3
  },
  "bg": {
-   "resize": .25,
-   "width": 1343,
-   "height": 1343,
-   "scale": .8,
-   "file": "assets/gameboard.png"
+   "resize": 1,
+   "width": 5574,
+   "height": 5574,
+   "scale": .5,
+   "file": "assets/gameboard.jpg"
  },
  "mech": {
    "width": 72,
