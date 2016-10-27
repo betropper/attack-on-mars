@@ -28,10 +28,11 @@ var C = {
    "scaleRatio": window.devicePixelRatio / 3
  },
  "bg": {
-   "resize": 1,
-   "width": 5574,
-   "height": 5574,
-   "scale": .5,
+   "width": 3300,
+   "height": 2787,
+   "resizeX": C.bg.width/5574,
+   "resizeY" C.bg.height/5574:
+   "scale": .8,
    "file": "assets/gameboard.jpg"
  },
  "mech": {
@@ -352,7 +353,7 @@ class Setup {
             }
         }
     } if (battleStarting) {
-      var lookAt = focusSpace.x * C.bg.scale*C.bg.resize + game.bg.position.x;
+      var lookAt = focusSpace.x * C.bg.scale*C.bg.resizeX + game.bg.position.x;
       battlePlayer.sprite.x = Phaser.Math.clamp(battlePlayer.sprite.x + .2, 0, lookAt + 30);
       battleMonster.sprite.x = Phaser.Math.clamp(battleMonster.sprite.x - .2, lookAt - 30, 3000);
       if (battlePlayer.sprite.x === lookAt + 30 && battleMonster.sprite.x - 35 && zoomIn === false) {
@@ -632,8 +633,12 @@ function findIncrementsTo(space) {
     space.increment = {x: (changeValueScale(space.x) * 4 - game.camera.view.halfWidth) / 101, y: (changeValueScale(space.y) * 4 - game.camera.view.halfHeight) / 101};
 }
 
-function changeValueScale(value) {
-  return value * C.bg.scale*C.bg.resize + game.bg.position.x; 
+function changeValueScale(value,xory) {
+  if (xory === "x") {
+    return value * C.bg.scale*C.bg.resizeX + game.bg.position.x; 
+  } else if (xory === "y") {
+    return value * C.bg.scale*C.bg.resizeY + game.bg.position.x; 
+  }
 }
 
 function checkAttack(sprite,pointer) {
@@ -923,8 +928,8 @@ function move(object,destination) {
       console.log("BOOM!");
     }
   }
-  object.sprite.x = Space[destination].x*C.bg.scale*C.bg.resize + game.bg.position.x;
-  object.sprite.y = Space[destination].y*C.bg.scale*C.bg.resize + game.bg.position.y;
+  object.sprite.x = Space[destination].x*C.bg.scale*C.bg.resizeX + game.bg.position.x;
+  object.sprite.y = Space[destination].y*C.bg.scale*C.bg.resizeY + game.bg.position.y;
   removeFromList(object, Space[object.key]);
   object.key = destination;
   object.sprite.closestSpaces = getClosestSpaces(object.key);
@@ -1154,8 +1159,8 @@ function attachClosestSpace(sprite,pointer) {
       console.log(closestSpaces);
     }
     for (i = 0; i < closestSpaces.selectedSpaces.length; i++) {
-        var spaceObjX = closestSpaces.selectedSpaces[i].x*C.bg.scale*C.bg.resize + game.bg.position.x;
-        var spaceObjY = closestSpaces.selectedSpaces[i].y*C.bg.scale*C.bg.resize + game.bg.position.y;
+        var spaceObjX = closestSpaces.selectedSpaces[i].x*C.bg.scale*C.bg.resizeX + game.bg.position.x;
+        var spaceObjY = closestSpaces.selectedSpaces[i].y*C.bg.scale*C.bg.resizeY + game.bg.position.y;
         if (distance(spaceObjX,spaceObjY,sprite.x,sprite.y) < closestDistance) {
           closest = closestSpaces.selectedSpaces[i];
           closestDistance = distance(spaceObjX,spaceObjY,sprite.x,sprite.y);
@@ -1316,14 +1321,14 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
   
   console.log(object + " found a home");
   if (object !== "monster") {
-  random = game.add.sprite(space.selectedSpace.x*C.bg.scale*C.bg.resize + game.bg.position.x,space.selectedSpace.y*C.bg.scale*C.bg.resize + game.bg.position.y,object); 
+  random = game.add.sprite(space.selectedSpace.x*C.bg.scale*C.bg.resizeX + game.bg.position.x,space.selectedSpace.y*C.bg.scale*C.bg.resizeY + game.bg.position.y,object); 
   } else {
     if (threatLevel <= 12) {
-  random = game.add.sprite(space.selectedSpace.x*C.bg.scale*C.bg.resize + game.bg.position.x,space.selectedSpace.y*C.bg.scale*C.bg.resize + game.bg.position.y,"initialMonster"); 
+  random = game.add.sprite(space.selectedSpace.x*C.bg.scale*C.bg.resizeX + game.bg.position.x,space.selectedSpace.y*C.bg.scale*C.bg.resizeY + game.bg.position.y,"initialMonster"); 
     } else if (threatLevel <= 24) {
-  random = game.add.sprite(space.selectedSpace.x*C.bg.scale*C.bg.resize + game.bg.position.x,space.selectedSpace.y*C.bg.scale*C.bg.resize + game.bg.position.y,"growingMonster"); 
+  random = game.add.sprite(space.selectedSpace.x*C.bg.scale*C.bg.resizeX + game.bg.position.x,space.selectedSpace.y*C.bg.scale*C.bg.resizeY + game.bg.position.y,"growingMonster"); 
     } else {
-  random = game.add.sprite(space.selectedSpace.x*C.bg.scale*C.bg.resize + game.bg.position.x,space.selectedSpace.y*C.bg.scale*C.bg.resize + game.bg.position.y,"extinctionMonster"); 
+  random = game.add.sprite(space.selectedSpace.x*C.bg.scale*C.bg.resizeX + game.bg.position.x,space.selectedSpace.y*C.bg.scale*C.bg.resizeY + game.bg.position.y,"extinctionMonster"); 
     }
     random.spriteName = random.key;
     random.key = "monster";
@@ -1397,7 +1402,7 @@ function addToOccupied(object,space) {
 
 function spawnSpecific(object,space) {
   targetSpace = Space[space]
-  spawn = game.add.sprite(targetSpace.x*C.bg.scale*C.bg.resize + game.bg.position.x,targetSpace.y*C.bg.scale*C.bg.resize + game.bg.position.y,object); 
+  spawn = game.add.sprite(targetSpace.x*C.bg.scale*C.bg.resizeX + game.bg.position.x,targetSpace.y*C.bg.scale*C.bg.resizeY + game.bg.position.y,object); 
   spawn.anchor.x = .5;
   spawn.anchor.y = .5;
   if (object === "purplecircle") {
