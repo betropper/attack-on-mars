@@ -1,7 +1,7 @@
 var C = {
  "game": {
-   "width": 1200,
-   "height": 640,
+   "width": 2400,
+   "height": 1280,
    "textStyle": {
       align: 'center',
       fill: "#ffffff",
@@ -28,15 +28,15 @@ var C = {
  },
  "bg": {
    "resize": .25,
-   "width": 1394,
-   "height": 1394,
-   "scale": .40,
+   "width": 1343,
+   "height": 1343,
+   "scale": .8,
    "file": "assets/gameboard.png"
  },
  "mech": {
    "width": 72,
    "height": 72,
-   "scale": .4
+   "scale": 1
  },
  "destroyed": {
    "scale": .55
@@ -45,10 +45,10 @@ var C = {
  "monster": {
    "width": 72,
    "height": 72,
-   "scale": .4
+   "scale": 1
  },
  "menuBar": {
-  "width": 1200,
+  "width": 2400,
   "height": 160
  },
  "wrench": {
@@ -219,7 +219,7 @@ class Setup {
     closestSpaces = getClosestSpaces(turn.key);
     turn.sprite.closestSpaces = closestSpaces;
     // Add in text that is displayed.
-    spaceDisplay = game.add.text(900, 100,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
+    spaceDisplay = game.add.text(1800, 100,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
     attributeDisplay = game.add.text(spaceDisplay.x, spaceDisplay.y + 160, "", C.game.textStyle);
     spaceDisplay.anchor.setTo(.5); 
     attributeDisplay.anchor.setTo(.5);
@@ -831,6 +831,8 @@ function battle(player, monster) {
       for (var i = 0; i < monstersList.length ; i++) {
         var newDestination = monstersList[i].key.substring(0,2) + (parseInt(monstersList[i].key.charAt(2)) - 1);
         monstersList[i].sprite.closestSpaces = getClosestSpaces(monstersList[i].key);
+        //Finds the closest spaces from two spaces away in case of
+        //monster bait upgrade
         var twoAwayList = [];
         for (m = 0; m < monstersList[i].sprite.closestSpaces.keys.length; m++) {
             //monstersList[i].sprite.closestSpaces.selectedSpaces[m].closestSpaces = getClosestSpaces(monstersList[i].sprite.closestSpaces.keys[m]) 
