@@ -134,7 +134,16 @@ var donovank = "White";
 var tempFocus;
 class Boot {
   init() {
-
+    if (Phaser.Device.desktop) {
+      if (window.innerHeight < 2800) {
+        globalScale = .5;
+      } else {
+        globalScale = 1;
+      }
+    } else {
+      alert("You are on mobile!");
+      globalScale = 1;
+    }
   }
   preload() {
     this.scale.pageAlignHorizontally = true;
@@ -147,8 +156,7 @@ class Boot {
 }
 
 class Load {
-  preload() {
-
+  preload() { 
   game.kineticScrolling = this.game.plugins.add(Phaser.Plugin.KineticScrolling);
   game.kineticScrolling.configure({
       kineticMovement: true,
