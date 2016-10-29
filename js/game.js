@@ -1,17 +1,18 @@
+var globalScale = .5;
 var C = {
  "game": {
    "zoomScale": 3,
-   "width": 2400,
-   "height": 1280,
+    "width": 2800 * globalScale,
+    "height": 1280 * globalScale,
    "textStyle": {
       align: 'center',
       fill: "#ffffff",
-      font: '30px Poiret One'
+      font: '40px Poiret One'
    },
    "smallStyle": {
       align: 'center',
       fill: "#ffffff",
-      font: '25px Poiret One',
+      font: '35px Poiret One',
       "style": {
         backgroundColor: 'black'
       }
@@ -20,7 +21,7 @@ var C = {
    "ynStyle": {
       align: 'center',
       fill: "#ffffff",
-      font: '40px Poiret One',
+      font: '50px Poiret One',
       "style": {
         backgroundColor: 'black'
       }
@@ -32,28 +33,28 @@ var C = {
    "height": 2787,
    "resizeX": 3300/5574,
    "resizeY": 2787/5574,
-   "scale": .5,
+   "scale": .46 * globalScale,
    "file": "assets/gameboard.jpg"
  },
  "mech": {
    "width": 72,
    "height": 72,
-   "scale": 1,
+   "scale": 1.3 * globalScale,
    "battleSpacing": 100,
-   "battleSpeed": 1
+   "battleSpeed": 2
  },
  "destroyed": {
-   "scale": .55
+   "scale": 1.55 * globalScale
  },
 
  "monster": {
    "width": 72,
    "height": 72,
-   "scale": 1
+   "scale": 1.3 * globalScale
  },
  "menuBar": {
   "width": 2400,
-  "height": 160
+  "height": 300
  },
  "wrench": {
   "width": 200,
@@ -66,8 +67,19 @@ var C = {
  "extras": {
   "width": 72,
   "height": 72
+ }, 
+ "upgradeMenu": {
+  "width": 1725,
+  "height": 2350,
+  "scale": 1.3 * globalScale
+ 
  }
 }
+var focusX,
+ focusY,
+ xPivot,
+ yPivot;
+var battleSpeedDecrease = 0;
 var boughtBool;
 var upgradeState;
 var confirmState;
@@ -119,7 +131,7 @@ var buttonsTextList = [];
 var priceText;
 var jaja = null;
 var donovank = "White";
-
+var tempFocus;
 class Boot {
   init() {
 
@@ -140,7 +152,7 @@ class Load {
   game.kineticScrolling = this.game.plugins.add(Phaser.Plugin.KineticScrolling);
   game.kineticScrolling.configure({
       kineticMovement: true,
-      timeConstantScroll: 325, //really mimic iOS
+      timeConstantScroll: 700, //really mimic iOS
       horizontalScroll: false,
       verticalScroll: true,
       horizontalWheel: false,
@@ -186,7 +198,7 @@ class Setup {
     }   
   
     playerCount = parseInt(prompt("How many will be playing?", "2")) || null;
-    game.stage.smoothed = false;
+    game.stage.smoothed = true;
     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
     game.camera.bounds = null;
     console.log("Placing Board");
@@ -223,19 +235,19 @@ class Setup {
     closestSpaces = getClosestSpaces(turn.key);
     turn.sprite.closestSpaces = closestSpaces;
     // Add in text that is displayed.
-    spaceDisplay = game.add.text(1800, 100,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
+    spaceDisplay = game.add.text(2000, 100,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
     attributeDisplay = game.add.text(spaceDisplay.x, spaceDisplay.y + 160, "", C.game.textStyle);
     spaceDisplay.anchor.setTo(.5); 
     attributeDisplay.anchor.setTo(.5);
     upgradeDisplay = game.add.text(attributeDisplay.x, attributeDisplay.y + 160, "", C.game.textStyle);
     upgradeDisplay.anchor.setTo(.5);
     turn.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
-    // Temporary for testing. Change this later.
     menuBar = game.add.sprite(0,(game.height/worldScale) - 162 + C.menuBar.height/4,"menubar");
     menuBar.width = C.menuBar.width;
     menuBar.height = C.menuBar.height;
     menuBar.fixedToCamera = true;
     game.world.bringToTop(menuBar);
+    menuBar.kill();
     waitButton = game.add.button(80, menuBar.y + 80, 'purplecircle', waitOneAction);
     waitButton.anchor.x = .5;
     waitButton.anchor.y = .5;
@@ -251,6 +263,7 @@ class Setup {
     //reset itself.
     //
     //Disables scrolling when upgrading is done
+    //game.camera.focusOnXY(playersList[1].sprite.x, playersList[1].sprite.y);
     if (game.camera.y < 0) {
       game.camera.y = 0;
       if (upgradeState === true) {
@@ -262,23 +275,22 @@ class Setup {
         }
         game.kineticScrolling.stop();
         game.camera.y = 0;
-        menuBar.reset(menuBar.x,menuBar.y);
+        //menuBar.reset(menuBar.x,menuBar.y);
       }
     }
-    if (upgradeState && !confirmState && game.camera.y >= 1480) {
-      game.camera.y = 1480;
+    if (upgradeState && !confirmState && upgradeMenu && game.camera.y >= upgradeMenu.y + upgradeMenu.height/2 - game.camera.height) {
+      game.camera.y = upgradeMenu.y + upgradeMenu.height/2 - game.camera.height;
     } else if (confirmState === true) {
-      game.camera.y = 2140 
+      game.camera.y = upgradeMenu.y + upgradeMenu.height/2 + game.camera.height/2;
     }
     if (actionPoints === 0 && pendingBattles.length === 0 && zoomOut !== true && zoomOut !== true) {
       changeTurn();
     }
 
-    if (focusSpace && focusSpace.x) {
-      var xPivot = focusSpace.x * C.game.zoomScale - game.camera.view.halfWidth;
-      var yPivot = focusSpace.y * C.game.zoomScale - game.camera.view.halfHeight; 
-      var xMenu = focusSpace.x; 
-      var yMenu = focusSpace.y;
+    if (focusSpace && focusX) {
+      findIncrementsTo(focusSpace);
+      var xMenu = focusX; 
+      var yMenu = focusY;
     }
     
     var cursors = game.input.keyboard.createCursorKeys();
@@ -288,6 +300,14 @@ class Setup {
     }*/
 
      if (zoomIn === true) {
+      // Temporary for testing. Change this later.
+      if (!menuBar.alive) {
+        menuBar = game.add.sprite(0,(game.height/worldScale) - 162 + C.menuBar.height/4,"menubar");
+        menuBar.width = C.menuBar.width;
+        menuBar.height = C.menuBar.height;
+        menuBar.fixedToCamera = true;
+        game.world.bringToTop(menuBar);
+      }
        for (i = 0; i < buttonsTextList.length; i++) {
         buttonsTextList[0].kill();
        }
@@ -310,24 +330,29 @@ class Setup {
           zoomIn = false;
           console.log("Done zooming");
         }
-        if (game.camera.x < xPivot && xPivot > 0) {
+         if (game.camera.x < xPivot && xPivot > 0 && zoomIn) {
           game.camera.x = Phaser.Math.clamp(game.camera.x + focusSpace.increment.x, 0, xPivot);
-        } else if (game.camera.x > xPivot && xPivot > 0) {
+        } else if (game.camera.x > xPivot && xPivot > 0 && zoomIn) {
           game.camera.x = Phaser.Math.clamp(game.camera.x - focusSpace.increment.x, xPivot, 9999);
         }
-        if (game.camera.y < yPivot && yPivot > 0) {
+        if (game.camera.y < yPivot && yPivot > 0 && zoomIn) {
           game.camera.y = Phaser.Math.clamp(game.camera.y + focusSpace.increment.y, 0, yPivot);
-        } else if (game.camera.y > yPivot && yPivot > 0) {
+        } else if (game.camera.y > yPivot && yPivot > 0 && zoomIn) {
           game.camera.y = Phaser.Math.clamp(game.camera.y - focusSpace.increment.y, yPivot, 9999);
         }
        //console.log("x is " + xPivot);
        //console.log("y is " + yPivot);
     } else if (zoomOut === true) {
+        if (menuBar) {
+          menuBar.kill();
+        }
         worldScale -= 0.04;
+        /*
         menuBar.width = C.menuBar.width / worldScale;
         menuBar.height = C.menuBar.height / worldScale;
         menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/C.game.zoomScale, C.menuBar.width);
         menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/C.game.zoomScale, C.menuBar.height);
+        */
         game.world.bringToTop(menuBar);
         if (game.camera.x > 0 || game.camera.y > 0) {
           if (focusSpace.increment.x > 0) {
@@ -355,12 +380,12 @@ class Setup {
             }
         }
     } if (battleStarting) {
-      var lookAt = focusSpace.x; 
+      var lookAt = focusX; 
       battlePlayer.sprite.x = Phaser.Math.clamp(battlePlayer.sprite.x + C.mech.battleSpeed, 0, lookAt + C.mech.battleSpacing);
       battleMonster.sprite.x = Phaser.Math.clamp(battleMonster.sprite.x - C.mech.battleSpeed, lookAt - C.mech.battleSpacing, 3000);
       if (battlePlayer.sprite.x === lookAt + C.mech.battleSpacing && battleMonster.sprite.x - 35 && zoomIn === false) {
         battleTurn = battlePlayer;
-        attackText = game.add.bitmapText(menuBar.x + 30, menuBar.y + 20, 'attackfont', "Attack!", 10);
+        attackText = game.add.bitmapText(menuBar.x + 50, menuBar.y + 20 ,'attackfont', "Attack!",30);
         attackText.anchor.set(0.5);
         attackText.inputEnabled = true;
         attackText.events.onInputDown.add(queAttack, {attacker: battlePlayer});
@@ -383,7 +408,7 @@ class Setup {
 
     }
     // set a minimum and maximum scale value
-    worldScale = Phaser.Math.clamp(worldScale, 1, 4);
+    worldScale = Phaser.Math.clamp(worldScale, 1, C.game.zoomScale);
     game.world.scale.set(worldScale);
     if (spaceDisplay) {
       spaceDisplay.setText("Valid Movements for " + turn.sprite.key + ":\n " + turn.sprite.closestSpaces.keys.join(" ") + "\nRemaining Moves: " + actionPoints,C.game.textStyle);
@@ -436,7 +461,7 @@ function setLastClicked(sprite) {
       repairButton.height = 40;
       repairButton.battleButton = false;
       buttonsList.push(repairButton);
-      buttonsTextLit.push(repairText);
+      buttonsTextList.push(repairText);
       repairButton.events.onInputDown.add(repair, {repairing: lastClicked});
     } else if (lastClicked.key.indexOf("0") === 2 && lastClicked.hp < lastClicked.maxhp && normalState) {
       repairText.reset(1050, menuBar.y);
@@ -632,7 +657,7 @@ function attachToCamera(obj) {
     }
 
 function findIncrementsTo(space) {
-    space.increment = {x: (space.x * 6 - game.camera.view.halfWidth) / 110, y: (space.y * 6 - game.camera.view.halfHeight) / 110};
+    space.increment = {x: (((focusX*C.game.zoomScale))/(C.game.zoomScale/.04)), y: (((focusY*C.game.zoomScale))/(C.game.zoomScale/.04))};
 }
 
 function changeValueScale(value,xory) {
@@ -648,8 +673,8 @@ function checkAttack(sprite,pointer) {
     attack(battlePlayer,battleMonster)
   }
   if (battleState === true) {
-    sprite.x = focusSpace.x + C.mech.battleSpacing;
-    sprite.y = focusSpace.y;
+    sprite.x = focusX + C.mech.battleSpacing;
+    sprite.y = focusY;
   }
 }
 
@@ -688,9 +713,12 @@ function attack(attacker,defender) {
     var text = defender.sprite.key + " blocked every hit from " + attacker.sprite.key + "!";
   }
     if (resultsList.length > 0) {
-      var battleResults = game.add.bitmapText(Math.round(focusSpace.x),Math.round(resultsList[resultsList.length - 1].y + 25), 'attackfont', text, 10);
+      for (i = 0; i < resultsList.length; i++) {
+        resultsList[i].y -= 40
+      }
+      var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(focusY - 60), 'attackfont', text, 20);
     } else { 
-      var battleResults = game.add.bitmapText(Math.round(focusSpace.x),Math.round(focusSpace.y) - 80, 'attackfont', text, 10);
+      var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(focusY - 60), 'attackfont', text, 20);
     }
     battleResults.anchor.x = .5;
     battleResults.anchor.y = .5;
@@ -710,9 +738,8 @@ function attack(attacker,defender) {
       battleTexts.splice(battleTexts[i],1);
     }
     if (damaged === battlePlayer) {
-      playersList[damaged.sprite.number] = damaged.sprite.number;
       removeFromList(playersList[damaged.sprite.number], focusSpace);
-      damaged.sprite.destroy();
+      playersList[damaged.sprite.number].sprite.kill();
       var destroyedPlayers = 0;
       for (var i = 1; i <= playersList.length; i++) {
         if (Number.isInteger(playersList[i])) {
@@ -731,9 +758,9 @@ function attack(attacker,defender) {
       damaged.sprite.destroy();
       battlePlayer.sprite.events.onDragStop._bindings = [];
       battlePlayer.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
-      battlePlayer.sprite.x = focusSpace.x;
+      battlePlayer.sprite.x = focusX;
 
-      console.log("Monster died, moving back to position " + focusSpace.x );
+      console.log("Monster died, moving back to position " + focusX );
     }
     pendingBattles.splice(0,1);
     if (focusSpace.occupied && focusSpace.occupied !== false) {
@@ -748,8 +775,10 @@ function attack(attacker,defender) {
       battleMonster = pendingBattles[0].pendingMonster;
       battlePlayer = pendingBattles[0].pendingPlayer;
       focusSpace = pendingBattles[0].space;
-      focusSpace.x = changeValueScale(focusSpace.x,"x");
-      focusSpace.y = changeValueScale(focusSpace.y,"y");
+      focusX = changeValueScale(focusSpace.x,"x");
+      focusY = changeValueScale(focusSpace.y,"y"); 
+      yPivot = (battlePlayer.sprite.y *C.game.zoomScale) - game.camera.height/2; 
+      xPivot = (battlePlayer.sprite.x *C.game.zoomScale) - game.camera.width/2;
       findIncrementsTo(focusSpace);
       zoomIn = true;
       battleState = false;
@@ -793,11 +822,13 @@ function battle(player, monster) {
         battlePlayer.sprite.events.onDragStop._bindings = [];
         battlePlayer.sprite.inputEnabled = false;
       }
-      battleMonster.sprite.x += C.mech.battleSpeed + .2;
-      if (battleMonster.sprite.x >= focusSpace.x) {
+      battleMonster.sprite.x += C.mech.battleSpeed - battleSpeedDecrease;
+      battleSpeedDecrease += .02;
+      if (battleMonster.sprite.x >= focusX) {
         attack(battleMonster,battlePlayer);
+        battleSpeedDecrease = 0;
         if (battleState === true) {
-          battleMonster.sprite.x = focusSpace.x - C.mech.battleSpacing;
+          battleMonster.sprite.x = focusX - C.mech.battleSpacing;
           for (i = 0; i < battleTexts.length; i++) {
             battleTexts[i].reset(battleTexts[i].x, battleTexts[i].y);
           }
@@ -814,11 +845,13 @@ function battle(player, monster) {
         battlePlayer.sprite.inputEnabled = false;
       }
 
-      battlePlayer.sprite.x -= C.mech.battleSpeed + .2;
-      if (battlePlayer.sprite.x <= focusSpace.x) {
+      battlePlayer.sprite.x -= C.mech.battleSpeed - battleSpeedDecrease;
+      battleSpeedDecrease += .02;
+      if (battlePlayer.sprite.x <= focusX) {
+        battleSpeedDecrease = 0;
         attack(battlePlayer,battleMonster);
         if (battleState === true) {
-          battlePlayer.sprite.x = focusSpace.x + C.mech.battleSpacing;
+          battlePlayer.sprite.x = focusX + C.mech.battleSpacing;
           for (i = 0; i < battleTexts.length; i++) {
             battleTexts[i].reset(battleTexts[i].x, battleTexts[i].y);
           }
@@ -985,17 +1018,17 @@ function upgrade(upgrading) {
   upgradeButton.kill();
   menuBar.kill();
   if (!upgradeMenu) {
-    upgradeMenu = game.add.sprite(game.world.centerX, game.world.centerY + 1100, 'upgradeMat');
+    upgradeMenu = game.add.sprite(game.world.centerX, game.world.centerY + C.game.height/2 + (C.upgradeMenu.height*C.upgradeMenu.scale)/2 + 200, 'upgradeMat');
     upgradeMenu.anchor.setTo(.5,.5);
-    upgradeMenu.scale.x = .6;
-    upgradeMenu.scale.y = .6;
-console.log(upgradeDescription);
+    upgradeMenu.scale.x = C.upgradeMenu.scale;
+    upgradeMenu.scale.y = C.upgradeMenu.scale;
+  console.log(upgradeDescription);
   }
-    var upgradeDescription = game.add.text(game.world.centerX, game.world.centerY + 660 - game.height/2, "Click on an upgrade to see its details, scroll up to return to the game", C.game.textStyle);
+    var upgradeDescription = game.add.text(upgradeMenu.x, upgradeMenu.y - upgradeMenu.height/2 - 100, "Click on an upgrade to see its details, scroll up to return to the game", C.game.textStyle);
     upgradeDescription.anchor.setTo(.5,.5);
   game.kineticScrolling.start();
   game.input.onTap.add(chooseUpgrade, {menu: upgradeMenu});
-  game.camera.y = 630;
+  game.camera.y = game.height;
   upgradeState = true;
 }
 
@@ -1003,8 +1036,8 @@ console.log(upgradeDescription);
 function chooseUpgrade(event) {
   if (game.camera.y >= 430) {
     console.log(event);
-    var x1 = 111, x2 = 1073,
-    y1 = 746, y2 = 1718;
+    var x1 = 340 * globalScale, x2 = 2425 * globalScale,
+    y1 = 1544 * globalScale, y2 = 3650 * globalScale;
     console.log("Points are at " + x1 + "," + x2 + "," + y1 + "," + y2 + ".");
     console.log(event.worldX + " " + event.worldY);
     if (event.worldX > x1 && event.worldX < x2 && event.worldY > y1 && event.worldY < y2 ){
@@ -1017,18 +1050,20 @@ function chooseUpgrade(event) {
       ]
       var x = event.worldX - x1,
           y = event.worldY - y1;
-      var choice = options[Math.floor(x / (192)) + 5*Math.floor(y /(162))];
+      var choice = options[Math.floor(x / (415*globalScale)) + 5*Math.floor(y /(350*globalScale))];
       console.log(choice);
       console.log("Event was at " + x + " " + y);
+      game.kineticScrolling.stop();
+      game.camera.y = game.camera.y;
+      game.input.onTap._bindings = [];
       confirmUpgrade(lastClicked,choice);
     } 
   }
 }
 
 function confirmUpgrade(player,upgradeName) {
-      game.kineticScrolling.stop();
       confirmState = true;
-      game.camera.y = 1500 + game.height;
+      game.camera.y = upgradeMenu.y + upgradeMenu.height/2 + game.camera.height/2;
       var consideredUpgrade = U[upgradeName];
       if (confirmText) {
         confirmText.setText("Are you sure you would like to purchase " + upgradeName + " on " + lastClicked.sprite.key +"?\n\n" + consideredUpgrade.desc);
@@ -1107,9 +1142,11 @@ function checkBattle(space) {
         battlePlayer = pendingPlayer;
         battleMonster = pendingMonster;
         focusSpace = space;
-        focusSpace.x = changeValueScale(focusSpace.x,"x");
-        focusSpace.y = changeValueScale(focusSpace.y,"y");
-        findIncrementsTo(focusSpace);
+          focusX = changeValueScale(focusSpace.x,"x");
+          focusY = changeValueScale(focusSpace.y,"y");
+          yPivot = (battlePlayer.sprite.y *C.game.zoomScale) - game.camera.height/2; 
+          xPivot = (battlePlayer.sprite.x *C.game.zoomScale) - game.camera.width/2;
+          findIncrementsTo(focusSpace);
         zoomIn = true;
         battleStarting = true;
       }
@@ -1123,23 +1160,20 @@ function changeTurn() {
     actionPoints = 3;
     //turn.sprite.inputEnabled = false
     do {
-      if (turn && turn.sprite.number && turn.number < playerCount) {
+      if (turn && turn.sprite.number && turn.sprite.number < playerCount) {
         turn = playersList[turn.sprite.number + 1];
-      } else if (turn && turn.sprite.number && turn.number <= playerCount || Number.isInteger(turn) && turn === playerCount) {
+      } else if (turn && turn.sprite.number && turn.sprite.number === playerCount || turn === undefined) {
         for (i = 1; i < playersList.length; i++) {
           if (playersList[i].upgrades.indexOf("Siege Mode") && playersList[i].canSiege === false) {
             playersList[i].canSiege = true;
           }
         }
         turn = playersList[1];
-      } else if (Number.isInteger(turn)) {
-        turn += 1;
-        turn = playersList[turn];
-      }
-    } while (Number.isInteger(turn))
+      } 
+    } while (turn === undefined)
       console.log("Switching to this turn:");
       console.log(turn);
-      if (turn.rpPerTurn) {
+      if (turn.rpPerTurn && turn.sprite.alive) {
         turn.rp += turn.rpPerTurn;
       }
     //if (turn.sprite.inputEnabled === false) {
@@ -1407,7 +1441,7 @@ function addToOccupied(object,space) {
 }
 
 function spawnSpecific(object,space) {
-  targetSpace = Space[space]
+  targetSpace = Space[space];
   spawn = game.add.sprite(targetSpace.x*C.bg.scale*C.bg.resizeX + game.bg.position.x,targetSpace.y*C.bg.scale*C.bg.resizeY + game.bg.position.y,object); 
   spawn.anchor.x = .5;
   spawn.anchor.y = .5;
@@ -1438,7 +1472,7 @@ function spawnSpecific(object,space) {
       obj.mr = 4;
     }
   }
-  spawn.smoothed = false;
+  spawn.smoothed = true;
   addToOccupied(targetSpace,spawn);
   return {
     space: targetSpace,
@@ -1454,6 +1488,7 @@ var game = new Phaser.Game(C.game.width,C.game.height, Phaser.AUTO, '', {
         game.stateTransition = this.game.plugins.add(Phaser.Plugin.StateTransition);
     }
 });
+
 //game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;game.scale.minWidth = 320;game.scale.minHeight = 480;game.scale.maxWidth = 768;game.scale.maxHeight = 1152;
 //var game = new Phaser.Game(window.innerWidth * window.devicePixelRatio, window.innerHeight * window.devicePixelRatio, Phaser.CANVAS, 'gameArea');
 game.state.add("Boot",Boot);
