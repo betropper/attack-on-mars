@@ -1,18 +1,18 @@
-var globalScale = .5;
+var globalScale = .6;
 var C = {
  "game": {
    "zoomScale": 3,
-    "width": 2800 * globalScale,
-    "height": 1280 * globalScale,
+    "width": 2800*globalScale,
+    "height": 1280*globalScale,
    "textStyle": {
       align: 'center',
       fill: "#ffffff",
-      font: '40px Poiret One'
+      font: 70*globalScale + 'px Poiret One'
    },
    "smallStyle": {
       align: 'center',
       fill: "#ffffff",
-      font: '35px Poiret One',
+      font: 60*globalScale + 'px Poiret One',
       "style": {
         backgroundColor: 'black'
       }
@@ -21,7 +21,7 @@ var C = {
    "ynStyle": {
       align: 'center',
       fill: "#ffffff",
-      font: '50px Poiret One',
+      font: 70 * globalScale+'px Poiret One',
       "style": {
         backgroundColor: 'black'
       }
@@ -75,6 +75,7 @@ var C = {
  
  }
 }
+
 var focusX,
  focusY,
  xPivot,
@@ -134,16 +135,7 @@ var donovank = "White";
 var tempFocus;
 class Boot {
   init() {
-    if (Phaser.Device.desktop) {
-      if (window.innerHeight < 2800) {
-        globalScale = .5;
-      } else {
-        globalScale = 1;
-      }
-    } else {
-      alert("You are on mobile!");
-      globalScale = 1;
-    }
+
   }
   preload() {
     this.scale.pageAlignHorizontally = true;
@@ -207,7 +199,17 @@ class Setup {
   
     playerCount = parseInt(prompt("How many will be playing?", "2")) || null;
     game.stage.smoothed = true;
-    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+
+  if (Phaser.Device.desktop) {
+    if (window.innerWidth < C.game.width) {
+      game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+    } else {
+      game.scale.scaleMode = Phaser.ScaleManager.NO_SCALE;
+    }
+  } else {
+    alert("You are on mobile!");
+    game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
+  }
     game.camera.bounds = null;
     console.log("Placing Board");
     game.bg = game.add.sprite(0, game.world.centerY - game.height / 2, "gameboard");
@@ -243,14 +245,14 @@ class Setup {
     closestSpaces = getClosestSpaces(turn.key);
     turn.sprite.closestSpaces = closestSpaces;
     // Add in text that is displayed.
-    spaceDisplay = game.add.text(2000, 100,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
+    spaceDisplay = game.add.text(game.world.centerX + game.world.width/3.5, game.world.centerY - game.world.height/3,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
     attributeDisplay = game.add.text(spaceDisplay.x, spaceDisplay.y + 160, "", C.game.textStyle);
     spaceDisplay.anchor.setTo(.5); 
     attributeDisplay.anchor.setTo(.5);
     upgradeDisplay = game.add.text(attributeDisplay.x, attributeDisplay.y + 160, "", C.game.textStyle);
     upgradeDisplay.anchor.setTo(.5);
     turn.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
-    menuBar = game.add.sprite(0,(game.height/worldScale) - 162 + C.menuBar.height/4,"menubar");
+    menuBar = game.add.sprite(0,(game.height/worldScale) - C.menuBar.height+ C.menuBar.height/4,"menubar");
     menuBar.width = C.menuBar.width;
     menuBar.height = C.menuBar.height;
     menuBar.fixedToCamera = true;
@@ -266,7 +268,13 @@ class Setup {
     
     }
   update() {
-
+  if (Phaser.Device.desktop) {
+      if (window.innerWidth < C.game.width) {
+        game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+      } else {
+        game.scale.scaleMode = Phaser.ScaleManager.NO_SCALE;
+      }
+    }
     //Set ZoomIn to true or ZoomOut to false to enable zoom. It will
     //reset itself.
     //
@@ -310,7 +318,7 @@ class Setup {
      if (zoomIn === true) {
       // Temporary for testing. Change this later.
       if (!menuBar.alive) {
-        menuBar = game.add.sprite(0,(game.height/worldScale) - 162 + C.menuBar.height/4,"menubar");
+        menuBar = game.add.sprite(0,(game.height/worldScale) - C.menuBar.height + C.menuBar.height/4,"menubar");
         menuBar.width = C.menuBar.width;
         menuBar.height = C.menuBar.height;
         menuBar.fixedToCamera = true;
@@ -399,7 +407,7 @@ class Setup {
         attackText.events.onInputDown.add(queAttack, {attacker: battlePlayer});
         battleTexts.push(attackText);
         if (battlePlayer.canSiege) {
-          siegeText = game.add.bitmapText(battleTexts[battleTexts.length - 1].x + 60, menuBar.y + 20, 'attackfont', "Siege Mode", 10);
+          siegeText = game.add.bitmapText(battleTexts[battleTexts.length - 1].x + battleTexts[battleTexts.length - 1].width/2 + 10, menuBar.y + 20, 'attackfont', "Siege Mode", 10);
           siegeText.anchor.set(0.5);
           siegeText.inputEnabled = true;
           siegeText.events.onInputDown.add(queAttack, {attacker: battlePlayer, modifier: "Siege Mode"});
@@ -1045,7 +1053,7 @@ function chooseUpgrade(event) {
   if (game.camera.y >= 430) {
     console.log(event);
     var x1 = 340 * globalScale, x2 = 2425 * globalScale,
-    y1 = 1544 * globalScale, y2 = 3650 * globalScale;
+    y1 = 1755 * globalScale, y2 = 3650 * globalScale;
     console.log("Points are at " + x1 + "," + x2 + "," + y1 + "," + y2 + ".");
     console.log(event.worldX + " " + event.worldY);
     if (event.worldX > x1 && event.worldX < x2 && event.worldY > y1 && event.worldY < y2 ){
@@ -1489,6 +1497,12 @@ function spawnSpecific(object,space) {
   }
 }
 
+
+
+//game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;game.scale.minWidth = 320;game.scale.minHeight = 480;game.scale.maxWidth = 768;game.scale.maxHeight = 1152;
+//var game = new Phaser.Game(window.innerWidth * window.devicePixelRatio, window.innerHeight * window.devicePixelRatio, Phaser.CANVAS, 'gameArea');
+
+console.log(Phaser.Device.desktop);
 var game = new Phaser.Game(C.game.width,C.game.height, Phaser.AUTO, '', {
     init: function () {
 
@@ -1496,9 +1510,6 @@ var game = new Phaser.Game(C.game.width,C.game.height, Phaser.AUTO, '', {
         game.stateTransition = this.game.plugins.add(Phaser.Plugin.StateTransition);
     }
 });
-
-//game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;game.scale.minWidth = 320;game.scale.minHeight = 480;game.scale.maxWidth = 768;game.scale.maxHeight = 1152;
-//var game = new Phaser.Game(window.innerWidth * window.devicePixelRatio, window.innerHeight * window.devicePixelRatio, Phaser.CANVAS, 'gameArea');
 game.state.add("Boot",Boot);
 game.state.add("Load",Load);
 game.state.add("Setup",Setup);
