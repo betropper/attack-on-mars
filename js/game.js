@@ -7,12 +7,12 @@ var C = {
    "textStyle": {
       align: 'center',
       fill: "#ffffff",
-      font: 70*globalScale + 'px Poiret One'
+      font: 50*globalScale + 'px Poiret One'
    },
    "smallStyle": {
       align: 'center',
       fill: "#ffffff",
-      font: 60*globalScale + 'px Poiret One',
+      font: 40*globalScale + 'px Poiret One',
       "style": {
         backgroundColor: 'black'
       }
@@ -21,7 +21,7 @@ var C = {
    "ynStyle": {
       align: 'center',
       fill: "#ffffff",
-      font: 70 * globalScale+'px Poiret One',
+      font: 50 * globalScale+'px Poiret One',
       "style": {
         backgroundColor: 'black'
       }
@@ -318,8 +318,7 @@ class Setup {
       playersList[i].sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
       monstersList[i-1] = spawnRandom("monster", i, "3", true);
       monstersList[i-1].sprite.number = i - 1;
-      monstersList[i-1].sprite.inputEnabled = true;
-      monstersList[i-1].sprite.events.onInputDown.add(setLastClicked, this);
+
     }
     turn = playersList[1];
     turn.sprite.inputEnabled = true;
@@ -328,10 +327,10 @@ class Setup {
     turn.sprite.closestSpaces = closestSpaces;
     // Add in text that is displayed.
     spaceDisplay = game.add.text(game.world.centerX + game.world.width/3.5, game.world.centerY - game.world.height/3,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
-    attributeDisplay = game.add.text(spaceDisplay.x, spaceDisplay.y + 160, "", C.game.textStyle);
+    attributeDisplay = game.add.text(spaceDisplay.x, spaceDisplay.y + 300*globalScale, "", C.game.textStyle);
     spaceDisplay.anchor.setTo(.5); 
     attributeDisplay.anchor.setTo(.5);
-    upgradeDisplay = game.add.text(attributeDisplay.x, attributeDisplay.y + 160, "", C.game.textStyle);
+    upgradeDisplay = game.add.text(attributeDisplay.x, attributeDisplay.y + 400*globalScale, "", C.game.textStyle);
     upgradeDisplay.anchor.setTo(.5);
     turn.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
     menuBar = game.add.sprite(0,(game.height/worldScale) - C.menuBar.height+ C.menuBar.height/4,"menubar");
@@ -516,16 +515,21 @@ class Setup {
     }
     if (over) { 
       if (playerNames.indexOf(over.sprite.key) > -1) {
-        attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + "\nResearch Points: " + over.rp);
+        attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + "\nDefence Die (green): " + over.def + "\nRed Attack Die: " + over.ratk + "\nBlue Attack Die: " + over.batk + "\nResearch Points: " + over.rp);
         /*if (attributeDisplay.text && lastClicked !== undefined && repairText && attributeDisplay.text.indexOf(lastClicked.sprite.key) === -1) {
           repairText.text = "Repair " + lastClicked.sprite.key;
         }*/
        upgradeDisplay.setText("Upgrades for " + over.sprite.key +":\n" + over.upgrades.join(",\n"));
       } else if (over.sprite.key === "monster") {
-        attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + "\nResearch Point Reward: " + over.rp)
+        attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + "\nDefence Die (green): " + over.def + "\nBlue Attack Die: " + over.batk + "\nResearch Point Reward: " + over.rp);
+        upgradeDisplay.setText("Upgrades for " + over.sprite.key +":\n" + over.upgrades.join(",\n"));
       }
     } else if (lastClicked) {
-      attributeDisplay.setText("\nName: " + lastClicked.sprite.key + "\nHP: " + turn.hp + "\nResearch Points: " + turn.rp);
+      if (playerNames.indexOf(lastClicked.sprite.key) > -1) {
+        attributeDisplay.setText("\nName: " + lastClicked.sprite.key + "\nHP: " + lastClicked.hp + "\nDefence Die (green): " + lastClicked.def + "\nRed Attack Die: " + lastClicked.ratk + "\nBlue Attack Die: " + lastClicked.batk + "\nResearch Points: " + lastClicked.rp);
+      } else {
+        attributeDisplay.setText("\nName: " + lastClicked.sprite.key + "\nHP: " + lastClicked.hp + "\nDefence Die (green): " + lastClicked.def + "\nBlue Attack Die: " + lastClicked.batk + "\nResearch Point Reward: " + lastClicked.rp);
+      }
       upgradeDisplay.setText("Upgrades for " + lastClicked.sprite.key + ":\n" + lastClicked.upgrades.join(",\n"));
     }
 
@@ -1168,10 +1172,10 @@ function chooseUpgrade(event) {
       var choice = options[Math.floor(x / (415*globalScale)) + 5*Math.floor(y /(350*globalScale))];
       console.log(choice);
       console.log("Event was at " + x + " " + y);
-      game.kineticScrolling.stop();
       game.camera.y = game.camera.y;
       game.input.onTap._bindings = [];
       confirmUpgrade(lastClicked,choice);
+      //game.kineticScrolling.stop();
     } 
   }
 }
@@ -1504,8 +1508,18 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     random.scale.x = C.destroyed.scale;
     random.scale.y = C.destroyed.scale;
     random.angle = Math.atan2(game.bg.y + game.bg.height/2 - random.y, game.bg.x + game.bg.width/2 - random.x );
-    random.angle = random.angle * (180/Math.PI) - 10;   
-    /*if(random.angle < 0) {
+    random.angle = random.angle * (180/Math.PI) - 10;
+    if (space.key === "a20" || space.key === "c10") {
+      random.angle -= 11;
+    } else if (space.key === "a10") {
+      random.angle -= 7;
+    } else if (space.key === "d30" || space.key === "d20") {
+      random.angle += 10;
+    }
+      
+      
+      /*if(random.angle < 0) {
+
       random.angle = 360 - (-random.angle);
     }*/
     occupiedRows.push(space.key.substring(0,2));
@@ -1545,21 +1559,43 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     game.world.bringToTop(random);
     obj.sprite.inputEnabled = true;
     if (threatLevel <= 12) {
-      obj.hp = 3;
-      obj.batk = 3;
+      do {
+        var drawnMonster = MonstersDeck.initialMonsters[Math.floor(Math.random() * MonstersDeck.initialMonsters.length)];
+      } while (drawnMonster.drawn)
+      obj.hp = drawnMonster.hp;
+      obj.batk = drawnMonster.batk;
+      obj.upgrades = drawnMonster.upgrades;
+      obj.def = drawnMonster.def;
       obj.rp = 1;
       obj.mr = 2;
-    } else if (threatLevel <= 24) {
-      obj.hp = 4;
-      obj.batk = 4;
+    } else if (threatLevel <= 24) { 
+      do {
+        var drawnMonster = MonstersDeck.growingMonsters[Math.floor(Math.random() * MonstersDeck.growingMonsters.length)];
+      } while (drawnMonster.drawn)
+      obj.hp = drawnMonster.hp;
+      obj.batk = drawnMonster.batk;
+      obj.upgrades = drawnMonster.upgrades;
+      obj.def = drawnMonster.def;
       obj.rp = 2;
       obj.mr = 3;
     } else {
-      obj.hp = 5;
-      obj.batk = 5;
+      if (threatLevel >= 36) {
+        threatLevel = 24;
+        for (i = 0; i < MonstersDeck.extinctionMonsters.length; i++) {
+          MonsterDeck.extinctionMonsters.drawn = false;
+        }
+      }
+      do {
+        var drawnMonster = MonstersDeck.extinctionMonsters[Math.floor(Math.random() * MonstersDeck.extinctionMonsters.length)];
+      } while (drawnMonster.drawn)
+      obj.hp = drawnMonster.hp;
+      obj.batk = drawnMonster.batk;
+      obj.upgrades = drawnMonster.upgrades;
+      obj.def = drawnMonster.def;
       obj.rp = 3;
       obj.mr = 4;
-    }
+    } 
+    drawnMonster.drawn;
   }
   return obj
 }
@@ -1593,24 +1629,48 @@ function spawnSpecific(object,space) {
     spawn.scale.y = C.mech.scale;
   }
   if (object === "monster") {
+    threatLevel += 1;
     game.world.bringToTop(random);
     obj.sprite.inputEnabled = true;
-    if (monstersList.length <= 12) {
-      obj.hp = 3;
-      obj.batk = 3;
+    obj.sprite.events.onInputDown.add(setLastClicked, this);
+    if (threatLevel <= 12) {
+      do {
+        var drawnMonster = MonstersDeck.initialMonsters[Math.floor(Math.random() * MonstersDeck.initialMonsters.length)];
+      } while (drawnMonster.drawn)
+      obj.hp = drawnMonster.hp;
+      obj.batk = drawnMonster.batk;
+      obj.upgrades = drawnMonster.upgrades;
+      obj.def = drawnMonster.def;
       obj.rp = 1;
       obj.mr = 2;
-    } else if (monstersList.length <= 24) {
-      obj.hp = 4;
-      obj.batk = 4;
+    } else if (threatLevel <= 24) { 
+      do {
+        var drawnMonster = MonstersDeck.growingMonsters[Math.floor(Math.random() * MonstersDeck.growingMonsters.length)];
+      } while (drawnMonster.drawn)
+      obj.hp = drawnMonster.hp;
+      obj.batk = drawnMonster.batk;
+      obj.upgrades = drawnMonster.upgrades;
+      obj.def = drawnMonster.def;
       obj.rp = 2;
       obj.mr = 3;
     } else {
-      obj.hp = 5;
-      obj.batk = 5;
+      if (threatLevel >= 36) {
+        threatLevel = 24;
+        for (i = 0; i < MonstersDeck.extinctionMonsters.length; i++) {
+          MonsterDeck.extinctionMonsters.drawn = false;
+        }
+      }
+      do {
+        var drawnMonster = MonstersDeck.extinctionMonsters[Math.floor(Math.random() * MonstersDeck.extinctionMonsters.length)];
+      } while (drawnMonster.drawn)
+      obj.hp = drawnMonster.hp;
+      obj.batk = drawnMonster.batk;
+      obj.upgrades = drawnMonster.upgrades;
+      obj.def = drawnMonster.def;
       obj.rp = 3;
       obj.mr = 4;
-    }
+    } 
+    drawnMonster.drawn;
   }
   spawn.smoothed = true;
   addToOccupied(targetSpace,spawn);
