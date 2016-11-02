@@ -332,7 +332,7 @@ class Setup {
     upgradeDisplay = game.add.text(attributeDisplay.x, attributeDisplay.y + 400*globalScale, "", C.game.textStyle);
     upgradeDisplay.anchor.setTo(.5);
     turn.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
-    menuBar = game.add.sprite(0,(game.height/worldScale) - C.menuBar.height+ C.menuBar.height/4,"menubar");
+    menuBar = game.add.sprite(0,(game.height/game.world.scale.x) - C.menuBar.height+ C.menuBar.height/4,"menubar");
     menuBar.width = C.menuBar.width;
     menuBar.height = C.menuBar.height;
     menuBar.fixedToCamera = true;
@@ -384,7 +384,7 @@ class Setup {
     }
 
     if (focusSpace && focusX) {
-      findIncrementsTo(focusSpace);
+      //findIncrementsTo(focusSpace);
       var xMenu = focusX; 
       var yMenu = focusY;
     }
@@ -398,7 +398,7 @@ class Setup {
      if (zoomIn === true) {
       // Temporary for testing. Change this later.
       if (!menuBar.alive) {
-        menuBar = game.add.sprite(0,(game.height/worldScale) - C.menuBar.height + C.menuBar.height/4,"menubar");
+        menuBar.reset(menuBar.x,menuBar.y);
         menuBar.width = C.game.width;
         menuBar.height = C.menuBar.height*globalScale;
         menuBar.fixedToCamera = true;
@@ -407,81 +407,39 @@ class Setup {
         //zoomTween.onComplete.add(zoomWorld, {zoomScale: C.game.zoomScale});
         var scaleTween = game.add.tween(game.world.scale).to( { x: C.game.zoomScale, y: C.game.zoomScale }, 1000, Phaser.Easing.Linear.None, true);
         scaleTween.onComplete.add(zoomFalse, this);
-      }/*
        for (i = 0; i < buttonsTextList.length; i++) {
-        buttonsTextList[0].kill();
+        buttonsTextList[i].kill();
        }
         for (i = 1; i < playersList.length; i++) {
           if (playersList[i] !== battlePlayer) {
             playersList[i].sprite.inputEnabled = false;
           }
-        } 
-        worldScale += 0.04;
-        console.log("Tick.");
-        menuBar.width = C.menuBar.width / worldScale;
-        menuBar.height = C.menuBar.height / worldScale;
+        }
+      }
+
+        menuBar.width = C.menuBar.width / game.world.scale.x;
+        menuBar.height = C.menuBar.height / game.world.scale.y;
         menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/C.game.zoomScale, C.menuBar.width);
         menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/C.game.zoomScale, C.menuBar.height);
         game.world.bringToTop(menuBar);
-        if (yPivot < 0) {
-          yPivot = 0
-        }
-        if (Math.floor(worldScale) === C.game.zoomScale && Math.floor(yPivot) === game.camera.y && Math.floor(xPivot) === game.camera.x) {
-          zoomIn = false;
-          console.log("Done zooming");
-        }
-         if (game.camera.x < xPivot && xPivot > 0 && zoomIn) {
-          game.camera.x = Phaser.Math.clamp(game.camera.x + focusSpace.increment.x, 0, xPivot);
-        } else if (game.camera.x > xPivot && xPivot > 0 && zoomIn) {
-          game.camera.x = Phaser.Math.clamp(game.camera.x - focusSpace.increment.x, xPivot, 9999);
-        }
-        if (game.camera.y < yPivot && yPivot > 0 && zoomIn) {
-          game.camera.y = Phaser.Math.clamp(game.camera.y + focusSpace.increment.y, 0, yPivot);
-        } else if (game.camera.y > yPivot && yPivot > 0 && zoomIn) {
-          game.camera.y = Phaser.Math.clamp(game.camera.y - focusSpace.increment.y, yPivot, 9999);
-        }
-       //console.log("x is " + xPivot);
-       //console.log("y is " + yPivot);
     } else if (zoomOut === true) {
-        if (menuBar) {
-          menuBar.kill();
+        if (menuBar.alive) {
+        menuBar.kill();
+        var zoomTween = game.add.tween(game.camera).to( { x: 0, y: 0 }, 1500, Phaser.Easing.Linear.None, true);
+        //zoomTween.onComplete.add(zoomWorld, {zoomScale: C.game.zoomScale});
+        var scaleTween = game.add.tween(game.world.scale).to( { x: 1, y: 1 }, 1500, Phaser.Easing.Linear.None, true);
+        scaleTween.onComplete.add(zoomFalse, this);
         }
-        worldScale -= 0.04;
-        menuBar.width = C.menuBar.width / worldScale;
-        menuBar.height = C.menuBar.height / worldScale;
+        menuBar.width = C.menuBar.width / game.world.scale.x;
+        menuBar.height = C.menuBar.height / game.world.scale.y;
         menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/C.game.zoomScale, C.menuBar.width);
         menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/C.game.zoomScale, C.menuBar.height);
         game.world.bringToTop(menuBar);
-        if (game.camera.x > 0 || game.camera.y > 0) {
-          if (focusSpace.increment.x > 0) {
-            game.camera.x -= focusSpace.increment.x;
-          } else {
-            game.camera.x += focusSpace.increment.x;
-          }
-          if (focusSpace.increment.y > 0) {
-            game.camera.y -= focusSpace.increment.y;
-          } else {
-            game.camera.y += focusSpace.increment.y;
-          }
-
-          game.camera.x = Phaser.Math.clamp(game.camera.x, 0, 3000);
-          game.camera.y = Phaser.Math.clamp(game.camera.y, 0, 3000);
-
-        } else if (worldScale <= 1) {
-            zoomOut = false;
-            for (i = 0; i < buttonsList.length; i++) {
-              game.world.bringToTop(buttonsList[i]);
-            }
-
-            for (i = 0; i < buttonsTextList.length; i++) {
-              buttonsTextList[0].reset(buttonsTextList[0].x,buttonsTextList[0].y);
-            }
-        }*/
     } if (battleStarting) {
       var lookAt = focusX; 
-      battlePlayer.sprite.x = Phaser.Math.clamp(battlePlayer.sprite.x + C.mech.battleSpeed, 0, lookAt + C.mech.battleSpacing);
-      battleMonster.sprite.x = Phaser.Math.clamp(battleMonster.sprite.x - C.mech.battleSpeed, lookAt - C.mech.battleSpacing, 3000);
-      if (battlePlayer.sprite.x === lookAt + C.mech.battleSpacing && battleMonster.sprite.x - 35 && zoomIn === false) {
+      battlePlayer.sprite.x = Phaser.Math.clamp(battlePlayer.sprite.x + C.mech.battleSpeed/2, 0, lookAt + C.mech.battleSpacing);
+      battleMonster.sprite.x = Phaser.Math.clamp(battleMonster.sprite.x - C.mech.battleSpeed/2, lookAt - C.mech.battleSpacing, 3000);
+      if (battlePlayer.sprite.x === lookAt + C.mech.battleSpacing && battleMonster.sprite.x - 35) {
         battleTurn = battlePlayer;
         attackText = game.add.bitmapText(menuBar.x + 50, menuBar.y + 20 ,'attackfont', "Attack!",30);
         attackText.anchor.set(0.5);
@@ -547,8 +505,20 @@ function zoomWorld() {
 }
 
 function zoomFalse() {
-  zoomIn = false;
-  game.world.scale.set(C.game.zoomScale);
+  if (zoomIn === true) {
+    zoomIn = false;
+    game.world.scale.set(C.game.zoomScale);
+  }
+  if (zoomOut === true) { 
+    zoomOut = false;
+    for (i = 0; i < buttonsList.length; i++) {
+      game.world.bringToTop(buttonsList[i]);
+    }
+    for (i = 0; i < buttonsTextList.length; i++) {
+      buttonsTextList[i].reset(buttonsTextList[i].x,buttonsTextList[i].y);
+    }
+    game.world.scale.set(1);
+  }
 }
 
 function queAttack() {
@@ -1685,7 +1655,7 @@ function spawnSpecific(object,space) {
       obj.rp = 3;
       obj.mr = 4;
     } 
-    drawnMonster.drawn;
+    drawnMonster.drawn = true;
   }
   spawn.smoothed = true;
   addToOccupied(targetSpace,spawn);
