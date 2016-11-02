@@ -205,43 +205,42 @@ class MainMenu {
   }
 
   create() {
-    var titleText = game.add.bitmapText(game.world.centerX, game.world.centerY - game.height/4, 'attackfont', "ATTACK ON MARS", 80*globalScale);
+    var titleText = game.add.bitmapText(game.world.centerX, game.world.centerY - game.height/4, 'attackfont', "ATTACK ON MARS", 90*globalScale);
     titleText.anchor.set(0.5);
     playerCount = localStorage.getItem('playerCount') || 2;
-    var countNumber = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/6, 'attackfont', playerCount, 60*globalScale) 
+    var countNumber = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/6, 'attackfont', playerCount, 90*globalScale) 
     countNumber.anchor.set(0.5);
-    //var left = game.add.bitmapText(game.world.centerX - 40*globalScale, game.world.centerY + game.height/6, 'attackfont', "<", 60*globalScale)
-    var left = game.add.sprite(game.world.centerX - 90*globalScale, game.world.centerY + game.height/6, "leftright");
+    var left = game.add.sprite(game.world.centerX - 140*globalScale, game.world.centerY + game.height/6, "leftright");
     left.frame = 0;
     left.anchor.set(0.5);
     left.inputEnabled = true;
-    left.width = 62;
-    left.height = 62;
+    left.width = 90 * globalScale;
+    left.height = 90 * globalScale;
     left.events.onInputDown.add(changePlayerCount, {action: -1, display: countNumber});
-    ///var right = game.add.bitmapText(game.world.centerX + 40*globalScale, game.world.centerY + game.height/6, 'attackfont', ">", 60*globalScale)
-    var right = game.add.sprite(game.world.centerX + 90*globalScale, game.world.centerY + game.height/6, "leftright");
+    var right = game.add.sprite(game.world.centerX + 140*globalScale, game.world.centerY + game.height/6, "leftright");
     right.frame = 1;
     right.anchor.set(0.5);
     right.inputEnabled = true;
-    right.width = 62;
-    right.height = 62;
+    right.width = 90 * globalScale;
+    right.height = 90 * globalScale;
     right.events.onInputDown.add(changePlayerCount, {action: 1, display: countNumber});
-    var playerCountText = game.add.bitmapText(game.world.centerX, countNumber.y - 100*globalScale, 'attackfont', "Player Count", 60*globalScale);
+    var playerCountText = game.add.bitmapText(game.world.centerX, countNumber.y - 140*globalScale, 'attackfont', "Player Count", 90*globalScale);
     playerCountText.anchor.set(.5);
     game.input.onUp.add(checkButtons, {left: left, right: right});
-    var playButton = game.add.bitmapText(game.world.centerX, countNumber.y + 100*globalScale, 'attackfont', "Play Game", 60*globalScale);
+    var playButton = game.add.bitmapText(game.world.centerX, countNumber.y + 140*globalScale, 'attackfont', "Play Game", 90*globalScale);
     playButton.anchor.set(.5);
     playButton.inputEnabled = true;
     playButton.events.onInputUp.add(changeState, {state: "Setup"});
-    var settingsButton = game.add.bitmapText(game.world.centerX, playButton.y + 100*globalScale, 'attackfont', "Settings", 60*globalScale);
+    var settingsButton = game.add.bitmapText(game.world.centerX, playButton.y + 140*globalScale, 'attackfont', "Settings", 90*globalScale);
     settingsButton.anchor.set(.5);
     settingsButton.inputEnabled = true;
     settingsButton.events.onInputUp.add(displaySettings, {state: "Setup"});
+
   }
 }
 
 function displaySettings() {
-  
+  game.camera.y += game.camera.width;
 
 }
 
