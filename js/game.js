@@ -177,7 +177,7 @@ class Load {
     this.load.image("menubar","assets/menubar.png",C.menuBar.width,C.menuBar.height);
     this.load.image("wrench","assets/wrench.png", C.wrench.width,C.wrench.height);
     this.load.image("arrow","assets/arrow.png", C.arrow.width,C.arrow.height);
-    this.load.image("left","assets/lefright.png", 62, 128);
+    this.load.spritesheet("leftright","assets/leftright.png", 62, 128);
     this.load.image("mine","assets/Mines.png", C.extras.width,C.extras.height);
     this.load.image("dropwall", "assets/DropWall.png", C.extras.width, C.extras.height);
     this.load.image("obliterationray", "assets/ObliterationRay.png", C.extras.width, C.extras.height);
@@ -211,24 +211,38 @@ class MainMenu {
     var countNumber = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/6, 'attackfont', playerCount, 60*globalScale) 
     countNumber.anchor.set(0.5);
     //var left = game.add.bitmapText(game.world.centerX - 40*globalScale, game.world.centerY + game.height/6, 'attackfont', "<", 60*globalScale)
-    var left = game.sprite.add(game.world.centerX - 40*globalScale, game.world.centerY + game.height/6, "left");
+    var left = game.add.sprite(game.world.centerX - 90*globalScale, game.world.centerY + game.height/6, "leftright");
+    left.frame = 0;
     left.anchor.set(0.5);
     left.inputEnabled = true;
-    left.events.onInputUp.add(changePlayerCount, {action: -1, display: countNumber});
-    var right = game.add.bitmapText(game.world.centerX + 40*globalScale, game.world.centerY + game.height/6, 'attackfont', ">", 60*globalScale)
+    left.width = 62;
+    left.height = 62;
+    left.events.onInputDown.add(changePlayerCount, {action: -1, display: countNumber});
+    ///var right = game.add.bitmapText(game.world.centerX + 40*globalScale, game.world.centerY + game.height/6, 'attackfont', ">", 60*globalScale)
+    var right = game.add.sprite(game.world.centerX + 90*globalScale, game.world.centerY + game.height/6, "leftright");
+    right.frame = 1;
     right.anchor.set(0.5);
     right.inputEnabled = true;
-    right.events.onInputUp.add(changePlayerCount, {action: 1, display: countNumber});
-    console.log(left.x);
+    right.width = 62;
+    right.height = 62;
+    right.events.onInputDown.add(changePlayerCount, {action: 1, display: countNumber});
     var playerCountText = game.add.bitmapText(game.world.centerX, countNumber.y - 100*globalScale, 'attackfont', "Player Count", 60*globalScale);
     playerCountText.anchor.set(.5);
+    game.input.onUp.add(checkButtons, {left: left, right: right});
     var playButton = game.add.bitmapText(game.world.centerX, countNumber.y + 100*globalScale, 'attackfont', "Play Game", 60*globalScale);
     playButton.anchor.set(.5);
     playButton.inputEnabled = true;
     playButton.events.onInputUp.add(changeState, {state: "Setup"});
     var settingsButton = game.add.bitmapText(game.world.centerX, playButton.y + 100*globalScale, 'attackfont', "Settings", 60*globalScale);
-    settingsButton.anchor.set(.5); 
+    settingsButton.anchor.set(.5);
+    settingsButton.inputEnabled = true;
+    settingsButton.events.onInputUp.add(displaySettings, {state: "Setup"});
   }
+}
+
+function displaySettings() {
+  
+
 }
 
 function changeState() {
@@ -246,6 +260,13 @@ function changePlayerCount(callObject) {
   }
 }
 
+function checkButtons() {
+  if (!this.left.alive && playerCount > 2) {
+    this.left.reset(this.left.x,this.left.y);
+  } else if (!this.right.alive && playerCount < 4) {
+    this.right.reset(this.right.x,this.right.y);
+  }
+}
 
 class Setup {
 
@@ -424,12 +445,10 @@ class Setup {
           menuBar.kill();
         }
         worldScale -= 0.04;
-        /*
         menuBar.width = C.menuBar.width / worldScale;
         menuBar.height = C.menuBar.height / worldScale;
         menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/C.game.zoomScale, C.menuBar.width);
         menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/C.game.zoomScale, C.menuBar.height);
-        */
         game.world.bringToTop(menuBar);
         if (game.camera.x > 0 || game.camera.y > 0) {
           if (focusSpace.increment.x > 0) {
@@ -891,6 +910,9 @@ function rollDie(count){
 
 function battle(player, monster) {
   //Simple Placeholder battle
+  game.world.bringToTop(monster.sprite);
+  game.world.bringToTop(player.sprite);
+  
     if (battleTurn === battleMonster && battleMonster.sprite) {
       if (attackText) {
         for (i = 0; i < battleTexts.length; i++) {
@@ -1042,16 +1064,32 @@ function move(object,destination) {
       console.log("BOOM!");
     }
   }
-  object.sprite.x = Space[destination].x*C.bg.scale*C.bg.resizeX + game.bg.position.x;
-  object.sprite.y = Space[destination].y*C.bg.scale*C.bg.resizeY + game.bg.position.y;
+  var destinationX = Space[destination].x*C.bg.scale*C.bg.resizeX + game.bg.position.x;
+  var destinationY = Space[destination].y*C.bg.scale*C.bg.resizeY + game.bg.position.y;
+  
+  if (playersList.indexOf(object) > -1) {
+    object.sprite.x = destinationX;
+    object.sprite.y = destinationY;
+  } else { 
+    var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, 2000, Phaser.Easing.Linear.None, true);
+    for (i = 1; i < playersList.length; i++) {
+      if (playersList[i] && playersList[i].sprite) {
+        playersList[i].sprite.inputEnabled = false;
+      }
+    }
+  }
   removeFromList(object, Space[object.key]);
   object.key = destination;
   object.sprite.closestSpaces = getClosestSpaces(object.key);
   object.space = Space[destination];
   addToOccupied(object, Space[destination]);
   game.world.bringToTop(object.sprite);
-  checkBattle(Space[object.key]);
-
+  
+  if (playersList.indexOf(object) > -1) {
+    checkBattle(Space[object.key]);
+  } else {
+    moveTween.onComplete.add(checkBattle, {space:Space[object.key]});
+  }
 }
 
 function repair(repairing) {
@@ -1188,6 +1226,14 @@ function checkBattle(space) {
   //Takes a space, and if there are both monsters and players on that
   //space, battle 
   //happens
+  for (i = 1; i < playersList.length; i++) {
+    if (playersList[i] && playersList[i].sprite) {
+      playersList[i].sprite.inputEnabled = true;
+    }
+  }
+  if (this.space) {
+    space = this.space;
+  }
   scrubList(globalList);
   scrubList(space.occupied);
   var pendingMonster = null;
@@ -1468,6 +1514,8 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     random.scale.y = C.mech.scale;
   }
   random.smoothed = true;
+  random.alpha = 0;
+  game.add.tween(random).to( { alpha: 1 }, 1000, Phaser.Easing.Linear.None, true);
   random.prototype = Object.create(Phaser.Sprite.prototype);
   //random.scale.setTo(C.game.scaleRatio,C.game.scaleRatio)
   var obj =  {
