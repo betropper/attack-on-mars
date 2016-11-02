@@ -271,8 +271,6 @@ class Setup {
   if (Phaser.Device.desktop) {
       if (window.innerWidth < C.game.width) {
         game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-      } else {
-        game.scale.scaleMode = Phaser.ScaleManager.NO_SCALE;
       }
     }
     //Set ZoomIn to true or ZoomOut to false to enable zoom. It will
@@ -465,7 +463,7 @@ function setLastClicked(sprite) {
   if (playerNames.indexOf(sprite.key) > -1) {
     lastClicked = playersList[sprite.number];
     var normalState = battleState !== false && zoomIn !== false && zoomOut !== false;
-    if (lastClicked.key.indexOf("0") === 2 && !repairText && lastClicked.hp < lastClicked.maxhp && normalState) { 
+    if  (lastClicked.key.indexOf("0") === 2 && !repairText && lastClicked.hp < lastClicked.maxhp && normalState) { 
       repairText = game.add.text(1050, menuBar.y, "Repair " + sprite.key, C.game.textStyle);
       repairText.anchor.set(0.5);
       repairText.inputEnabled = true;
