@@ -399,11 +399,15 @@ class Setup {
       // Temporary for testing. Change this later.
       if (!menuBar.alive) {
         menuBar = game.add.sprite(0,(game.height/worldScale) - C.menuBar.height + C.menuBar.height/4,"menubar");
-        menuBar.width = C.menuBar.width;
-        menuBar.height = C.menuBar.height;
+        menuBar.width = C.game.width;
+        menuBar.height = C.menuBar.height*globalScale;
         menuBar.fixedToCamera = true;
         game.world.bringToTop(menuBar);
-      }
+        var zoomTween = game.add.tween(game.camera).to( { x: focusX*3 - game.camera.width/2, y: focusY*3 - game.camera.height/2 }, 1000, Phaser.Easing.Linear.None, true);
+        //zoomTween.onComplete.add(zoomWorld, {zoomScale: C.game.zoomScale});
+        var scaleTween = game.add.tween(game.world.scale).to( { x: C.game.zoomScale, y: C.game.zoomScale }, 1000, Phaser.Easing.Linear.None, true);
+        scaleTween.onComplete.add(zoomFalse, this);
+      }/*
        for (i = 0; i < buttonsTextList.length; i++) {
         buttonsTextList[0].kill();
        }
@@ -472,7 +476,7 @@ class Setup {
             for (i = 0; i < buttonsTextList.length; i++) {
               buttonsTextList[0].reset(buttonsTextList[0].x,buttonsTextList[0].y);
             }
-        }
+        }*/
     } if (battleStarting) {
       var lookAt = focusX; 
       battlePlayer.sprite.x = Phaser.Math.clamp(battlePlayer.sprite.x + C.mech.battleSpeed, 0, lookAt + C.mech.battleSpacing);
@@ -502,8 +506,8 @@ class Setup {
 
     }
     // set a minimum and maximum scale value
-    worldScale = Phaser.Math.clamp(worldScale, 1, C.game.zoomScale);
-    game.world.scale.set(worldScale);
+    //worldScale = Phaser.Math.clamp(worldScale, 1, C.game.zoomScale);
+    //game.world.scale.set(worldScale);
     if (spaceDisplay) {
       spaceDisplay.setText("Valid Movements for " + turn.sprite.key + ":\n " + turn.sprite.closestSpaces.keys.join(" ") + "\nRemaining Moves: " + actionPoints,C.game.textStyle);
     }
@@ -533,6 +537,18 @@ class Setup {
     }
 
   }
+}
+
+function zoomWorld() {
+ if (this.zoomScale) {
+  var scaleTween = game.add.tween(game.world.scale).to( { x: this.zoomScale, y: this.zoomScale }, 1000, Phaser.Easing.Linear.None, true);
+  scaleTween.onComplete.add(zoomFalse, this);
+ }
+}
+
+function zoomFalse() {
+  zoomIn = false;
+  game.world.scale.set(C.game.zoomScale);
 }
 
 function queAttack() {
