@@ -1,4 +1,4 @@
-var globalScale = .7;
+var globalScale = .5;
 var C = {
  "game": {
    "zoomScale": 3,
@@ -177,6 +177,7 @@ class Load {
     this.load.image("menubar","assets/menubar.png",C.menuBar.width,C.menuBar.height);
     this.load.image("wrench","assets/wrench.png", C.wrench.width,C.wrench.height);
     this.load.image("arrow","assets/arrow.png", C.arrow.width,C.arrow.height);
+    this.load.image("left","assets/lefright.png", 62, 128);
     this.load.image("mine","assets/Mines.png", C.extras.width,C.extras.height);
     this.load.image("dropwall", "assets/DropWall.png", C.extras.width, C.extras.height);
     this.load.image("obliterationray", "assets/ObliterationRay.png", C.extras.width, C.extras.height);
@@ -184,9 +185,67 @@ class Load {
   }
   create() {
     console.log("Loaded!");
-    this.state.start("Setup");
+    this.state.start("MainMenu");
   }
 }
+
+class MainMenu {
+  
+  preload() {
+    if (Phaser.Device.desktop) {
+      if (window.innerWidth < C.game.width) {
+        game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+      } else {
+        game.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
+        game.scale.setUserScale((window.innerWidth)/2800,(window.innerHeight)/1280);
+      }
+    } else {
+      game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
+    }
+  }
+
+  create() {
+    var titleText = game.add.bitmapText(game.world.centerX, game.world.centerY - game.height/4, 'attackfont', "ATTACK ON MARS", 80*globalScale);
+    titleText.anchor.set(0.5);
+    playerCount = localStorage.getItem('playerCount') || 2;
+    var countNumber = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/6, 'attackfont', playerCount, 60*globalScale) 
+    countNumber.anchor.set(0.5);
+    //var left = game.add.bitmapText(game.world.centerX - 40*globalScale, game.world.centerY + game.height/6, 'attackfont', "<", 60*globalScale)
+    var left = game.sprite.add(game.world.centerX - 40*globalScale, game.world.centerY + game.height/6, "left");
+    left.anchor.set(0.5);
+    left.inputEnabled = true;
+    left.events.onInputUp.add(changePlayerCount, {action: -1, display: countNumber});
+    var right = game.add.bitmapText(game.world.centerX + 40*globalScale, game.world.centerY + game.height/6, 'attackfont', ">", 60*globalScale)
+    right.anchor.set(0.5);
+    right.inputEnabled = true;
+    right.events.onInputUp.add(changePlayerCount, {action: 1, display: countNumber});
+    console.log(left.x);
+    var playerCountText = game.add.bitmapText(game.world.centerX, countNumber.y - 100*globalScale, 'attackfont', "Player Count", 60*globalScale);
+    playerCountText.anchor.set(.5);
+    var playButton = game.add.bitmapText(game.world.centerX, countNumber.y + 100*globalScale, 'attackfont', "Play Game", 60*globalScale);
+    playButton.anchor.set(.5);
+    playButton.inputEnabled = true;
+    playButton.events.onInputUp.add(changeState, {state: "Setup"});
+    var settingsButton = game.add.bitmapText(game.world.centerX, playButton.y + 100*globalScale, 'attackfont', "Settings", 60*globalScale);
+    settingsButton.anchor.set(.5); 
+  }
+}
+
+function changeState() {
+    game.state.start(this.state);
+}
+
+function changePlayerCount(callObject) {
+  if (this.action && this.action + playerCount >= 2 && this.action + playerCount <= 4) {
+    playerCount += this.action;
+    if (this.display) {
+      this.display.setText(playerCount);
+    }
+  } else {
+    callObject.kill()
+  }
+}
+
 
 class Setup {
 
@@ -197,8 +256,8 @@ class Setup {
     for (var i = 0; i < obj_keys.length; i++) {
       Space[obj_keys[i]].occupied = false;
     }   
-  
-    playerCount = parseInt(prompt("How many will be playing?", "2")) || null;
+    
+    //playerCount = parseInt(prompt("How many will be playing?", "2")) || null;
     game.stage.smoothed = true;
   
   if (Phaser.Device.desktop) {
@@ -1531,6 +1590,6 @@ game.state.add("Boot",Boot);
 game.state.add("Load",Load);
 game.state.add("Setup",Setup);
 game.state.add("GameOver",GameOver);
-//game.state.add("Reload",Reload);
+game.state.add("MainMenu",MainMenu);
 game.state.start("Boot");
 
