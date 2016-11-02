@@ -1,4 +1,4 @@
-var globalScale = .6;
+var globalScale = .7;
 var C = {
  "game": {
    "zoomScale": 3,
@@ -44,7 +44,7 @@ var C = {
    "battleSpeed": 2
  },
  "destroyed": {
-   "scale": 1.55 * globalScale
+   "scale": 1.8 * globalScale
  },
 
  "monster": {
@@ -170,6 +170,7 @@ class Load {
     this.load.image("bluecircle", "assets/blue-circle.png", 72, 72);
     this.load.image("redcircle", "assets/red-circle.png", 72, 72);
     this.load.image("purplecircle", "assets/purple-circle.png", 72, 72);
+    this.load.image("destroyedCity", "assets/destroyedcity.png", 66, 124);
     this.load.image("initialMonster", "assets/InitialIcon.png", C.monster.width, C.monster.height);
     this.load.image("growingMonster", "assets/GrowingIcon.png", C.monster.width, C.monster.height);
     this.load.image("extinctionMonster", "assets/ExtinctionIcon.png", C.monster.width, C.monster.height);
@@ -199,12 +200,13 @@ class Setup {
   
     playerCount = parseInt(prompt("How many will be playing?", "2")) || null;
     game.stage.smoothed = true;
-
+  
   if (Phaser.Device.desktop) {
     if (window.innerWidth < C.game.width) {
       game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
     } else {
-      game.scale.scaleMode = Phaser.ScaleManager.NO_SCALE;
+      game.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
+      game.scale.setUserScale((window.innerWidth)/2800,(window.innerHeight)/1280);
     }
   } else {
     alert("You are on mobile!");
@@ -222,7 +224,7 @@ class Setup {
 
     for (var i = 1; i <= playerCount; i++) {
       console.log(i);
-      var destroyedCityColumn = spawnRandom("purplecircle", i, "0", false);
+      var destroyedCityColumn = spawnRandom("destroyedCity", i, "0", false);
       destroyedCities[i-1] = destroyedCityColumn;
       playersList[i] = spawnRandom(playerNames[i-1], i, "0", true); 
       playersList[i].sprite.number = i;
@@ -258,7 +260,7 @@ class Setup {
     menuBar.fixedToCamera = true;
     game.world.bringToTop(menuBar);
     menuBar.kill();
-    waitButton = game.add.button(80, menuBar.y + 80, 'purplecircle', waitOneAction);
+    waitButton = game.add.button(80, menuBar.y + 80, 'destroyedCity', waitOneAction);
     waitButton.anchor.x = .5;
     waitButton.anchor.y = .5;
     waitButton.scale.y = .6;
@@ -268,11 +270,13 @@ class Setup {
     
     }
   update() {
-  if (Phaser.Device.desktop) {
+  /*if (Phaser.Device.desktop) {
       if (window.innerWidth < C.game.width) {
         game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+      } else {
+        game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
       }
-    }
+    }*/
     //Set ZoomIn to true or ZoomOut to false to enable zoom. It will
     //reset itself.
     //
@@ -329,7 +333,7 @@ class Setup {
           if (playersList[i] !== battlePlayer) {
             playersList[i].sprite.inputEnabled = false;
           }
-        }
+        } 
         worldScale += 0.04;
         console.log("Tick.");
         menuBar.width = C.menuBar.width / worldScale;
@@ -932,14 +936,14 @@ function battle(player, monster) {
           if (parseInt(monstersList[i].key.charAt(2)) !== 0 && parseInt(newDestination.charAt(2)) === 0) {
             if (Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined) {
               console.log("U R DED"); 
-              var destroyedCityColumn = spawnSpecific("purplecircle", newDestination);
+              var destroyedCityColumn = spawnSpecific("destroyedCity", newDestination);
               destroyedCities.push(destroyedCityColumn);
               occupiedRows.push(destroyedCityColumn.key.substring(0,2));
             }
           } else if (parseInt(monstersList[i].key.charAt(2)) === 0 )  {
             newDestination = monstersList[i].sprite.closestSpaces.directions[1];
             if (Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined) {
-            var destroyedCityColumn = spawnSpecific("purplecircle", newDestination);
+            var destroyedCityColumn = spawnSpecific("destroyedCity", newDestination);
             destroyedCities.push(destroyedCityColumn);
             occupiedRows.push(destroyedCityColumn.key.substring(0,2));
           } 
@@ -1389,9 +1393,16 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
   }
   random.anchor.x = .5;
   random.anchor.y = .5;
-  if (object === "purplecircle") {
+  if (object === "destroyedCity") {
+    random.anchor.x = .41;
+    random.anchor.y = .5;
     random.scale.x = C.destroyed.scale;
     random.scale.y = C.destroyed.scale;
+    random.angle = Math.atan2(game.bg.y + game.bg.height/2 - random.y, game.bg.x + game.bg.width/2 - random.x );
+    random.angle = random.angle * (180/Math.PI) - 10;   
+    /*if(random.angle < 0) {
+      random.angle = 360 - (-random.angle);
+    }*/
     occupiedRows.push(space.key.substring(0,2));
   } else {
     random.scale.x = C.mech.scale;
@@ -1459,9 +1470,17 @@ function spawnSpecific(object,space) {
   spawn = game.add.sprite(targetSpace.x*C.bg.scale*C.bg.resizeX + game.bg.position.x,targetSpace.y*C.bg.scale*C.bg.resizeY + game.bg.position.y,object); 
   spawn.anchor.x = .5;
   spawn.anchor.y = .5;
-  if (object === "purplecircle") {
+  if (object === "destroyedCity") {
     spawn.scale.x = C.destroyed.scale;
     spawn.scale.y = C.destroyed.scale;
+    spawn.angle = Math.atan2(game.bg.y + game.bg.height/2 - spawn.y, game.bg.x + game.bg.width/2 - spawn.x );
+    spawn.angle = spawn.angle * (180/Math.PI) - 10;
+    if(spawn.angle < 0)
+      {
+        spawn.angle = 360 - (-spawn.angle);
+      }
+    console.log(random.angle);
+    occupiedRows.push(space.substring(0,2));
   } else {
     spawn.scale.x = C.mech.scale;
     spawn.scale.y = C.mech.scale;
