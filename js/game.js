@@ -57,8 +57,8 @@ var C = {
   "height": 120
  },
  "wrench": {
-  "width": 200,
-  "height": 200
+  "width": 300,
+  "height": 300
  },
  "arrow": {
   "width": 512,
@@ -79,7 +79,8 @@ var C = {
 var focusX,
  focusY,
  xPivot,
- yPivot;
+ yPivot,
+ zoomInTweens;
 var battleSpeedDecrease = 0;
 var boughtBool;
 var upgradeState;
@@ -325,7 +326,7 @@ class Setup {
     closestSpaces = getClosestSpaces(turn.key);
     turn.sprite.closestSpaces = closestSpaces;
     // Add in text that is displayed.
-    spaceDisplay = game.add.text(game.world.centerX + game.world.width/3.5, game.world.centerY - game.world.height/3,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
+    spaceDisplay = game.add.text(game.world.centerX + game.world.width/4.5, game.world.centerY - game.world.height/3,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
     attributeDisplay = game.add.text(spaceDisplay.x, spaceDisplay.y + 300*globalScale, "", C.game.textStyle);
     spaceDisplay.anchor.setTo(.5); 
     attributeDisplay.anchor.setTo(.5);
@@ -335,7 +336,7 @@ class Setup {
     menuBar = game.add.sprite(0,game.height - game.camera.width/5,"menubar");
     menuBar.width = game.camera.width;
     menuBar.height = game.camera.width/5;
-    menuBar.fixedToCamera = true;
+    //menuBar.fixedToCamera = true;
     game.world.bringToTop(menuBar);
     menuBar.kill();
     waitButton = game.add.button(80, menuBar.y + 80, 'destroyedCity', waitOneAction);
@@ -397,26 +398,22 @@ class Setup {
 
      if (zoomIn === true) {
       // Temporary for testing. Change this later.
-      if (!menuBar.alive) {
-        menuBar.reset(menuBar.x,menuBar.y);
-        menuBar.width = game.camera.width;
-        menuBar.height = game.camera.width/5;
-        menuBar.fixedToCamera = true;
-        game.world.bringToTop(menuBar);
-        var zoomTween = game.add.tween(game.camera).to( { x: focusX*3 - game.camera.width/2, y: focusY*3 - game.camera.height/2 }, 1000, Phaser.Easing.Linear.None, true);
+      if (!zoomInTweens) {
+        zoomInTweens = true;
+        var zoomTween = game.add.tween(game.camera).to( { x: focusX*3 - game.camera.width/2 , y: focusY*3 - game.camera.height/2 + game.camera.height/8 }, 1000, Phaser.Easing.Linear.None, true);
         //zoomTween.onComplete.add(zoomWorld, {zoomScale: C.game.zoomScale});
         var scaleTween = game.add.tween(game.world.scale).to( { x: C.game.zoomScale, y: C.game.zoomScale }, 1000, Phaser.Easing.Linear.None, true);
         scaleTween.onComplete.add(zoomFalse, this);
-        var barTween = game.add.tween(menuBar).to( { y: game.camera.y - game.camera.width/2 + menuBar.width, width: game.camera.width/3, height: game.camera.width/10 }, 1000, Phaser.Easing.Linear.None, true)
+      }
         for (i = 0; i < buttonsTextList.length; i++) {
         buttonsTextList[i].kill();
        }
+
         for (i = 1; i < playersList.length; i++) {
           if (playersList[i] !== battlePlayer) {
             playersList[i].sprite.inputEnabled = false;
           }
         }
-      }
         /*
         menuBar.width = C.game.width / game.world.scale.x;
         menuBar.height = (C.game.height/10) / game.world.scale.y;
@@ -443,18 +440,33 @@ class Setup {
       battlePlayer.sprite.x = Phaser.Math.clamp(battlePlayer.sprite.x + C.mech.battleSpeed/2, 0, lookAt + C.mech.battleSpacing);
       battleMonster.sprite.x = Phaser.Math.clamp(battleMonster.sprite.x - C.mech.battleSpeed/2, lookAt - C.mech.battleSpacing, 3000);
       if (battlePlayer.sprite.x === lookAt + C.mech.battleSpacing && battleMonster.sprite.x - 35) {
+        
+        menuBar.reset(game.camera.x/C.game.zoomScale, game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale);
+        menuBar.width = game.camera.width/C.game.zoomScale;
+        menuBar.height = game.camera.height/8;
+        //menuBar.y = game.camera.y + game.camera.height/C.game.zoomScale;
+        //menuBar.x = game.camera.x/C.game.zoomScale;
+        game.world.bringToTop(menuBar);
+        game.world.scale.set(C.game.zoomScale);
+        var barTween = game.add.tween(menuBar).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8)}, 2000, Phaser.Easing.Linear.None, true)
+        //game.add.tween(menuBar).to( { y: game.world.centerY }, 4000, Phaser.Easing.Bounce.Out, true);
         battleTurn = battlePlayer;
-        attackText = game.add.bitmapText(menuBar.x + 50, menuBar.y + 20 ,'attackfont', "Attack!",30);
+        attackText = game.add.bitmapText(menuBar.x + 100*globalScale, menuBar.y + menuBar.height,'attackfont', "Attack!",50*globalScale);
+        //var attackTween = game.add.tween(attackText).to({ y: C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + menuBar.width}, 2000, Phaser.Easing.Linear.None, true)
         attackText.anchor.set(0.5);
         attackText.inputEnabled = true;
         attackText.events.onInputDown.add(queAttack, {attacker: battlePlayer});
         battleTexts.push(attackText);
         if (battlePlayer.canSiege) {
-          siegeText = game.add.bitmapText(battleTexts[battleTexts.length - 1].x + battleTexts[battleTexts.length - 1].width/2 + 10, menuBar.y + 20, 'attackfont', "Siege Mode", 10);
-          siegeText.anchor.set(0.5);
+          siegeText = game.add.bitmapText(battleTexts[battleTexts.length - 1].x + battleTexts[battleTexts.length - 1].width/2 + 80*globalScale, menuBar.y + 20, 'attackfont', "Siege Mode", 50*globalScale);
+          siegeText.anchor.y = 0.5;
           siegeText.inputEnabled = true;
           siegeText.events.onInputDown.add(queAttack, {attacker: battlePlayer, modifier: "Siege Mode"});
           battleTexts.push(siegeText);
+        }
+        for (i = 0; i < battleTexts.length; i++) {
+          game.add.tween(battleTexts[i]).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + menuBar.height/2}, 2000, Phaser.Easing.Back.InOut, true)
+          game.world.bringToTop(battleTexts[i]);
         }
         battlePlayer.sprite.events.onDragStop._bindings = [];
         battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
@@ -510,8 +522,9 @@ function zoomWorld() {
 function zoomFalse() {
   if (zoomIn === true) {
     zoomIn = false;
-    game.world.scale.set(C.game.zoomScale);
-  }
+    zoomInTweens = false;
+
+}
   if (zoomOut === true) { 
     zoomOut = false;
     for (i = 0; i < buttonsList.length; i++) {
@@ -566,7 +579,7 @@ function setLastClicked(sprite) {
     }
     
     if (!upgradeText && normalState) { 
-      upgradeText = game.add.text(950, menuBar.y, "Upgrade " + sprite.key, C.game.textStyle);
+      upgradeText = game.add.text(attributeDisplay.x + 100*globalScale, attributeDisplay.y, "Upgrade " + sprite.key, C.game.textStyle);
       upgradeText.anchor.set(0.5);
       upgradeText.inputEnabled = true;
       upgradeText.events.onInputUp.add(upgrade, {upgrading: lastClicked});
