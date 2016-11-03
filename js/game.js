@@ -53,8 +53,8 @@ var C = {
    "scale": 1.3 * globalScale
  },
  "menuBar": {
-  "width": 2400,
-  "height": 300
+  "width": 294,
+  "height": 120
  },
  "wrench": {
   "width": 200,
@@ -332,9 +332,9 @@ class Setup {
     upgradeDisplay = game.add.text(attributeDisplay.x, attributeDisplay.y + 400*globalScale, "", C.game.textStyle);
     upgradeDisplay.anchor.setTo(.5);
     turn.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
-    menuBar = game.add.sprite(0,(game.height/game.world.scale.x) - C.menuBar.height+ C.menuBar.height/4,"menubar");
-    menuBar.width = C.menuBar.width;
-    menuBar.height = C.menuBar.height;
+    menuBar = game.add.sprite(0,game.height - game.camera.width/5,"menubar");
+    menuBar.width = game.camera.width;
+    menuBar.height = game.camera.width/5;
     menuBar.fixedToCamera = true;
     game.world.bringToTop(menuBar);
     menuBar.kill();
@@ -399,15 +399,16 @@ class Setup {
       // Temporary for testing. Change this later.
       if (!menuBar.alive) {
         menuBar.reset(menuBar.x,menuBar.y);
-        menuBar.width = C.game.width;
-        menuBar.height = C.menuBar.height*globalScale;
+        menuBar.width = game.camera.width;
+        menuBar.height = game.camera.width/5;
         menuBar.fixedToCamera = true;
         game.world.bringToTop(menuBar);
         var zoomTween = game.add.tween(game.camera).to( { x: focusX*3 - game.camera.width/2, y: focusY*3 - game.camera.height/2 }, 1000, Phaser.Easing.Linear.None, true);
         //zoomTween.onComplete.add(zoomWorld, {zoomScale: C.game.zoomScale});
         var scaleTween = game.add.tween(game.world.scale).to( { x: C.game.zoomScale, y: C.game.zoomScale }, 1000, Phaser.Easing.Linear.None, true);
         scaleTween.onComplete.add(zoomFalse, this);
-       for (i = 0; i < buttonsTextList.length; i++) {
+        var barTween = game.add.tween(menuBar).to( { y: game.camera.y - game.camera.width/2 + menuBar.width, width: game.camera.width/3, height: game.camera.width/10 }, 1000, Phaser.Easing.Linear.None, true)
+        for (i = 0; i < buttonsTextList.length; i++) {
         buttonsTextList[i].kill();
        }
         for (i = 1; i < playersList.length; i++) {
@@ -416,11 +417,12 @@ class Setup {
           }
         }
       }
-
-        menuBar.width = C.menuBar.width / game.world.scale.x;
-        menuBar.height = C.menuBar.height / game.world.scale.y;
+        /*
+        menuBar.width = C.game.width / game.world.scale.x;
+        menuBar.height = (C.game.height/10) / game.world.scale.y;
         menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/C.game.zoomScale, C.menuBar.width);
         menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/C.game.zoomScale, C.menuBar.height);
+        */
         game.world.bringToTop(menuBar);
     } else if (zoomOut === true) {
         if (menuBar.alive) {
@@ -430,8 +432,9 @@ class Setup {
         var scaleTween = game.add.tween(game.world.scale).to( { x: 1, y: 1 }, 1500, Phaser.Easing.Linear.None, true);
         scaleTween.onComplete.add(zoomFalse, this);
         }
-        menuBar.width = C.menuBar.width / game.world.scale.x;
-        menuBar.height = C.menuBar.height / game.world.scale.y;
+        menuBar.width = C.game.width / game.world.scale.x;
+        menuBar.height = (C.game.height/10) / game.world.scale.y;
+
         menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/C.game.zoomScale, C.menuBar.width);
         menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/C.game.zoomScale, C.menuBar.height);
         game.world.bringToTop(menuBar);
