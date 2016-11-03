@@ -91,6 +91,8 @@ var attackText;
 var siegeText;
 var waitButton;
 var mineButton;
+var repairButton;
+var upgradeButton;
 var wallButton;
 var lastClicked;
 var repairText;
@@ -326,7 +328,7 @@ class Setup {
     closestSpaces = getClosestSpaces(turn.key);
     turn.sprite.closestSpaces = closestSpaces;
     // Add in text that is displayed.
-    spaceDisplay = game.add.text(game.world.centerX + game.world.width/4.5, game.world.centerY - game.world.height/3,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
+    spaceDisplay = game.add.text(game.world.centerX + game.world.width/4, game.world.centerY - game.world.height/3,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
     attributeDisplay = game.add.text(spaceDisplay.x, spaceDisplay.y + 300*globalScale, "", C.game.textStyle);
     spaceDisplay.anchor.setTo(.5); 
     attributeDisplay.anchor.setTo(.5);
@@ -339,10 +341,10 @@ class Setup {
     //menuBar.fixedToCamera = true;
     game.world.bringToTop(menuBar);
     menuBar.kill();
-    waitButton = game.add.button(80, menuBar.y + 80, 'destroyedCity', waitOneAction);
+    waitButton = game.add.button(70*globalScale, game.world.centerX + game.world.width/2 - 90*globalScale, 'purplecircle', waitOneAction);
     waitButton.anchor.x = .5;
     waitButton.anchor.y = .5;
-    waitButton.scale.y = .6;
+    //waitButton.scale.y = .6;
     waitButton.battleButton = false;
     buttonsList.push(waitButton);
     game.world.bringToTop(waitButton);
@@ -550,54 +552,55 @@ function setLastClicked(sprite) {
   if (playerNames.indexOf(sprite.key) > -1) {
     lastClicked = playersList[sprite.number];
     var normalState = battleState !== false && zoomIn !== false && zoomOut !== false;
-    if  (lastClicked.key.indexOf("0") === 2 && !repairText && lastClicked.hp < lastClicked.maxhp && normalState) { 
-      repairText = game.add.text(1050, menuBar.y, "Repair " + sprite.key, C.game.textStyle);
-      repairText.anchor.set(0.5);
-      repairText.inputEnabled = true;
-      repairText.events.onInputDown.add(repair, {repairing: lastClicked});
-      repairButton = game.add.sprite(repairText.x, repairText.y + 85, 'wrench');
+    if  (lastClicked.key.indexOf("0") === 2 && !repairButton && lastClicked.hp < lastClicked.maxhp && normalState) { 
+      //repairText = game.add.text(1050, menuBar.y, "Repair " + sprite.key, C.game.textStyle);
+      //repairText.anchor.set(0.5);
+      //repairText.inputEnabled = true;
+      //repairText.events.onInputDown.add(repair, {repairing: lastClicked});
+      repairButton = game.add.sprite(0, 0, 'wrench');
       repairButton.anchor.set(0.5);
       repairButton.inputEnabled = true;
-      repairButton.width = 40;
-      repairButton.height = 40;
+      repairButton.width = 80;
+      repairButton.height = 80;
       repairButton.battleButton = false;
       buttonsList.push(repairButton);
-      buttonsTextList.push(repairText);
+      //buttonsTextList.push(repairText);
       repairButton.events.onInputDown.add(repair, {repairing: lastClicked});
     } else if (lastClicked.key.indexOf("0") === 2 && lastClicked.hp < lastClicked.maxhp && normalState) {
-      repairText.reset(1050, menuBar.y);
-      repairText.setText("Repair " + sprite.key);
-      repairText.events.onInputDown._bindings = [];
-      repairText.events.onInputDown.add(repair, {repairing: lastClicked});
+      //repairText.reset(1050, menuBar.y);
+      //repairText.setText("Repair " + sprite.key);
+      //repairText.events.onInputDown._bindings = [];
+      //repairText.events.onInputDown.add(repair, {repairing: lastClicked});
       repairButton.reset(repairText.x, repairText.y + 85);
       repairButton.events.onInputDown._bindings = [];
       repairButton.events.onInputDown.add(repair, {repairing: lastClicked});
-    } else if (repairText) {
-      repairText.kill();
+    } else if (repairButton) {
+      //repairText.kill();
       //buttonsList.splice(repairButton, 1);
       repairButton.kill();
     }
     
-    if (!upgradeText && normalState) { 
-      upgradeText = game.add.text(attributeDisplay.x + 100*globalScale, attributeDisplay.y, "Upgrade " + sprite.key, C.game.textStyle);
-      upgradeText.anchor.set(0.5);
-      upgradeText.inputEnabled = true;
-      upgradeText.events.onInputUp.add(upgrade, {upgrading: lastClicked});
-      upgradeButton = game.add.sprite(upgradeText.x, upgradeText.y + 85, 'wrench');
+    if (!upgradeButton && normalState) { 
+      //upgradeText = game.add.text(spaceDisplay.x + 200*globalScale, attributeDisplay.y, "Upgrade " + sprite.key, C.game.textStyle);
+      //upgradeText.anchor.set(0.5);
+      //upgradeText.inputEnabled = true;
+      //upgradeText.events.onInputUp.add(upgrade, {upgrading: lastClicked});
+      upgradeButton = game.add.sprite(0, 0, lastClicked.sprite.key);
       upgradeButton.anchor.set(0.5);
       upgradeButton.inputEnabled = true;
-      upgradeButton.width = 40;
-      upgradeButton.height = 40;
+      upgradeButton.width = 80;
+      upgradeButton.height = 80;
       upgradeButton.battleButton = false;
       buttonsList.push(upgradeButton);
-      buttonsTextList.push(upgradeText);
+      //buttonsTextList.push(upgradeText);
       upgradeButton.events.onInputUp.add(upgrade, {upgrading: lastClicked});
     } else if (normalState) {
-      upgradeText.reset(950, menuBar.y);
-      upgradeText.setText("Upgrade " + sprite.key);
-      upgradeText.events.onInputUp._bindings = [];
-      upgradeText.events.onInputUp.add(upgrade, {upgrading: lastClicked});
-      upgradeButton.reset(upgradeText.x, upgradeText.y + 85);
+      //upgradeText.reset(upgradeText.x, upgradeText.y);
+      //upgradeText.setText("Upgrade " + sprite.key);
+      //upgradeText.events.onInputUp._bindings = [];
+      //upgradeText.events.onInputUp.add(upgrade, {upgrading: lastClicked});
+      upgradeButton.reset(upgradeButton.x, upgradeButton.y);
+      upgradeButton.loadTexture(lastClicked.sprite.key);
       game.world.bringToTop(upgradeButton);
       upgradeButton.events.onInputUp._bindings = [];
       upgradeButton.events.onInputUp.add(upgrade, {upgrading: lastClicked});
@@ -664,17 +667,28 @@ function setLastClicked(sprite) {
         arrows[i].events.onInputDown.add(arrowMove, {moving: lastClicked, direction: arrows[i].attributes.direction});
       } 
     }*/
+   for (i = 0; i < buttonsList.length; i++) {
+     if (buttonsList[i].alive) {
+      buttonsList[i].x = game.world.centerX + game.world.width/2 - 90*globalScale;
+      if (lastButton) {
+        buttonsList[i].y = lastButton.y + 90;
+      } else {
+        buttonsList[i].y = 70;
+      }
+      var lastButton = buttonsList[i];
+     }
+   }
   } else if (sprite.key === "monster") {
     if (repairText) {
       repairText.kill();
       //buttonsList.splice(repairButton, 1);
       repairButton.kill();
     }
-    if (upgradeText) {
+    /*if (upgradeText) {
       upgradeText.kill();
       //buttonsList.splice(upgradeButton, 1);
       upgradeButton.kill();
-    }
+    }*/
   }
   
 }
@@ -1134,7 +1148,7 @@ function upgrade(upgrading) {
       }
   }
   console.log("Upgrading " + upgrading.sprite.key);
-  upgradeText.kill();
+  //upgradeText.kill();
   upgradeButton.kill();
   menuBar.kill();
   if (!upgradeMenu) {
