@@ -76,11 +76,14 @@ var C = {
  }
 }
 
+var bossNames = ["The Bloat","The Deciever","The Brute",] 
 var focusX,
  focusY,
  xPivot,
  yPivot,
- zoomInTweens;
+ zoomInTweens,
+ bossSprite;
+var boss = {};
 var battleSpeedDecrease = 0;
 var boughtBool;
 var upgradeState;
@@ -305,7 +308,7 @@ class Setup {
       playerCount = 4;
     }
 
-    game.time.events.add(Phaser.Timer.SECOND * 4, spawnBoss, this);
+    game.time.events.add(Phaser.Timer.SECOND * 1, spawnBoss, this);
     for (var i = 1; i <= playerCount; i++) {
       console.log(i);
       var destroyedCityColumn = spawnRandom("destroyedCity", i, "0", false);
@@ -334,7 +337,7 @@ class Setup {
     attributeDisplay = game.add.text(spaceDisplay.x, spaceDisplay.y + 300*globalScale, "", C.game.textStyle);
     spaceDisplay.anchor.setTo(.5); 
     attributeDisplay.anchor.setTo(.5);
-    upgradeDisplay = game.add.text(attributeDisplay.x, attributeDisplay.y + 400*globalScale, "", C.game.textStyle);
+    upgradeDisplay = game.add.text(attributeDisplay.x, attributeDisplay.y + 450*globalScale, "", C.game.textStyle);
     upgradeDisplay.anchor.setTo(.5);
     turn.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
     menuBar = game.add.sprite(0,game.height - game.camera.width/5,"menubar");
@@ -500,7 +503,7 @@ class Setup {
           repairText.text = "Repair " + lastClicked.sprite.key;
         }*/
        upgradeDisplay.setText("Upgrades for " + over.sprite.key +":\n" + over.upgrades.join(",\n"));
-      } else if (over.sprite.key === "monster") {
+      } else if (over.sprite.key === "monster" || bossNames.indexOf(over.sprite.key) > -1) {
         attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + "\nDefence Die (green): " + over.def + "\nBlue Attack Die: " + over.batk + "\nResearch Point Reward: " + over.rp);
         upgradeDisplay.setText("Upgrades for " + over.sprite.key +":\n" + over.upgrades.join(",\n"));
       }
@@ -519,21 +522,39 @@ class Setup {
 function spawnBoss() {
   
   var drawnMonster = MonstersDeck.bossMonsters[Math.floor(Math.random() * MonstersDeck.bossMonsters.length)];
-  boss = drawnMonster.name;
-  boss.x = changeValueScale(Space["center"].x,"x");
-  boss.y = changeValueScale(Space["center"].y,"y");
-  var bossSprite = game.add.sprite(boss.x,boss.y,boss.name);
+  boss.name = drawnMonster.name;
+  boss.hp = drawnMonster.hp;
+  boss.batk = drawnMonster.batk;
+  boss.upgrades = drawnMonster.upgrades;
+  boss.def = drawnMonster.def;
+  boss.rp = 5;
+  boss.mr = 4;
+  var bossX = changeValueScale(Space["center"].x,"x");
+  var bossY = changeValueScale(Space["center"].y,"y");
+  boss.sprite = game.add.sprite(bossX,bossY,boss.name);
+  boss.sprite.anchor.setTo(.5);
+  Space["center"].occupied = [boss]
   if (boss.name === "The Bloat") {
-    bossSprite.scale.setTo(.1);
-    var bossScapeTween = game.add.tween(bossSprite.scale).to({x: 1, y: 1}, 500, Phaser.Easing.Back.InOut, true);
-    bossScaleTween.onComplete.add(game.camera.shake(.01,600),this);
+    boss.sprite.scale.setTo(.16 * globalScale);
+    var bossScaleTween = game.add.tween(boss.sprite.scale).to({x: .96*globalScale, y: .96*globalScale}, 500, Phaser.Easing.Back.InOut, true);
+    bossScaleTween.onComplete.add(shakeSprite,{sprite: boss.sprite});
   }
-
+  boss.sprite.inputEnabled = true;
+  globalList.push(boss);
 }
 
 function shakeSprite(sprite) {
   sprite = this.sprite || sprite;
-  
+  game.camera.shake(.01, 500);
+  if (boss.name === "The Bloat") { 
+    game.time.events.add(500, shrinkSprite, this, boss.sprite);
+  }
+}
+
+function shrinkSprite(sprite) {
+ if (sprite.key === "The Bloat") {
+   var bossScaleTween = game.add.tween(boss.sprite.scale).to({x: .16*globalScale, y: .16*globalScale}, 500, Phaser.Easing.Back.InOut, true);
+ }
 }
 
 function zoomWorld() {
