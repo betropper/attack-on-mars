@@ -184,6 +184,7 @@ class Load {
     this.load.image("mine","assets/Mines.png", C.extras.width,C.extras.height);
     this.load.image("dropwall", "assets/DropWall.png", C.extras.width, C.extras.height);
     this.load.image("obliterationray", "assets/ObliterationRay.png", C.extras.width, C.extras.height);
+    this.load.image("The Bloat", "assets/bloat.jpg");
     game.load.bitmapFont('attackfont','assets/attackfont.png', 'assets/attackfont.fnt');
   }
   create() {
@@ -304,6 +305,7 @@ class Setup {
       playerCount = 4;
     }
 
+    game.time.events.add(Phaser.Timer.SECOND * 4, spawnBoss, this);
     for (var i = 1; i <= playerCount; i++) {
       console.log(i);
       var destroyedCityColumn = spawnRandom("destroyedCity", i, "0", false);
@@ -514,6 +516,26 @@ class Setup {
   }
 }
 
+function spawnBoss() {
+  
+  var drawnMonster = MonstersDeck.bossMonsters[Math.floor(Math.random() * MonstersDeck.bossMonsters.length)];
+  boss = drawnMonster.name;
+  boss.x = changeValueScale(Space["center"].x,"x");
+  boss.y = changeValueScale(Space["center"].y,"y");
+  var bossSprite = game.add.sprite(boss.x,boss.y,boss.name);
+  if (boss.name === "The Bloat") {
+    bossSprite.scale.setTo(.1);
+    var bossScapeTween = game.add.tween(bossSprite.scale).to({x: 1, y: 1}, 500, Phaser.Easing.Back.InOut, true);
+    bossScaleTween.onComplete.add(game.camera.shake(.01,600),this);
+  }
+
+}
+
+function shakeSprite(sprite) {
+  sprite = this.sprite || sprite;
+  
+}
+
 function zoomWorld() {
  if (this.zoomScale) {
   var scaleTween = game.add.tween(game.world.scale).to( { x: this.zoomScale, y: this.zoomScale }, 1000, Phaser.Easing.Linear.None, true);
@@ -571,7 +593,7 @@ function setLastClicked(sprite) {
       //repairText.setText("Repair " + sprite.key);
       //repairText.events.onInputDown._bindings = [];
       //repairText.events.onInputDown.add(repair, {repairing: lastClicked});
-      repairButton.reset(repairText.x, repairText.y + 85);
+      repairButton.reset(repairButton.x, repairButton.y);
       repairButton.events.onInputDown._bindings = [];
       repairButton.events.onInputDown.add(repair, {repairing: lastClicked});
     } else if (repairButton) {

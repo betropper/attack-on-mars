@@ -99,7 +99,17 @@ var MonstersDeck = {
    "upgrades": ["-1 Mech Blue Attack"]
    }
 
- ]
+ ],
+ "bossMonsters": [
+   {
+    "name": "The Bloat",
+    "file": "assets/bloat.jpg",
+    "batk": 9,
+    "def": 7,
+    "hp": 6,
+    "upgrades": ["-1 Monster Target Attack", "-1 Monster Target Defense", "+1 Mecha Target Blue", "+1 Mecha Target Red", "+1 Mecha Target Green"]
+   }
+  ]
 
 
 

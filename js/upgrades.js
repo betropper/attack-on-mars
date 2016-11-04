@@ -87,9 +87,9 @@ var U = {
       var player = this.player;
       console.log(player);
       if (player.upgrades.indexOf("Drop Wall") > -1 && !Space[player.key].wall) {
-        var wall = game.add.sprite(changeValueScale(player.space.x), changeValueScale(player.space.y), "dropwall");
+        var wall = game.add.sprite(player.sprite.x, player.sprite.y, "dropwall");
         wall.anchor.setTo(.5);
-        wall.scale.setTo(.6);
+        wall.scale.setTo(1.6*globalScale);
         Space[player.key].wall = wall;
         actionPoints -= 1;
       } else {
