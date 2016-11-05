@@ -1,4 +1,4 @@
-var globalScale = 1;
+var globalScale = .5;
 var C = {
  "game": {
    "zoomScale": 3,
@@ -77,13 +77,14 @@ var C = {
  
  }
 }
-
 var bossNames = ["The Bloat","The Deciever","The Brute",] 
 var focusX,
  focusY,
  xPivot,
  yPivot,
  zoomInTweens,
+ mainMenuTweens = [],
+ settingsMenuTweens = [],
  bossSprite;
 var boss = {};
 var battleSpeedDecrease = 0;
@@ -202,12 +203,13 @@ class MainMenu {
   
   preload() {
     if (Phaser.Device.desktop) {
-      if (window.innerWidth < C.game.width) {
+      /*if (window.innerWidth < C.game.width) {
         game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
       } else {
         game.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
         game.scale.setUserScale((window.innerWidth)/2800,(window.innerHeight)/1280);
-      }
+      }*/
+      game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
     } else {
       game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
     }
@@ -216,7 +218,7 @@ class MainMenu {
   create() {
     var titleText = game.add.bitmapText(game.world.centerX, game.world.centerY - game.height/4, 'attackfont', "ATTACK ON MARS", 90*globalScale);
     titleText.anchor.set(0.5);
-    playerCount = localStorage.getItem('playerCount') || 2;
+    playerCount = 4;
     var countNumber = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/6, 'attackfont', playerCount, 90*globalScale) 
     countNumber.anchor.set(0.5);
     var left = game.add.sprite(game.world.centerX - 140*globalScale, game.world.centerY + game.height/6, "leftright");
@@ -243,16 +245,39 @@ class MainMenu {
     var settingsButton = game.add.bitmapText(game.world.centerX, playButton.y + 140*globalScale, 'attackfont', "Settings", 90*globalScale);
     settingsButton.anchor.set(.5);
     settingsButton.inputEnabled = true;
-    settingsButton.events.onInputUp.add(displaySettings, {state: "Setup"});
+    var menuList = [left, countNumber, right, playerCountText, playButton, settingsButton];
 
+    var settingsText = game.add.bitmapText(game.world.centerX + game.width, game.world.centerY - game.height/7, 'attackfont', "Settings:", 90*globalScale);
+    settingsText.anchor.set(.5);
+    //Off screen settings menu
+    var settingsList = [settingsText]
+    settingsButton.events.onInputUp.add(shiftSettings, {menuList: menuList, settingsList:settingsList});
   }
 }
 
-function displaySettings() {
-  game.camera.y += game.camera.width;
 
+function shiftSettings() {
+  //game.camera.y += game.camera.width;
+    for (i = 0; i < this.menuList.length; i++) {
+      if (!mainMenuTweens[i]|| (mainMenuTweens[i].position && mainMenuTweens[i].position === "center")) {
+        mainMenuTweens[i] = game.add.tween(this.menuList[i]).to({x: this.menuList[i].x - game.width}, 700, Phaser.Easing.Back.InOut, true);
+        mainMenuTweens[i].position = "left";
+      } else if (mainMenuTweens[i].position = "left") {
+        mainMenuTweens[i] = game.add.tween(this.menuList[i]).to({x: this.menuList[i].x + game.width}, 700, Phaser.Easing.Back.InOut, true);
+        mainMenuTweens[i].position = "center";
+      }
+    }
+    for (i = 0; i < this.settingsList.length; i++) {
+      if (!settingsMenuTweens[i] || (settingsTweens[i].position && settingsTweens[i].position === "right")) {
+        settingsMenuTweens[i] = game.add.tween(this.settingsList[i]).to({x: this.settingsList[i].x - game.width}, 700, Phaser.Easing.Back.InOut, true);
+        settingsMenuTweens[i].position = "center";
+      } else if (settingsMenuTweens[i].position = "center") {
+        settingsMenuTweens[i] = game.add.tween(this.settingsList[i]).to({x: this.settingsList[i].x + game.width}, 700, Phaser.Easing.Back.InOut, true);
+        settingsMenuTweens[i].position = "right";
+      }
+    }
+    var settingMenuTween
 }
-
 function changeState() {
     game.state.start(this.state);
 }
@@ -500,20 +525,20 @@ class Setup {
     }
     if (over) { 
       if (playerNames.indexOf(over.sprite.key) > -1) {
-        attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + "\nDefence Die (green): " + over.def + "\nRed Attack Die: " + over.ratk + "\nBlue Attack Die: " + over.batk + "\nResearch Points: " + over.rp);
+        attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + " / " + over.maxhp + "\nDefence Die (green): " + over.def + "\nRed Attack Die: " + over.ratk + "\nBlue Attack Die: " + over.batk + "\nResearch Points: " + over.rp);
         /*if (attributeDisplay.text && lastClicked !== undefined && repairText && attributeDisplay.text.indexOf(lastClicked.sprite.key) === -1) {
           repairText.text = "Repair " + lastClicked.sprite.key;
         }*/
        upgradeDisplay.setText("Upgrades for " + over.sprite.key +":\n" + over.upgrades.join(",\n"));
       } else if (over.sprite.key === "monster" || bossNames.indexOf(over.sprite.key) > -1) {
-        attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + "\nDefence Die (green): " + over.def + "\nBlue Attack Die: " + over.batk + "\nResearch Point Reward: " + over.rp);
+        attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + " / " + over.maxhp + "\nDefence Die (green): " + over.def + "\nBlue Attack Die: " + over.batk + "\nResearch Point Reward: " + over.rp);
         upgradeDisplay.setText("Upgrades for " + over.sprite.key +":\n" + over.upgrades.join(",\n"));
       }
     } else if (lastClicked) {
       if (playerNames.indexOf(lastClicked.sprite.key) > -1) {
-        attributeDisplay.setText("\nName: " + lastClicked.sprite.key + "\nHP: " + lastClicked.hp + "\nDefence Die (green): " + lastClicked.def + "\nRed Attack Die: " + lastClicked.ratk + "\nBlue Attack Die: " + lastClicked.batk + "\nResearch Points: " + lastClicked.rp);
+        attributeDisplay.setText("\nName: " + lastClicked.sprite.key + "\nHP: " + lastClicked.hp + " / " + lastClicked.maxhp + "\nDefence Die (green): " + lastClicked.def + "\nRed Attack Die: " + lastClicked.ratk + "\nBlue Attack Die: " + lastClicked.batk + "\nResearch Points: " + lastClicked.rp);
       } else {
-        attributeDisplay.setText("\nName: " + lastClicked.sprite.key + "\nHP: " + lastClicked.hp + "\nDefence Die (green): " + lastClicked.def + "\nBlue Attack Die: " + lastClicked.batk + "\nResearch Point Reward: " + lastClicked.rp);
+        attributeDisplay.setText("\nName: " + lastClicked.sprite.key + "\nHP: " + lastClicked.hp + " / " + lastClicked.maxhp + "\nDefence Die (green): " + lastClicked.def + "\nBlue Attack Die: " + lastClicked.batk + "\nResearch Point Reward: " + lastClicked.rp);
       }
       upgradeDisplay.setText("Upgrades for " + lastClicked.sprite.key + ":\n" + lastClicked.upgrades.join(",\n"));
     }
@@ -527,6 +552,7 @@ function spawnBoss() {
   boss.name = drawnMonster.name;
   boss.hp = drawnMonster.hp;
   boss.batk = drawnMonster.batk;
+  boss.maxhp = drawnMonster.hp;
   boss.upgrades = drawnMonster.upgrades;
   boss.def = drawnMonster.def;
   boss.rp = 5;
@@ -761,7 +787,7 @@ class GameOver {
 }
 
 function resetGame() {
-  game.state.start("Setup");
+  game.state.start("MainMenu");
 var waitButton
 var lastClicked;
 var repairText;
@@ -1647,6 +1673,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
         var drawnMonster = MonstersDeck.initialMonsters[Math.floor(Math.random() * MonstersDeck.initialMonsters.length)];
       } while (drawnMonster.drawn)
       obj.hp = drawnMonster.hp;
+      obj.maxhp = drawnMonster.hp;
       obj.batk = drawnMonster.batk;
       obj.upgrades = drawnMonster.upgrades;
       obj.def = drawnMonster.def;
@@ -1657,6 +1684,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
         var drawnMonster = MonstersDeck.growingMonsters[Math.floor(Math.random() * MonstersDeck.growingMonsters.length)];
       } while (drawnMonster.drawn)
       obj.hp = drawnMonster.hp;
+      obj.maxhp = drawnMonster.hp;
       obj.batk = drawnMonster.batk;
       obj.upgrades = drawnMonster.upgrades;
       obj.def = drawnMonster.def;
@@ -1673,6 +1701,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
         var drawnMonster = MonstersDeck.extinctionMonsters[Math.floor(Math.random() * MonstersDeck.extinctionMonsters.length)];
       } while (drawnMonster.drawn)
       obj.hp = drawnMonster.hp;
+      obj.maxhp = drawnMonster.hp;
       obj.batk = drawnMonster.batk;
       obj.upgrades = drawnMonster.upgrades;
       obj.def = drawnMonster.def;
@@ -1722,6 +1751,7 @@ function spawnSpecific(object,space) {
         var drawnMonster = MonstersDeck.initialMonsters[Math.floor(Math.random() * MonstersDeck.initialMonsters.length)];
       } while (drawnMonster.drawn)
       obj.hp = drawnMonster.hp;
+      obj.maxhp = drawnMonster.hp;
       obj.batk = drawnMonster.batk;
       obj.upgrades = drawnMonster.upgrades;
       obj.def = drawnMonster.def;
@@ -1733,6 +1763,7 @@ function spawnSpecific(object,space) {
       } while (drawnMonster.drawn)
       obj.hp = drawnMonster.hp;
       obj.batk = drawnMonster.batk;
+      obj.maxhp = drawnMonster.hp;
       obj.upgrades = drawnMonster.upgrades;
       obj.def = drawnMonster.def;
       obj.rp = 2;
@@ -1748,6 +1779,7 @@ function spawnSpecific(object,space) {
         var drawnMonster = MonstersDeck.extinctionMonsters[Math.floor(Math.random() * MonstersDeck.extinctionMonsters.length)];
       } while (drawnMonster.drawn)
       obj.hp = drawnMonster.hp;
+      obj.maxhp = drawnMonster.hp;
       obj.batk = drawnMonster.batk;
       obj.upgrades = drawnMonster.upgrades;
       obj.def = drawnMonster.def;
