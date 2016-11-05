@@ -688,11 +688,12 @@ function setLastClicked(sprite) {
       wallButton.height = 80;
       wallButton.width = 80;
       buttonsList.push(wallButton);
-      wallButton.events.onInputDown.add(U["Drop Wall"].active, {player: lastClicked});
+      wallButton.input.enableDrag();
+      wallButton.events.onDragStop.add(U["Drop Wall"].active, {player: lastClicked, sprite: wallButton});
     } else if (normalState && lastClicked.upgrades.indexOf("Drop Wall") > -1) {
       wallButton.reset(wallButton.x, wallButton.y);
-      wallButton.events.onInputDown._bindings = [];
-      wallButton.events.onInputDown.add(U["Drop Wall"].active, {player: lastClicked});
+      wallButton.events.onDragStop._bindings = [];
+      wallButton.events.onDragStop.add(U["Drop Wall"].active, {player: lastClicked, sprite: wallButton});
       //buttonsList.push(wallButton);
     } else if (wallButton) {
       //buttonsList.splice(wallButton, 1);
@@ -1247,13 +1248,13 @@ function move(object,destination) {
     upgradeButton.kill();
     menuBar.kill();
     if (!upgradeMenu) {
-    upgradeMenu = game.add.sprite(game.world.centerX, game.world.centerY + C.game.height/2 + (C.upgradeMenu.height*C.upgradeMenu.scale)/2 + 200, 'upgradeMat');
+    upgradeMenu = game.add.sprite(game.world.centerX, game.world.centerY + C.game.height/2 + (C.upgradeMenu.height*C.upgradeMenu.scale)/2 + 200*globalScale, 'upgradeMat');
     upgradeMenu.anchor.setTo(.5,.5);
     upgradeMenu.scale.x = C.upgradeMenu.scale;
     upgradeMenu.scale.y = C.upgradeMenu.scale;
   console.log(upgradeDescription);
   }
-    var upgradeDescription = game.add.text(upgradeMenu.x, upgradeMenu.y - upgradeMenu.height/2 - 100, "Click on an upgrade to see its details, scroll up to return to the game", C.game.textStyle);
+    var upgradeDescription = game.add.text(upgradeMenu.x, upgradeMenu.y - upgradeMenu.height/2 - 100*globalScale, "Click on an upgrade to see its details, scroll up to return to the game", C.game.textStyle);
     upgradeDescription.anchor.setTo(.5,.5);
   game.kineticScrolling.start();
   game.input.onTap.add(chooseUpgrade, {menu: upgradeMenu});
@@ -1419,6 +1420,7 @@ function changeTurn() {
     //if (turn.sprite.inputEnabled === false) {
     //}
 }
+
 
 
 function distance(x1, y1, x2, y2) {

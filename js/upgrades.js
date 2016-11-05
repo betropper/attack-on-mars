@@ -1,3 +1,4 @@
+
 var U = {
   "Electric Fists": {
     "desc": "Increases max red (attack) die by one.",
@@ -80,18 +81,40 @@ var U = {
     }
   },
   "Drop Wall": {
-    "desc": "Allows player to drop a wall on a space that a monster must destroy before moving to.",
+    "desc": "Allows player to drop a wall on any space that a monster must destroy before moving to.",
     "color": "purple",
     "cost": 2,
     passive: function(player) { },
     active: function() {
       var player = this.player;
+      var sprite = this.sprite;
       console.log(player);
-      if (player.upgrades.indexOf("Drop Wall") > -1 && !Space[player.key].wall) {
-        var wall = game.add.sprite(player.sprite.x, player.sprite.y, "dropwall");
-        wall.anchor.setTo(.5);
-        wall.scale.setTo(1.6*globalScale);
-        Space[player.key].wall = wall;
+      if (player.upgrades.indexOf("Drop Wall") > -1) {
+        var closestDistance = 9999;
+        var closestX = 9999;
+        var closestY = 9999;
+        var space = null;
+        for (var i = 0; i < obj_keys.length; i++) {
+          console.log(closestDistance);
+          var spaceObj = Space[obj_keys[i]];
+          var spaceObjX = spaceObj.x*C.bg.scale*C.bg.resizeX + game.bg.position.x;
+          var spaceObjY = spaceObj.y*C.bg.scale*C.bg.resizeY + game.bg.position.y;
+          var distanceTo = distance(spaceObj.x,spaceObj.y,sprite.x,sprite.y)
+          if (distanceTo < closestDistance) {
+            closestDistance = distanceTo;
+            space = spaceObj;
+            closestX = spaceObjX;
+            closestY = spaceObjY;
+          }
+        }
+        console.log(closestX + " " + closestY);
+        //var wall = game.add.sprite(closestX, closestY, "dropwall");
+        sprite.x = closestX;
+        sprite.y = closestY;
+        sprite.anchor.setTo(.5);
+        sprite.owner = player;
+        sprite.scale.setTo(2.6*globalScale);
+        spaceObj.wall = sprite;
         actionPoints -= 1;
       } else {
         console.log("Failed to build a wall.");
@@ -107,7 +130,7 @@ var U = {
       }
     },
     "Autododge": {
-    "desc": "Decreases target number of green die by one.",
+    "desc": "Decreases target number to defend green die by one.",
     "color": "green",
     "cost": 2,
     passive: function(player) { 
