@@ -20,9 +20,10 @@ var U = {
       var player = this.player;
       console.log(player);
       if (player.upgrades.indexOf("Mines") > -1 && !Space[player.key].mine) {
-        var mine = game.add.sprite(changeValueScale(player.space.x), changeValueScale(player.space.y), "mine");
+        var mine = game.add.sprite(player.sprite.x, player.sprite.y, "mine");
         mine.anchor.setTo(.5);
-        mine.scale.setTo(.7);
+        mine.scale.setTo(1.6*globalScale);
+        mine.owner = player;
         Space[player.key].mine = mine;
         actionPoints -= 1;
       } else {
@@ -59,10 +60,10 @@ var U = {
     "color": "red",
     "cost": 2,
     passive: function(player) { 
-      if (player.ratkDecrease) {
-        player.ratkDecrease += 1 
+      if (player.ratkGoal) {
+        player.ratkGoal -= 1 
       } else {
-        player.ratkDecrease = 1;
+        player.ratkGoal = 4;
       }
     }
   },
@@ -71,10 +72,10 @@ var U = {
     "color": "blue",
     "cost": 2,
     passive: function(player) { 
-      if (player.batkDecrease) {
-        player.batkDecrease += 1 
+      if (player.batkGoal) {
+        player.batkGoal -= 1 
       } else {
-        player.batkDecrease = 1;
+        player.batkGoal = 4;
       }
     }
   },

@@ -1,8 +1,9 @@
-var globalScale = .5;
+var globalScale = 1;
 var C = {
  "game": {
    "zoomScale": 3,
-    "width": 2800*globalScale,
+   "zoomSpeed": 600,
+   "width": 2800*globalScale,
     "height": 1280*globalScale,
    "textStyle": {
       align: 'center',
@@ -40,8 +41,8 @@ var C = {
    "width": 72,
    "height": 72,
    "scale": 1.3 * globalScale,
-   "battleSpacing": 100,
-   "battleSpeed": 2
+   "battleSpacing": 100*globalScale,
+   "battleSpeed": 3*globalScale
  },
  "destroyed": {
    "scale": 1.8 * globalScale
@@ -158,7 +159,7 @@ class Load {
   game.kineticScrolling = this.game.plugins.add(Phaser.Plugin.KineticScrolling);
   game.kineticScrolling.configure({
       kineticMovement: true,
-      timeConstantScroll: 700, //really mimic iOS
+      timeConstantScroll: 700*globalScale, //really mimic iOS
       horizontalScroll: false,
       verticalScroll: true,
       horizontalWheel: false,
@@ -407,9 +408,9 @@ class Setup {
       // Temporary for testing. Change this later.
       if (!zoomInTweens) {
         zoomInTweens = true;
-        var zoomTween = game.add.tween(game.camera).to( { x: focusX*3 - game.camera.width/2 , y: focusY*3 - game.camera.height/2 + game.camera.height/8 }, 1000, Phaser.Easing.Linear.None, true);
+        var zoomTween = game.add.tween(game.camera).to( { x: focusX*3 - game.camera.width/2 , y: focusY*3 - game.camera.height/2 + game.camera.height/8 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
         //zoomTween.onComplete.add(zoomWorld, {zoomScale: C.game.zoomScale});
-        var scaleTween = game.add.tween(game.world.scale).to( { x: C.game.zoomScale, y: C.game.zoomScale }, 1000, Phaser.Easing.Linear.None, true);
+        var scaleTween = game.add.tween(game.world.scale).to( { x: C.game.zoomScale, y: C.game.zoomScale }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
         scaleTween.onComplete.add(zoomFalse, this);
       }
         for (i = 0; i < buttonsTextList.length; i++) {
@@ -431,9 +432,9 @@ class Setup {
     } else if (zoomOut === true) {
         if (menuBar.alive) {
         menuBar.kill();
-        var zoomTween = game.add.tween(game.camera).to( { x: 0, y: 0 }, 1500, Phaser.Easing.Linear.None, true);
+        var zoomTween = game.add.tween(game.camera).to( { x: 0, y: 0 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
         //zoomTween.onComplete.add(zoomWorld, {zoomScale: C.game.zoomScale});
-        var scaleTween = game.add.tween(game.world.scale).to( { x: 1, y: 1 }, 1500, Phaser.Easing.Linear.None, true);
+        var scaleTween = game.add.tween(game.world.scale).to( { x: 1, y: 1 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
         scaleTween.onComplete.add(zoomFalse, this);
         }
         menuBar.width = C.game.width / game.world.scale.x;
@@ -455,7 +456,7 @@ class Setup {
         //menuBar.x = game.camera.x/C.game.zoomScale;
         game.world.bringToTop(menuBar);
         game.world.scale.set(C.game.zoomScale);
-        var barTween = game.add.tween(menuBar).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8)}, 2000, Phaser.Easing.Linear.None, true)
+        var barTween = game.add.tween(menuBar).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8)}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true)
         //game.add.tween(menuBar).to( { y: game.world.centerY }, 4000, Phaser.Easing.Bounce.Out, true);
         battleTurn = battlePlayer;
         attackText = game.add.bitmapText(menuBar.x + 100*globalScale, menuBar.y + menuBar.height,'attackfont', "Attack!",50*globalScale);
@@ -472,7 +473,7 @@ class Setup {
           battleTexts.push(siegeText);
         }
         for (i = 0; i < battleTexts.length; i++) {
-          game.add.tween(battleTexts[i]).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + menuBar.height/2}, 2000, Phaser.Easing.Back.InOut, true)
+          game.add.tween(battleTexts[i]).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + menuBar.height/2}, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true)
           game.world.bringToTop(battleTexts[i]);
         }
         battlePlayer.sprite.events.onDragStop._bindings = [];
@@ -559,7 +560,7 @@ function shrinkSprite(sprite) {
 
 function zoomWorld() {
  if (this.zoomScale) {
-  var scaleTween = game.add.tween(game.world.scale).to( { x: this.zoomScale, y: this.zoomScale }, 1000, Phaser.Easing.Linear.None, true);
+  var scaleTween = game.add.tween(game.world.scale).to( { x: this.zoomScale, y: this.zoomScale }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
   scaleTween.onComplete.add(zoomFalse, this);
  }
 }
@@ -837,10 +838,10 @@ function checkAttack(sprite,pointer) {
 }
 
 function attack(attacker,defender) {
-  var bhits = rollDie(attacker.batk - (defender.batkDecrease || 0)); 
+  var bhits = rollDie(attacker.batk - (defender.batkDecrease || 0), attacker.batkGoal || 5);
   var rhits = 0;
   if (attacker.ratk) {
-    rhits = rollDie(attacker.ratk - (defender.ratkDecrease || 0));
+    rhits = rollDie(attacker.ratk - (defender.ratkDecrease || 0), attacker.ratkGoal || 5);
   } 
   var successes = rhits + bhits;
   if (attacker.siegeMode) {
@@ -852,7 +853,7 @@ function attack(attacker,defender) {
     successes -= defender.guarenteedDef;
   }
   console.log(attacker.sprite.key + " hit " +successes + " hit/hits!");
-  var defences = rollDie(defender.def);
+  var defences = rollDie(defender.def, attacker.defGoal || 5);
   console.log(defender.sprite.key + " defended " + defences + " hit/hits!");
   if (successes > defences) {
     defender.hp -= successes - defences;
@@ -896,7 +897,7 @@ function attack(attacker,defender) {
       battleTexts.splice(battleTexts[i],1);
     }
     if (damaged === battlePlayer) {
-      removeFromList(playersList[damaged.sprite.number], focusSpace);
+      focusSpace.occupied = removeFromList(playersList[battlePlayer.sprite.number], focusSpace);
       playersList[damaged.sprite.number].sprite.kill();
       var destroyedPlayers = 0;
       for (var i = 1; i <= playersList.length; i++) {
@@ -960,10 +961,10 @@ function killResults(results) {
 }
 
 
-function rollDie(count){ 
+function rollDie(count, goal){ 
   var hits = 0;
   for (i = 1; i < count; i++) {
-    if (Math.floor(Math.random() * ((6-1)+1) + 1) >= 5) {
+    if (Math.floor(Math.random() * ((6-1)+1) + 1) >= goal) {
       hits += 1;
     }
   }
@@ -1110,21 +1111,24 @@ function battle(player, monster) {
     }
 }
 
+function destroyWall() {
+    this.wallSpace.wall.destroy();
+    this.wallSpace.wall = false;
+    var moveTween = game.add.tween(this.object.sprite).to( { x: changeValueScale(this.formerSpace.x,"x"), y: changeValueScale(this.formerSpace.y,"y") }, 700, Phaser.Easing.Linear.None, true);
+    console.log(this.formerSpace);
+}
+
+function explode(sprite) { 
+    this.mineSpace.mine.destroy();
+    this.mineSpace.mine = false;
+    var dieTween = game.add.tween(this.sprite).to( { x: game.world.centerX + game.width/2 + this.sprite.width*2, angle: 720}, 700, Phaser.Easing.Linear.None, true);
+    dieTween.onComplete.add(this.sprite.kill, this);
+}
+
 function move(object,destination) {
   console.log(object);
   if (playersList.indexOf(object) > -1) {
     setLastClicked(object.sprite);
-  } else if (monstersList.indexOf(object) > -1) {
-    if (Space[destination].wall) {
-      Space[destination].wall.destroy();
-      Space[destination].wall = false;
-      return
-    } else if (Space[destination].mine) {
-      Space[destination].mine.destroy();
-      Space[destination].mine = false;
-      object.hp -= 1;
-      console.log("BOOM!");
-    }
   }
   var destinationX = Space[destination].x*C.bg.scale*C.bg.resizeX + game.bg.position.x;
   var destinationY = Space[destination].y*C.bg.scale*C.bg.resizeY + game.bg.position.y;
@@ -1133,7 +1137,25 @@ function move(object,destination) {
     object.sprite.x = destinationX;
     object.sprite.y = destinationY;
   } else { 
-    var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, 2000, Phaser.Easing.Linear.None, true);
+    if (Space[destination].wall) {
+      var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, 1500, Phaser.Easing.Linear.None, true);
+      moveTween.onComplete.add(destroyWall,{wallSpace: Space[destination], formerSpace: object.space, object: object});
+      return
+    } else if (Space[destination].mine) {
+
+      object.hp -= 1;
+      if (object.hp <= 0) {
+        object.space.occupied = removeFromList(monstersList[object.sprite.number], object.space);
+        Space[destination].mine.owner.rp += object.rp;
+        monstersList.splice(object.sprite.number, 1);
+        /*PLACE TWEEN HERE*/
+        var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, 1500, Phaser.Easing.Linear.None, true);
+        moveTween.onComplete.add(explode, {sprite: object.sprite, mineSpace: Space[destination]})
+        return
+      }
+      console.log("BOOM!");
+    }
+    var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, 1500, Phaser.Easing.Linear.None, true);
     for (i = 1; i < playersList.length; i++) {
       if (playersList[i] && playersList[i].sprite) {
         playersList[i].sprite.inputEnabled = false;
@@ -1150,51 +1172,51 @@ function move(object,destination) {
   if (playersList.indexOf(object) > -1) {
     checkBattle(Space[object.key]);
   } else {
-    moveTween.onComplete.add(checkBattle, {space:Space[object.key]});
+      moveTween.onComplete.add(checkBattle, {space:Space[object.key]});
+    }
   }
-}
 
-function repair(repairing) {
-  var repairing = repairing || repairing;
-  if (repairing.hp < repairing.maxhp) {
-    repairing.hp = repairing.maxhp;
-    actionPoints -= 1;
-    repairText.kill();
-    repairButton.kill();
+  function repair(repairing) {
+    var repairing = repairing || repairing;
+    if (repairing.hp < repairing.maxhp) {
+      repairing.hp = repairing.maxhp;
+      actionPoints -= 1;
+      repairText.kill();
+      repairButton.kill();
+    }
   }
-}
 
-function upgrade(upgrading) {
-  var upgrading = this.upgrading || upgrading 
-  confirmState = false;
-  if (this.yn) {
-      var boughtUpgrade = U[this.boughtUpgrade];
-      if (this.yn === "yes" && boughtUpgrade) {
-        if (boughtUpgrade.passive) {
-          boughtUpgrade.passive(upgrading);
-        }
-        if (boughtUpgrade.color) {
-            for (i = 0; i < upgrading.colorDiscounts.length; i++) {
-              if (upgrading.colorDiscounts[i].color === boughtUpgrade.color) {
-                upgrading.colorDiscounts[i].discount += 1;
-                var discountValue = upgrading.colorDiscounts[i].discount - 1;
-                break
-              }
+  function upgrade(upgrading) {
+    var upgrading = this.upgrading || upgrading 
+    confirmState = false;
+    if (this.yn) {
+        var boughtUpgrade = U[this.boughtUpgrade];
+        if (this.yn === "yes" && boughtUpgrade) {
+          if (boughtUpgrade.passive) {
+            boughtUpgrade.passive(upgrading);
           }
+          if (boughtUpgrade.color) {
+              for (i = 0; i < upgrading.colorDiscounts.length; i++) {
+                if (upgrading.colorDiscounts[i].color === boughtUpgrade.color) {
+                  upgrading.colorDiscounts[i].discount += 1;
+                  var discountValue = upgrading.colorDiscounts[i].discount - 1;
+                  break
+                }
+            }
+          }
+          if ((boughtUpgrade.cost - discountValue) > 0) {
+            upgrading.rp -= (boughtUpgrade.cost - discountValue);
+            console.log("cost was " + (boughtUpgrade.cost-discountValue));
+          }
+          lastClicked.upgrades.push(this.boughtUpgrade);
+          boughtBool = true;
         }
-        if ((boughtUpgrade.cost - discountValue) > 0) {
-          upgrading.rp -= (boughtUpgrade.cost - discountValue);
-          console.log("cost was " + (boughtUpgrade.cost-discountValue));
-        }
-        lastClicked.upgrades.push(this.boughtUpgrade);
-        boughtBool = true;
-      }
-  }
-  console.log("Upgrading " + upgrading.sprite.key);
-  //upgradeText.kill();
-  upgradeButton.kill();
-  menuBar.kill();
-  if (!upgradeMenu) {
+    }
+    console.log("Upgrading " + upgrading.sprite.key);
+    //upgradeText.kill();
+    upgradeButton.kill();
+    menuBar.kill();
+    if (!upgradeMenu) {
     upgradeMenu = game.add.sprite(game.world.centerX, game.world.centerY + C.game.height/2 + (C.upgradeMenu.height*C.upgradeMenu.scale)/2 + 200, 'upgradeMat');
     upgradeMenu.anchor.setTo(.5,.5);
     upgradeMenu.scale.x = C.upgradeMenu.scale;
@@ -1214,7 +1236,7 @@ function chooseUpgrade(event) {
   if (game.camera.y >= 430) {
     console.log(event);
     var x1 = 340 * globalScale, x2 = 2425 * globalScale,
-    y1 = 1755 * globalScale, y2 = 3650 * globalScale;
+    y1 = 1545 * globalScale, y2 = 3650 * globalScale;
     console.log("Points are at " + x1 + "," + x2 + "," + y1 + "," + y2 + ".");
     console.log(event.worldX + " " + event.worldY);
     if (event.worldX > x1 && event.worldX < x2 && event.worldY > y1 && event.worldY < y2 ){
@@ -1313,6 +1335,9 @@ function checkBattle(space) {
           }
       
       }
+    }
+    if (space === Space["center"]) {
+      pendingMonster = boss;
     }
     if (pendingPlayer === null || pendingMonster === null) {
       pendingMonster = null;
