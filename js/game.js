@@ -247,33 +247,34 @@ class MainMenu {
     settingsButton.inputEnabled = true;
     var menuList = [left, countNumber, right, playerCountText, playButton, settingsButton];
 
-    var settingsText = game.add.bitmapText(game.world.centerX + game.width, game.world.centerY - game.height/8, 'attackfont', "Return to Menu", 90*globalScale);
-    settingsText.anchor.set(.5);
+    var returnButton = game.add.bitmapText(game.world.centerX + game.width, game.world.centerY - game.height/8, 'attackfont', "Return to Menu", 90*globalScale);
+    returnButton.anchor.set(.5);
     //Off screen settings menu
-   
-    var settingsList = [settingsText]
+    returnButton.inputEnabled = true;
+    var settingsList = [returnButton]
     settingsButton.events.onInputUp.add(shiftSettings, {menuList: menuList, settingsList:settingsList});
-  
+    returnButton.events.onInputUp.add(shiftSettings, {menuList: menuList, settingsList:settingsList});
   }
 }
 
 
 function shiftSettings() {
   //game.camera.y += game.camera.width;
+    console.log("Shifting");
     for (i = 0; i < this.menuList.length; i++) {
       if (!mainMenuTweens[i]|| (mainMenuTweens[i].position && mainMenuTweens[i].position === "center")) {
         mainMenuTweens[i] = game.add.tween(this.menuList[i]).to({x: this.menuList[i].x - game.width}, 700, Phaser.Easing.Back.InOut, true);
         mainMenuTweens[i].position = "left";
-      } else if (mainMenuTweens[i].position = "left") {
+      } else if (mainMenuTweens[i].position === "left") {
         mainMenuTweens[i] = game.add.tween(this.menuList[i]).to({x: this.menuList[i].x + game.width}, 700, Phaser.Easing.Back.InOut, true);
         mainMenuTweens[i].position = "center";
       }
     }
     for (i = 0; i < this.settingsList.length; i++) {
-      if (!settingsMenuTweens[i] || (settingsTweens[i].position && settingsTweens[i].position === "right")) {
+      if (!settingsMenuTweens[i] || (settingsMenuTweens[i].position && settingsMenuTweens[i].position === "right")) {
         settingsMenuTweens[i] = game.add.tween(this.settingsList[i]).to({x: this.settingsList[i].x - game.width}, 700, Phaser.Easing.Back.InOut, true);
         settingsMenuTweens[i].position = "center";
-      } else if (settingsMenuTweens[i].position = "center") {
+      } else if (settingsMenuTweens[i].position === "center") {
         settingsMenuTweens[i] = game.add.tween(this.settingsList[i]).to({x: this.settingsList[i].x + game.width}, 700, Phaser.Easing.Back.InOut, true);
         settingsMenuTweens[i].position = "right";
       }
