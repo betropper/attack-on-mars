@@ -3,6 +3,7 @@ var C = {
  "game": {
    "zoomScale": 3,
    "zoomSpeed": 600,
+    "moveSpeed": 900,
    "width": 2800*globalScale,
     "height": 1280*globalScale,
    "textStyle": {
@@ -595,7 +596,7 @@ function queAttack() {
 function setLastClicked(sprite) {
   if (playerNames.indexOf(sprite.key) > -1) {
     lastClicked = playersList[sprite.number];
-    var normalState = battleState !== false && zoomIn !== false && zoomOut !== false;
+    var normalState = !battleState && !zoomIn && !zoomOut;
     if  (lastClicked.key.indexOf("0") === 2 && !repairButton && lastClicked.hp < lastClicked.maxhp && normalState) { 
       //repairText = game.add.text(1050, menuBar.y, "Repair " + sprite.key, C.game.textStyle);
       //repairText.anchor.set(0.5);
@@ -853,7 +854,7 @@ function attack(attacker,defender) {
     successes -= defender.guarenteedDef;
   }
   console.log(attacker.sprite.key + " hit " +successes + " hit/hits!");
-  var defences = rollDie(defender.def, attacker.defGoal || 5);
+  var defences = rollDie(defender.def, defender.defGoal || 5);
   console.log(defender.sprite.key + " defended " + defences + " hit/hits!");
   if (successes > defences) {
     defender.hp -= successes - defences;
@@ -900,8 +901,8 @@ function attack(attacker,defender) {
       focusSpace.occupied = removeFromList(playersList[battlePlayer.sprite.number], focusSpace);
       playersList[damaged.sprite.number].sprite.kill();
       var destroyedPlayers = 0;
-      for (var i = 1; i <= playersList.length; i++) {
-        if (Number.isInteger(playersList[i])) {
+      for (var i = 1; i < playersList.length; i++) {
+        if (!playersList[i].sprite.alive) {
           destroyedPlayers += 1;
         }
       }
@@ -1058,7 +1059,7 @@ function battle(player, monster) {
           }
         }
         for (y = 0; y < monstersList[i].sprite.closestSpaces.selectedSpaces.length; y++) {
-          for (o = 0; o < monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied.length; o++) {
+          for (o = 0; o < monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied.length || 0; o++) {
             if (playersList.indexOf(monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied[o]) > -1) {
               var newDestination = monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied[o].key;
               console.log("Moving to player at " + newDestination);
@@ -1114,7 +1115,7 @@ function battle(player, monster) {
 function destroyWall() {
     this.wallSpace.wall.destroy();
     this.wallSpace.wall = false;
-    var moveTween = game.add.tween(this.object.sprite).to( { x: changeValueScale(this.formerSpace.x,"x"), y: changeValueScale(this.formerSpace.y,"y") }, 700, Phaser.Easing.Linear.None, true);
+    var moveTween = game.add.tween(this.object.sprite).to( { x: changeValueScale(this.formerSpace.x,"x"), y: changeValueScale(this.formerSpace.y,"y") }, 500, Phaser.Easing.Back.InOut, true);
     console.log(this.formerSpace);
 }
 
@@ -1138,7 +1139,7 @@ function move(object,destination) {
     object.sprite.y = destinationY;
   } else { 
     if (Space[destination].wall) {
-      var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, 1500, Phaser.Easing.Linear.None, true);
+      var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
       moveTween.onComplete.add(destroyWall,{wallSpace: Space[destination], formerSpace: object.space, object: object});
       return
     } else if (Space[destination].mine) {
@@ -1149,13 +1150,13 @@ function move(object,destination) {
         Space[destination].mine.owner.rp += object.rp;
         monstersList.splice(object.sprite.number, 1);
         /*PLACE TWEEN HERE*/
-        var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, 1500, Phaser.Easing.Linear.None, true);
+        var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
         moveTween.onComplete.add(explode, {sprite: object.sprite, mineSpace: Space[destination]})
         return
       }
       console.log("BOOM!");
     }
-    var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, 1500, Phaser.Easing.Linear.None, true);
+    var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
     for (i = 1; i < playersList.length; i++) {
       if (playersList[i] && playersList[i].sprite) {
         playersList[i].sprite.inputEnabled = false;

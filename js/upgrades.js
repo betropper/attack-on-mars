@@ -112,9 +112,9 @@ var U = {
     "cost": 2,
     passive: function(player) { 
         if (player.guarenteedDef) {
-          player.guarenteedDef += 1 
+          player.defGoal -= 1 
         }   else {
-          player.guarenteedDef = 1;
+          player.defGoal = 4;
         }
       }
     },
