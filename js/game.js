@@ -216,7 +216,7 @@ class MainMenu {
   }
 
   create() {
-    var titleText = game.add.bitmapText(game.world.centerX, game.world.centerY - game.height/4, 'attackfont', "ATTACK ON MARS", 90*globalScale);
+    var titleText = game.add.bitmapText(game.world.centerX, game.world.centerY - game.height/3, 'attackfont', "ATTACK ON MARS", 90*globalScale);
     titleText.anchor.set(0.5);
     playerCount = 4;
     var countNumber = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/6, 'attackfont', playerCount, 90*globalScale) 
@@ -247,11 +247,13 @@ class MainMenu {
     settingsButton.inputEnabled = true;
     var menuList = [left, countNumber, right, playerCountText, playButton, settingsButton];
 
-    var settingsText = game.add.bitmapText(game.world.centerX + game.width, game.world.centerY - game.height/8, 'attackfont', "Settings:", 90*globalScale);
+    var settingsText = game.add.bitmapText(game.world.centerX + game.width, game.world.centerY - game.height/8, 'attackfont', "Return to Menu", 90*globalScale);
     settingsText.anchor.set(.5);
     //Off screen settings menu
+   
     var settingsList = [settingsText]
     settingsButton.events.onInputUp.add(shiftSettings, {menuList: menuList, settingsList:settingsList});
+  
   }
 }
 
