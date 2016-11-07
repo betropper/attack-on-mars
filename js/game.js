@@ -680,7 +680,7 @@ function setLastClicked(sprite) {
       upgradeButton.events.onInputUp.add(upgrade, {upgrading: lastClicked});
     }
 
-    if (!wallButton && normalState && lastClicked.upgrades.indexOf("Drop Wall") > -1) { 
+    if (!wallButton && normalState && lastClicked.upgrades.indexOf("Drop Wall") > -1 && !lastClicked.wallDeployed) { 
       wallButton = game.add.sprite(300, menuBar.y + 77, 'dropwall');
       wallButton.anchor.set(0.5);
       wallButton.inputEnabled = true;
@@ -689,11 +689,11 @@ function setLastClicked(sprite) {
       wallButton.width = 80;
       buttonsList.push(wallButton);
       wallButton.input.enableDrag();
-      wallButton.events.onDragStop.add(U["Drop Wall"].active, {player: lastClicked, sprite: wallButton});
-    } else if (normalState && lastClicked.upgrades.indexOf("Drop Wall") > -1) {
+      wallButton.events.onDragStop.add(U["Drop Wall"].active, {spaceStart: null, player: lastClicked, sprite: wallButton});
+    } else if (normalState && lastClicked.upgrades.indexOf("Drop Wall") > -1 && !lastClicked.wallDeployed) {
       wallButton.reset(wallButton.x, wallButton.y);
       wallButton.events.onDragStop._bindings = [];
-      wallButton.events.onDragStop.add(U["Drop Wall"].active, {player: lastClicked, sprite: wallButton});
+      wallButton.events.onDragStop.add(U["Drop Wall"].active, {spaceStart: null, player: lastClicked, sprite: wallButton});
       //buttonsList.push(wallButton);
     } else if (wallButton) {
       //buttonsList.splice(wallButton, 1);
@@ -1143,6 +1143,7 @@ function battle(player, monster) {
 }
 
 function destroyWall() {
+    this.wallSpace.wall.owner.wallDeployed = false;
     this.wallSpace.wall.destroy();
     this.wallSpace.wall = false;
     var moveTween = game.add.tween(this.object.sprite).to( { x: changeValueScale(this.formerSpace.x,"x"), y: changeValueScale(this.formerSpace.y,"y") }, 500, Phaser.Easing.Back.InOut, true);

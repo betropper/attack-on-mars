@@ -90,16 +90,19 @@ var U = {
       var sprite = this.sprite;
       console.log(player);
       if (player.upgrades.indexOf("Drop Wall") > -1) {
+        //buttonsList.splice(sprite,1)
+        //sprite.deployed = true;
         var closestDistance = 9999;
         var closestX = 9999;
         var closestY = 9999;
         var space = null;
         for (var i = 0; i < obj_keys.length; i++) {
-          console.log(closestDistance);
+          //console.log(closestDistance);
           var spaceObj = Space[obj_keys[i]];
+          //console.log(spaceObj);
           var spaceObjX = spaceObj.x*C.bg.scale*C.bg.resizeX + game.bg.position.x;
           var spaceObjY = spaceObj.y*C.bg.scale*C.bg.resizeY + game.bg.position.y;
-          var distanceTo = distance(spaceObj.x,spaceObj.y,sprite.x,sprite.y)
+          var distanceTo = distance(spaceObjX,spaceObjY,sprite.x,sprite.y)
           if (distanceTo < closestDistance) {
             closestDistance = distanceTo;
             space = spaceObj;
@@ -107,15 +110,51 @@ var U = {
             closestY = spaceObjY;
           }
         }
+        if (!player.wallDeployed) {
+          sprite.kill();
+          var wall = game.add.sprite(closestX, closestY, "dropwall");
+          wall.anchor.setTo(.5);
+          wall.inputEnabled = true;
+          wall.input.enableDrag(true);
+          wall.owner = player;
+          player.wallDeployed = true;
+        } else {
+          var wall = sprite;
+          wall.owner = player;
+        }
+        if ((space.wall || space.occupied) && this.spaceStart) {
+          /*wall.destroy();
+          var wall = game.add.sprite(changeValueScale(this.spaceStart.x), changeValueScale(this.spaceStart.y), "dropwall");
+          wall.anchor.setTo(.5);
+          wall.inputEnabled = true;
+          wall.input.enableDrag(true);
+          wall.owner = player;
+          player.wallDeployed = true;*/
+          wall.x = changeValueScale(this.spaceStart.x, "x");
+          wall.y = changeValueScale(this.spaceStart.y, "y");
+          console.log(wall);
+          console.log(this.spaceStart);
+          wall.events.onDragStop._bindings = [];
+          wall.events.onDragStop.add(U["Drop Wall"].active, {spaceStart: this.spaceStart, player: player, sprite: wall});
+          return
+        } else if ((space.wall || space.occupied) && !this.spaceStart) {
+          wall.destroy();
+          player.wallDeployed = false;
+          console.log("wall destroyed");
+          return
+        } else if (this.spaceStart) {
+          this.spaceStart.wall = false;
+        }
+
         console.log(closestX + " " + closestY);
-        //var wall = game.add.sprite(closestX, closestY, "dropwall");
-        sprite.x = closestX;
-        sprite.y = closestY;
-        sprite.anchor.setTo(.5);
-        sprite.owner = player;
-        sprite.scale.setTo(2.6*globalScale);
-        spaceObj.wall = sprite;
+        wall.x = closestX;
+        wall.y = closestY;
+        wall.scale.setTo(1.5*globalScale);
+        space.wall = wall;
         actionPoints -= 1;
+        wall.events.onDragStop._bindings = [];
+        wall.events.onDragStop.add(U["Drop Wall"].active, {spaceStart: space, player: player, sprite: wall});
+
       } else {
         console.log("Failed to build a wall.");
       }
