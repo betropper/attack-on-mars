@@ -501,6 +501,13 @@ class Setup {
           siegeText.events.onInputDown.add(queAttack, {attacker: battlePlayer, modifier: "Siege Mode"});
           battleTexts.push(siegeText);
         }
+        if (battlePlayer.weaponizedResearchCharges && battlePlayer.weaponizedResearchCharges > 0) {
+          wprText = game.add.bitmapText(battleTexts[battleTexts.length - 1].x + battleTexts[battleTexts.length - 1].width/2 + 80*globalScale, menuBar.y + 20, 'attackfont', "Weaponized Research", 50*globalScale);
+          wprText.anchor.y = 0.5;
+          wprText.inputEnabled = true;
+          wprText.events.onInputDown.add(queAttack, {attacker: battlePlayer, modifier: "Weaponized Research"});
+          battleTexts.push(wprText);
+        }
         for (i = 0; i < battleTexts.length; i++) {
           game.add.tween(battleTexts[i]).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + menuBar.height/2}, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true)
           game.world.bringToTop(battleTexts[i]);
@@ -618,6 +625,7 @@ function queAttack() {
     this.attacker.attacking = true;
     if (this.modifier && this.modifier === "Siege Mode") {
       this.attacker.siegeMode = true;
+    } else if (this.modifier && this.modifier === "Weaponized Research") {
     }
   }
 }

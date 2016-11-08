@@ -192,6 +192,13 @@ var U = {
       "color": "red",
       "cost": 3,
       passive: function(player) { player.canSiege = true; }
+    },
 
-    }
+    "Weaponized Research": {
+      "desc": "Up to three times per round, spend one research point to gain a die color of your choice."
+      "color": "blue",
+      "cost": 3,
+      passive: function(player) { player.weaponizedResearchCharges = 3; }
+    },
+  
 }
