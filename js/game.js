@@ -77,7 +77,7 @@ var C = {
  
  }
 }
-var bossNames = ["The Bloat","The Deciever","The Brute",] 
+var bossNames = ["The Bloat","The Deciever","The Brute"] 
 var focusX,
  focusY,
  xPivot,
@@ -398,7 +398,7 @@ class Setup {
     //
     //Disables scrolling when upgrading is done
     //game.camera.focusOnXY(playersList[1].sprite.x, playersList[1].sprite.y);
-    if (game.camera.y < 0) {
+    if (game.camera.y <= 0) {
       game.camera.y = 0;
       if (upgradeState === true) {
         upgradeState = false;
@@ -408,7 +408,6 @@ class Setup {
           boughtBool = false;
         }
         game.kineticScrolling.stop();
-        game.camera.y = 0;
         //menuBar.reset(menuBar.x,menuBar.y);
       }
     }
@@ -556,8 +555,7 @@ class Setup {
   }
 }
 
-function spawnBoss() {
-  
+function spawnBoss() {  
   var drawnMonster = MonstersDeck.bossMonsters[Math.floor(Math.random() * MonstersDeck.bossMonsters.length)];
   boss.name = drawnMonster.name;
   boss.hp = drawnMonster.hp;
@@ -1097,7 +1095,12 @@ function battle(player, monster) {
           }
         }
         for (y = 0; y < monstersList[i].sprite.closestSpaces.selectedSpaces.length; y++) {
-          for (o = 0; o < monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied.length || 0; o++) {
+          if (monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied) {
+            var len = monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied.length;
+          } else {
+            var len = 0;
+          }
+          for (o = 0; o < len; o++) {
             if (playersList.indexOf(monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied[o]) > -1) {
               var newDestination = monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied[o].key;
               console.log("Moving to player at " + newDestination);
@@ -1295,7 +1298,7 @@ function chooseUpgrade(event) {
       game.camera.y = game.camera.y;
       game.input.onTap._bindings = [];
       confirmUpgrade(lastClicked,choice);
-      //game.kineticScrolling.stop();
+      game.kineticScrolling.stop();
     } 
   }
 }
