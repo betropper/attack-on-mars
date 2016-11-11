@@ -3,19 +3,19 @@ var U = {
   "Electric Fists": {
     "desc": "Increases max red (attack) die by one.",
     "color": "red",
-    "cost": 1,
+    "cost": 2,
     passive: function(player) { player.ratk += 1 }
   },
   "Bigger Fists": {
     "desc": "Increases max blue (attack) die by one.",
     "color": "blue",
-    "cost": 1,
+    "cost": 2,
     passive: function(player) { player.batk += 1 }
   },
   "Mines": {
     "desc": "Allows player to set a mine that deals one damage to a single monster.",
     "color": "purple",
-    "cost": 1,
+    "cost": 2,
     passive: function(player) { },
     active: function() {
       var player = this.player;
@@ -35,19 +35,19 @@ var U = {
   "More Armor": {
     "desc": "Increases max health and current health by one.",
     "color": "yellow",
-    "cost": 1,
+    "cost": 2,
     passive: function(player) { player.hp +=1; player.maxhp += 1; }
   },
   "5D Accelerators": {
     "desc": "Increases max green (defence) die by one.",
     "color": "green",
-    "cost": 1,
+    "cost": 2,
     passive: function(player) { player.def += 1 }
   },
   "Hyper Caffeine": {
     "desc": "Gain one additional Research Point at the start of your turn.",
     "color": "black",
-    "cost": 1,
+    "cost": 2,
     passive: function(player) { 
       if (player.rpPerTurn) {
         player.rpPerTurn += 1 
@@ -59,7 +59,7 @@ var U = {
   "Targeting Computer": {
     "desc": "Decreases target red (attack) die by one.",
     "color": "red",
-    "cost": 2,
+    "cost": 4,
     passive: function(player) { 
       if (player.ratkGoal) {
         player.ratkGoal -= 1 
@@ -71,7 +71,7 @@ var U = {
   "Weakpoint Analysis": {
     "desc": "Decreases target blue (attack) die by one.",
     "color": "blue",
-    "cost": 2,
+    "cost": 4,
     passive: function(player) { 
       if (player.batkGoal) {
         player.batkGoal -= 1 
@@ -83,7 +83,7 @@ var U = {
   "Drop Wall": {
     "desc": "Allows player to drop a wall on any space that a monster must destroy before moving to.",
     "color": "purple",
-    "cost": 2,
+    "cost": 4,
     passive: function(player) { },
     active: function() {
       var player = this.player;
@@ -163,7 +163,7 @@ var U = {
     "Field Repair": {
       "desc": "Gain the ability to spend one action to repair one point of damage.\nHit the wait button after selecting this mech to activate.",
       "color": "yellow",
-      "cost": 2,
+      "cost": 4,
       passive: function(player) {
         player.canRepair = true;
       }
@@ -171,7 +171,7 @@ var U = {
     "Autododge": {
     "desc": "Decreases target number to defend green die by one.",
     "color": "green",
-    "cost": 2,
+    "cost": 4,
     passive: function(player) { 
         if (player.guarenteedDef) {
           player.defGoal -= 1 
@@ -183,34 +183,59 @@ var U = {
     "Monster Bait": {
     "desc": "Player attracts monsters from two spaces away instead of one.",
     "color": "black",
-    "cost": 2,
+    "cost": 4,
     passive: function(player) { }
     },
     
     "Siege Mode": {
       "desc": "Once per round, while attacking, you can spend one green (defence) die to get one guarenteed hit.",
       "color": "red",
-      "cost": 3,
+      "cost": 6,
       passive: function(player) { player.canSiege = true; }
     },
 
     "Weaponized Research": {
       "desc": "Up to three times per round, spend one research point to gain a die color of your choice.",
       "color": "blue",
-      "cost": 3,
+      "cost": 6,
       passive: function(player) { player.weaponizedResearchCharges = 3; }
     }, 
   
     "Fortified Cities": {
       "desc": "Cities in this mech's home quadrant take two turns to destroy",
       "color": "purple",
-      "cost": 3,
+      "cost": 6,
       passive: function(player) {
         var chr = String.fromCharCode(96 + player.sprite.number);
         console.log(chr + " is now fortified");
           fortifiedList.push(chr)
         console.log(fortifiedList);
       }
-    } 
+    },
 
+    "Even More Armor": {
+      "desc": "Increase current and max health by 2", 
+      "color": "yellow",
+      "cost": 6,
+      passive: function(player) {
+        player.maxhp += 2;
+        player.hp += 2;
+      }
+    },
+
+    "Emergency Jump Jets": {
+      "desc": "When escaping combat, this mech can flee two spaces in any direction.\nYou may also spend an action point to return to any home quadrant city.",
+      "color": "green",
+      "cost": 6,
+      passive: function(player) {
+      }
+    },
+
+    "Chaos Systems": {
+      "desc": "Up to twice per round, you may turn one dice from one color into one dice of another color.\nCannot turn dice that have already been rolled into another color.",
+      "color": "black",
+      "cost": 6,
+      passive: function(player) {
+      }
+    },
 }

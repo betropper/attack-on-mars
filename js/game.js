@@ -1071,7 +1071,8 @@ function battle(player, monster) {
   }
 
   function moveMonsters() {
-      for (var i = 0; i < monstersList.length ; i++) {
+   scrubList(monstersList);   
+    for (var i = 0; i < monstersList.length ; i++) {
         if (monstersList[i].key.charAt(2) !== "0") {
           var newDestination = monstersList[i].key.substring(0,2) + (parseInt(monstersList[i].key.charAt(2)) - 1);
         } else {
@@ -1113,16 +1114,7 @@ function battle(player, monster) {
           }
         }
           
-        if (Space[newDestination]) {
-          if (Space[newDestination].occupied) {
-            for (x = 0; x < Space[newDestination].occupied.length; x++) {
-              if (monstersList.indexOf(Space[newDestination].occupied[x]) > -1) {
-                var containsMonsters = true;
-              } else if (playersList.indexOf(Space[newDestination].occupied[x]) > -1) {
-                var containsPlayers = true;
-              }
-            }
-          }
+
           
           if (parseInt(monstersList[i].key.charAt(2)) !== 0 && parseInt(newDestination.charAt(2)) === 0) {
             if (Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined) {
@@ -1137,12 +1129,16 @@ function battle(player, monster) {
               }
             }
           } else if (parseInt(monstersList[i].key.charAt(2)) === 0 )  {
-            if (Space[newDestination].damage && Space[newDestination.damage] === 1) {
+            if (Space[newDestination].damage && Space[newDestination].damage === 1) {
               newDestination = monstersList[i].key;
             } else {
-              newDestination = monstersList[i].sprite.closestSpaces.directions[1];
+              if (monstersList[i].sprite.key.charAt(1) !== "4") {
+                newDestination = monstersList[i].key.charAt(0) + (parseInt(monstersList[i].key.charAt(1))+1) + monstersList[i].key.charAt(2);
+              } else {
+                newDestination = monstersList[i].sprite.closestSpaces.directions[2].spaceKey || monstersList[i].sprite.closestSpaces.directions[1].spaceKey;
+              }
             }
-            if (Space[newDestination] || Space[newDestination] === monstersList[i].space || Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined) {
+            if ((Space[newDestination] || Space[newDestination] === monstersList[i].space) && (Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined)) {
               if (fortifiedList.indexOf(newDestination.charAt(0)) === -1 || Space[newDestination].damage === 1) {
                 var destroyedCityColumn = spawnSpecific("destroyedCity", newDestination);
                 destroyedCities.push(destroyedCityColumn);
@@ -1152,10 +1148,23 @@ function battle(player, monster) {
                 Space[newDestination].damage = 1;
               }
           } 
+
+        }
+
+        if (Space[newDestination]) {
+          if (Space[newDestination].occupied) {
+            for (x = 0; x < Space[newDestination].occupied.length; x++) {
+              if (monstersList.indexOf(Space[newDestination].occupied[x]) > -1) {
+                var containsMonsters = true;
+              } else if (playersList.indexOf(Space[newDestination].occupied[x]) > -1) {
+                var containsPlayers = true;
+              }
+            }
+          }
           if (containsMonsters && !containsPlayers) {
             var newDestination = monstersList[i].key;
           }
-        }
+        
         console.log("Monster is moving to " + newDestination);
         move(monstersList[i], newDestination);
       } else {
@@ -1567,11 +1576,11 @@ function getClosestSpaces(spaceKey) {
   }
   var directionObjects = [];
 
-  var directions = [clockwise,counter_clockwise,inward,outward];
+  var directions = [{direction: "clockwise", spaceKey: clockwise}, {direction: "counter_clockwise", spaceKey:counter_clockwise},{direction: "inward",spaceKey:inward},{direction: "outward",spaceKey:outward}];
   directions.forEach(function(direction) {
-  if (direction !== undefined) {
-    selectedSpaces.push(Space[direction]);
-    var directionValue = Space[direction];
+  if (direction && direction.spaceKey) {
+    selectedSpaces.push(Space[direction.spaceKey] || undefined);
+    var directionValue = Space[direction.spaceKey] || undefined;
     var spaceValue = Space[spaceKey];
     if ((spaceValue.x > directionValue.x) && (diff(spaceValue.x, directionValue.x) > diff(spaceValue.y,directionValue.y))) {
         directionObjects.push({direction: "left", spaceKey: direction});
@@ -1585,7 +1594,7 @@ function getClosestSpaces(spaceKey) {
     if ((spaceValue.y < directionValue.y) && (diff(spaceValue.x, directionValue.x) < diff(spaceValue.y,directionValue.y))) {
         directionObjects.push({direction: "down", spaceKey: outward});
       }
-      close_keys.push(direction);
+      close_keys.push(direction.spaceKey);
      }
    });
   return {
