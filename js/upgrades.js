@@ -199,6 +199,18 @@ var U = {
       "color": "blue",
       "cost": 3,
       passive: function(player) { player.weaponizedResearchCharges = 3; }
-    } 
+    }, 
   
+    "Fortified Cities": {
+      "desc": "Cities in this mech's home quadrant take two turns to destroy",
+      "color": "purple",
+      "cost": 3,
+      passive: function(player) {
+        var chr = String.fromCharCode(96 + player.sprite.number);
+        console.log(chr + " is now fortified");
+          fortifiedList.push(chr)
+        console.log(fortifiedList);
+      }
+    } 
+
 }

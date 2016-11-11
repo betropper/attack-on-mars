@@ -85,7 +85,8 @@ var focusX,
  zoomInTweens,
  mainMenuTweens = [],
  settingsMenuTweens = [],
- bossSprite;
+ bossSprite
+ fortifiedList = [];
 var boss = {};
 var battleSpeedDecrease = 0;
 var boughtBool;
@@ -1071,7 +1072,11 @@ function battle(player, monster) {
 
   function moveMonsters() {
       for (var i = 0; i < monstersList.length ; i++) {
-        var newDestination = monstersList[i].key.substring(0,2) + (parseInt(monstersList[i].key.charAt(2)) - 1);
+        if (monstersList[i].key.charAt(2) !== "0") {
+          var newDestination = monstersList[i].key.substring(0,2) + (parseInt(monstersList[i].key.charAt(2)) - 1);
+        } else {
+          var newDestination = monstersList[i].key;
+        }
         monstersList[i].sprite.closestSpaces = getClosestSpaces(monstersList[i].key);
         //Finds the closest spaces from two spaces away in case of
         //monster bait upgrade
@@ -1121,17 +1126,31 @@ function battle(player, monster) {
           
           if (parseInt(monstersList[i].key.charAt(2)) !== 0 && parseInt(newDestination.charAt(2)) === 0) {
             if (Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined) {
-              console.log("U R DED"); 
-              var destroyedCityColumn = spawnSpecific("destroyedCity", newDestination);
-              destroyedCities.push(destroyedCityColumn);
-              occupiedRows.push(destroyedCityColumn.key.substring(0,2));
+              console.log("U R DED");
+              if (fortifiedList.indexOf(newDestination.charAt(0)) === -1 || Space[newDestination].damage === 1) {
+                var destroyedCityColumn = spawnSpecific("destroyedCity", newDestination);
+                destroyedCities.push(destroyedCityColumn);
+                occupiedRows.push(destroyedCityColumn.key.substring(0,2));
+                Space[newDestination].damage = 2;
+              } else {
+                Space[newDestination].damage = 1;
+              }
             }
           } else if (parseInt(monstersList[i].key.charAt(2)) === 0 )  {
-            newDestination = monstersList[i].sprite.closestSpaces.directions[1];
-            if (Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined) {
-            var destroyedCityColumn = spawnSpecific("destroyedCity", newDestination);
-            destroyedCities.push(destroyedCityColumn);
-            occupiedRows.push(destroyedCityColumn.key.substring(0,2));
+            if (Space[newDestination].damage && Space[newDestination.damage] === 1) {
+              newDestination = monstersList[i].key;
+            } else {
+              newDestination = monstersList[i].sprite.closestSpaces.directions[1];
+            }
+            if (Space[newDestination] || Space[newDestination] === monstersList[i].space || Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined) {
+              if (fortifiedList.indexOf(newDestination.charAt(0)) === -1 || Space[newDestination].damage === 1) {
+                var destroyedCityColumn = spawnSpecific("destroyedCity", newDestination);
+                destroyedCities.push(destroyedCityColumn);
+                occupiedRows.push(destroyedCityColumn.key.substring(0,2));
+                Space[newDestination].damage = 2;
+              } else {
+                Space[newDestination].damage = 1;
+              }
           } 
           if (containsMonsters && !containsPlayers) {
             var newDestination = monstersList[i].key;
@@ -1220,7 +1239,7 @@ function move(object,destination) {
   }
 
   function repair(repairing) {
-    var repairing = repairing || repairing;
+    var repairing = this.repairing || repairing;
     if (repairing.hp < repairing.maxhp) {
       repairing.hp = repairing.maxhp;
       actionPoints -= 1;
