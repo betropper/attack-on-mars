@@ -493,25 +493,21 @@ class Setup {
           battleTurn = battleMonster;
           printBattleResults(battleMonster.sprite.key + " attacks first!");
         }
-        attackText = game.add.bitmapText(menuBar.x + 100*globalScale, menuBar.y + menuBar.height,'attackfont', "Attack!",50*globalScale);
-        //var attackTween = game.add.tween(attackText).to({ y: C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + menuBar.width}, 2000, Phaser.Easing.Linear.None, true)
+        attackText = game.add.bitmapText(menuBar.x + 100*globalScale, menuBar.y + menuBar.height,'attackfont', "Attack!",40*globalScale);
         attackText.anchor.set(0.5);
         attackText.inputEnabled = true;
         attackText.events.onInputDown.add(queAttack, {attacker: battlePlayer});
         battleTexts.push(attackText);
+        if (battlePlayer.upgrades.indexOf("Emergency Jump Jets") > -1) {  
+          addBattleText("Run",attemptEscape, "Emergency Jump Jets");
+        } else {
+          addBattleText("Run",attemptEscape, null);
+        }
         if (battlePlayer.canSiege) {
-          siegeText = game.add.bitmapText(battleTexts[battleTexts.length - 1].x + battleTexts[battleTexts.length - 1].width/2 + 80*globalScale, menuBar.y + 20, 'attackfont', "Siege Mode", 50*globalScale);
-          siegeText.anchor.y = 0.5;
-          siegeText.inputEnabled = true;
-          siegeText.events.onInputDown.add(queAttack, {attacker: battlePlayer, modifier: "Siege Mode"});
-          battleTexts.push(siegeText);
+          addBattleText("Siege Mode",queAttack,"Siege Mode");
         }
         if (battlePlayer.weaponizedResearchCharges && battlePlayer.weaponizedResearchCharges > 0) {
-          wprText = game.add.bitmapText(battleTexts[battleTexts.length - 1].x + battleTexts[battleTexts.length - 1].width/2 + 80*globalScale, menuBar.y + 20, 'attackfont', "Weaponized Research", 50*globalScale);
-          wprText.anchor.y = 0.5;
-          wprText.inputEnabled = true;
-          wprText.events.onInputDown.add(queAttack, {attacker: battlePlayer, modifier: "Weaponized Research"});
-          battleTexts.push(wprText);
+          addBattleText("Weaponized Research",queAttack,"Siege Mode");
         }
         for (i = 0; i < battleTexts.length; i++) {
           game.add.tween(battleTexts[i]).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + menuBar.height/2}, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true)
@@ -559,6 +555,13 @@ class Setup {
     }
 
   }
+}
+function addBattleText(text, action, modifier) {
+      var battleText = game.add.bitmapText(battleTexts[battleTexts.length - 1].x + battleTexts[battleTexts.length - 1].width/2 + 80*globalScale, menuBar.y + 20, 'attackfont', text, 40*globalScale);
+      battleText.anchor.y = 0.5;
+      battleText.inputEnabled = true;
+      battleText.events.onInputDown.add(action, {attacker: battlePlayer, modifier: modifier});
+      battleTexts.push(battleText);
 }
 
 function spawnBoss() {  
@@ -908,6 +911,21 @@ function countInArray(array, what) {
     return count;
 }
 
+function attemptEscape(method) {
+  var method = this.modifier || method;
+  if (method === null) {
+    var row = parseInt(battlePlayer.key.charAt(2)) - 2;
+    if (row < 0) {
+      row = 0;
+    } 
+    var destination = battlePlayer.key.substring(0,2) + row;
+    console.log("running to " + destination);
+    move(battlePlayer,destination,"running");
+  }
+  move(battleMonster,destination,"chasing");
+  var moveTween = game.add.tween(game.camera).to( { x: changeValueScale(Space[destination].x,"x"), y: changeValueScale(Space[destination].y,"y")}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
+}
+
 function attack(attacker,defender) {
 
   var bhits = rollDie(attacker.batk - (defender.batkDecrease || 0), attacker.batkGoal || 5);
@@ -949,79 +967,82 @@ function attack(attacker,defender) {
       MU["Poison Aura"].active(attacker,defender,stacks);      
     }
   if (damaged && damaged.hp <= 0) {
-    if (damaged.upgrades.indexOf("Feign Death") > -1 && damaged.feigned === false) {
-      MU["Feign Death"].active(damaged);
-      return;
-    }
-    battlePlayer.attacking = false;
-    console.log("DED with " + damaged.hp);
-    scrubList(globalList);
-    if (attacker.siegeMode) {
-      attacker.siegeMode = false;
-      attacker.def += 1;
-    }
-    for (i = 0; i < battleTexts.length; i++) {
-      battleTexts[i].kill();
-      battleTexts.splice(battleTexts[i],1);
-    }
-    if (damaged === battlePlayer) {
-      focusSpace.occupied = removeFromList(playersList[battlePlayer.sprite.number], focusSpace);
-      playersList[damaged.sprite.number].sprite.kill();
-      var destroyedPlayers = 0;
-      for (var i = 1; i < playersList.length; i++) {
-        if (!playersList[i].sprite.alive) {
-          destroyedPlayers += 1;
-        }
-      }
-      console.log("There are " + destroyedPlayers + " mechs destroyed.")
-      if (destroyedPlayers === playerCount) {
-        zoomOut = true;
-        game.state.start("GameOver");
-      }
-    } else if (damaged === battleMonster) {
-      focusSpace.occupied = removeFromList(monstersList[damaged.sprite.number], focusSpace);
-      battlePlayer.rp += damaged.rp;
-      monstersList.splice(damaged.sprite.number, 1);
-      damaged.sprite.destroy();
-      battlePlayer.sprite.events.onDragStop._bindings = [];
-      battlePlayer.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
-      battlePlayer.sprite.x = focusX;
-
-      console.log("Monster died, moving back to position " + focusX );
-    }
-    pendingBattles.splice(0,1);
-    if (focusSpace.occupied && focusSpace.occupied !== false) {
-      scrubList(focusSpace.occupied);
-    }
-    for (i = 1; i < playersList.length; i++) {
-      playersList[i].sprite.inputEnabled = true;
-      playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
-    }
-    if (pendingBattles.length > 0) {
-      console.log("There are more battles.");
-      battleMonster = pendingBattles[0].pendingMonster;
-      battlePlayer = pendingBattles[0].pendingPlayer;
-      focusSpace = pendingBattles[0].space;
-      focusX = changeValueScale(focusSpace.x,"x");
-      focusY = changeValueScale(focusSpace.y,"y"); 
-      yPivot = (battlePlayer.sprite.y *C.game.zoomScale) - game.camera.height/2; 
-      xPivot = (battlePlayer.sprite.x *C.game.zoomScale) - game.camera.width/2;
-      findIncrementsTo(focusSpace);
-      zoomIn = true;
-      battleState = false;
-      battleStarting = true;
-    } else {
-      zoomIn = false;
-      zoomOut = true;
-      battleState = false;
-    }
+    handleDeath(damaged,survivor);
   }
     if (!damaged || damaged.hp > 0) {
     battleTurn = defender;
   }
 
-
 }
+function handleDeath(damaged,survivor) {
+  if (damaged.upgrades.indexOf("Feign Death") > -1 && damaged.feigned === false) {
+    MU["Feign Death"].active(damaged);
+    return;
+  }
+  battlePlayer.attacking = false;
+  console.log("DED with " + damaged.hp);
+  scrubList(globalList);
+  if (survivor.siegeMode) {
+    survivor.siegeMode = false;
+    survivor.def += 1;
+  }
+  for (i = 0; i < battleTexts.length; i++) {
+    battleTexts[i].kill();
+    battleTexts.splice(battleTexts[i],1);
+  }
+  if (damaged === battlePlayer) {
+    focusSpace.occupied = removeFromList(playersList[battlePlayer.sprite.number], focusSpace);
+    playersList[damaged.sprite.number].sprite.kill();
+    var destroyedPlayers = 0;
+    for (var i = 1; i < playersList.length; i++) {
+      if (!playersList[i].sprite.alive) {
+        destroyedPlayers += 1;
+      }
+    }
+    console.log("There are " + destroyedPlayers + " mechs destroyed.")
+    if (destroyedPlayers === playerCount) {
+      zoomOut = true;
+      game.state.start("GameOver");
+    }
+  } else if (damaged === battleMonster) {
+    focusSpace.occupied = removeFromList(monstersList[damaged.sprite.number], focusSpace);
+    battlePlayer.rp += damaged.rp;
+    monstersList.splice(damaged.sprite.number, 1);
+    damaged.sprite.destroy();
+    battlePlayer.sprite.events.onDragStop._bindings = [];
+    battlePlayer.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
+    battlePlayer.sprite.x = focusX;
+
+    console.log("Monster died, moving back to position " + focusX );
+  }
+  pendingBattles.splice(0,1);
+  if (focusSpace.occupied && focusSpace.occupied !== false) {
+    scrubList(focusSpace.occupied);
+  }
+  for (i = 1; i < playersList.length; i++) {
+    playersList[i].sprite.inputEnabled = true;
+    playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
+  }
+  if (pendingBattles.length > 0) {
+    console.log("There are more battles.");
+    battleMonster = pendingBattles[0].pendingMonster;
+    battlePlayer = pendingBattles[0].pendingPlayer;
+    focusSpace = pendingBattles[0].space;
+    focusX = changeValueScale(focusSpace.x,"x");
+    focusY = changeValueScale(focusSpace.y,"y"); 
+    yPivot = (battlePlayer.sprite.y *C.game.zoomScale) - game.camera.height/2; 
+    xPivot = (battlePlayer.sprite.x *C.game.zoomScale) - game.camera.width/2;
+    findIncrementsTo(focusSpace);
+    zoomIn = true;
+    battleState = false;
+    battleStarting = true;
+  } else {
+    zoomIn = false;
+    zoomOut = true;
+    battleState = false;
+  }
+}
+
 function killResults(results) {
   results.destroy();
   resultsList.splice(results,1);
@@ -1230,15 +1251,29 @@ function explode(sprite) {
     dieTween.onComplete.add(this.sprite.kill, this);
 }
 
-function move(object,destination) {
+function chase() {
+
+}
+
+function move(object,destination,escaping) {
   console.log(object);
   if (playersList.indexOf(object) > -1) {
     setLastClicked(object.sprite);
   }
+  console.log(destination);
   var destinationX = Space[destination].x*C.bg.scale*C.bg.resizeX + game.bg.position.x;
-  var destinationY = Space[destination].y*C.bg.scale*C.bg.resizeY + game.bg.position.y;
-  
-  if (playersList.indexOf(object) > -1) {
+  var destinationY = Space[destination].y*C.bg.scale*C.bg.resizeY + game.bg.position.y;  
+  if (escaping) {
+    if (escaping === "running") {
+      var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
+      //moveTween.onComplete.add();
+      return;
+    } else if (escaping === "chasing") {
+      var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
+      return;
+    }
+  } 
+  else if (playersList.indexOf(object) > -1) {
     object.sprite.x = destinationX;
     object.sprite.y = destinationY;
   } else { 
@@ -1247,7 +1282,6 @@ function move(object,destination) {
       moveTween.onComplete.add(destroyWall,{wallSpace: Space[destination], formerSpace: object.space, object: object});
       return
     } else if (Space[destination].mine) {
-
       object.hp -= 1;
       if (object.hp <= 0) {
         object.space.occupied = removeFromList(monstersList[object.sprite.number], object.space);
