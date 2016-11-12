@@ -111,6 +111,25 @@ var MonstersDeck = {
    }
   ]
 
+}
 
 
+var MU = {
+  "Feign Death": {
+    "desc": "After a monster is first reduced below 1 hp, it is restored to 1 hp.",
+    "cost": 2,
+    passive: function(monster) { 
+      monster.feigned = false;
+    },
+    active: function(monster) {
+      var feignTween = game.add.tween(monster.sprite).to( { alpha: .3 }, 700, Phaser.Easing.Linear.None, true);
+      feignTween.onComplete.add(revive, {monster:monster});
+    },
+    revive: function(monster) {
+      var feignTween = game.add.tween(monster.sprite).to( { alpha: 1 }, 400, Phaser.Easing.Linear.None, true);
+      printBattleResults(monster.sprite.key + " feigned its death!");
+      monster.hp = 1;
+      monster.feigned = true;
+    }
+  }
 }

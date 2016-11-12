@@ -563,6 +563,11 @@ function spawnBoss() {
   boss.batk = drawnMonster.batk;
   boss.maxhp = drawnMonster.hp;
   boss.upgrades = drawnMonster.upgrades;
+  for (i = 0; i < boss.upgrades.length; i++) {
+    if (boss.upgrades[i].passive) {
+      boss.upgrades[i].passive(boss);
+    }
+  }
   boss.def = drawnMonster.def;
   boss.rp = 5;
   boss.mr = 4;
@@ -874,6 +879,14 @@ function checkAttack(sprite,pointer) {
     sprite.y = focusY;
   }
 }
+function printBattleResults(text) {
+  var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(focusY - 60), 'attackfont', text, 20);
+  battleResults.anchor.x = .5;
+  battleResults.anchor.y = .5;
+  game.world.bringToTop(battleResults);
+  resultsList.push(battleResults);
+  game.time.events.add(Phaser.Timer.SECOND * 2, killResults, this, battleResults);
+}
 
 function attack(attacker,defender) {
   var bhits = rollDie(attacker.batk - (defender.batkDecrease || 0), attacker.batkGoal || 5);
@@ -913,16 +926,15 @@ function attack(attacker,defender) {
       for (i = 0; i < resultsList.length; i++) {
         resultsList[i].y -= 40
       }
-      var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(focusY - 60), 'attackfont', text, 20);
+      printBattleResults(text);
     } else { 
-      var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(focusY - 60), 'attackfont', text, 20);
+      printBattleResults(text);
     }
-    battleResults.anchor.x = .5;
-    battleResults.anchor.y = .5;
-    game.world.bringToTop(battleResults);
-    resultsList.push(battleResults);
-    game.time.events.add(Phaser.Timer.SECOND * 2, killResults, this, battleResults);
   if (damaged && damaged.hp <= 0) {
+    if (damaged.upgrades.indexOf("Feign Death") > -1 && damaged.feigned === false) {
+      MU["Feign Death"].active;
+      return;
+    }
     battlePlayer.attacking = false;
     console.log("DED with " + damaged.hp);
     scrubList(globalList);
@@ -1799,6 +1811,11 @@ function spawnSpecific(object,space) {
       obj.maxhp = drawnMonster.hp;
       obj.batk = drawnMonster.batk;
       obj.upgrades = drawnMonster.upgrades;
+      for (i = 0; i < obj.upgrades.length; i++) {
+        if (obj.upgrades[i].passive) {
+          obj.upgrades[i].passive(obj);
+        }
+      }
       obj.def = drawnMonster.def;
       obj.rp = 1;
       obj.mr = 2;
@@ -1810,6 +1827,11 @@ function spawnSpecific(object,space) {
       obj.batk = drawnMonster.batk;
       obj.maxhp = drawnMonster.hp;
       obj.upgrades = drawnMonster.upgrades;
+      for (i = 0; i < obj.upgrades.length; i++) {
+        if (obj.upgrades[i].passive) {
+          obj.upgrades[i].passive(obj);
+        }
+      }
       obj.def = drawnMonster.def;
       obj.rp = 2;
       obj.mr = 3;
@@ -1827,6 +1849,11 @@ function spawnSpecific(object,space) {
       obj.maxhp = drawnMonster.hp;
       obj.batk = drawnMonster.batk;
       obj.upgrades = drawnMonster.upgrades;
+      for (i = 0; i < obj.upgrades.length; i++) {
+        if (obj.upgrades[i].passive) {
+          obj.upgrades[i].passive(obj);
+        }
+      }
       obj.def = drawnMonster.def;
       obj.rp = 3;
       obj.mr = 4;
