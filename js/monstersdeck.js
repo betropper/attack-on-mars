@@ -136,5 +136,14 @@ var MU = {
       battlePlayer.inputEnabled = true;
       battleTurn = battleMonster;
     }
+  },
+  "Poison Aura": {
+    "desc": "Both Monster and Mech suffer 1 point of damage after combat",
+    "cost": 1,
+    active(attacker,defender,stacks) {
+      attacker.hp -= stacks || 1;
+      defender.hp -= stacks || 1;
+      printBattleResults(monster.sprite.key + " poisoned itself and " + player.sprite.key + " for " + (stacks || 1) + " damage!");
+    }
   }
 }

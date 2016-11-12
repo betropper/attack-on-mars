@@ -885,12 +885,22 @@ function printBattleResults(text) {
       resultsList[i].y -= 40;
     }
   }
-  var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(focusY - 60), 'attackfont', text, 20);
+  var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(focusY - 60), 'attackfont', text, 20*globalScale);
   battleResults.anchor.x = .5;
   battleResults.anchor.y = .5;
   game.world.bringToTop(battleResults);
   resultsList.push(battleResults);
-  game.time.events.add(Phaser.Timer.SECOND * 2, killResults, this, battleResults);
+  game.time.events.add(Phaser.Timer.SECOND * 3, killResults, this, battleResults);
+}
+
+function countInArray(array, what) {
+    var count = 0;
+    for (var i = 0; i < array.length; i++) {
+        if (array[i] === what) {
+            count++;
+        }
+    }
+    return count;
 }
 
 function attack(attacker,defender) {
@@ -928,6 +938,10 @@ function attack(attacker,defender) {
     var text = defender.sprite.key + " blocked every hit from " + attacker.sprite.key + "!";
   }
     printBattleResults(text); 
+    if (attacker.upgrades.indexOf("Poison Aura") > -1) {
+      var stacks = countInArray(attacker.upgrades,"Poison Aura");
+      MU["Poison Aura"].active(attacker,defender,stacks);      
+    }
   if (damaged && damaged.hp <= 0) {
     if (damaged.upgrades.indexOf("Feign Death") > -1 && damaged.feigned === false) {
       MU["Feign Death"].active(damaged);
