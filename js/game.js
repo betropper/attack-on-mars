@@ -487,7 +487,12 @@ class Setup {
         game.world.scale.set(C.game.zoomScale);
         var barTween = game.add.tween(menuBar).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8)}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true)
         //game.add.tween(menuBar).to( { y: game.world.centerY }, 4000, Phaser.Easing.Bounce.Out, true);
-        battleTurn = battlePlayer;
+        if (battleMonster.upgrades.indexOf("First Attack") === -1) {
+          battleTurn = battlePlayer;
+        } else {
+          battleTurn = battleMonster;
+          printBattleResults(battleMonster.sprite.key + " attacks first!");
+        }
         attackText = game.add.bitmapText(menuBar.x + 100*globalScale, menuBar.y + menuBar.height,'attackfont', "Attack!",50*globalScale);
         //var attackTween = game.add.tween(attackText).to({ y: C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + menuBar.width}, 2000, Phaser.Easing.Linear.None, true)
         attackText.anchor.set(0.5);
@@ -882,10 +887,10 @@ function checkAttack(sprite,pointer) {
 function printBattleResults(text) {
   if (resultsList.length > 0) {
     for (i = 0; i < resultsList.length; i++) {
-      resultsList[i].y -= 40;
+      resultsList[i].y -= globalScale*40;
     }
   }
-  var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(focusY - 60), 'attackfont', text, 20*globalScale);
+  var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(focusY - 60*globalScale), 'attackfont', text, 30*globalScale);
   battleResults.anchor.x = .5;
   battleResults.anchor.y = .5;
   game.world.bringToTop(battleResults);
@@ -904,6 +909,7 @@ function countInArray(array, what) {
 }
 
 function attack(attacker,defender) {
+
   var bhits = rollDie(attacker.batk - (defender.batkDecrease || 0), attacker.batkGoal || 5);
   var rhits = 0;
   if (attacker.ratk) {
@@ -1040,6 +1046,10 @@ function battle(player, monster) {
   
     if (battleTurn === battleMonster && battleMonster.sprite) {
       if (attackText) {
+        if (battleMonster.upgrades.indexOf("Regeneration") > -1) {
+          var stacks = countInArray(battleMonster.upgrades,"Regeneration");
+          MU["Regeneration"].active(battleMonster, stacks);
+        }
         for (i = 0; i < battleTexts.length; i++) {
           battleTexts[i].kill();
         }

@@ -143,7 +143,22 @@ var MU = {
     active(attacker,defender,stacks) {
       attacker.hp -= stacks || 1;
       defender.hp -= stacks || 1;
-      printBattleResults(monster.sprite.key + " poisoned itself and " + player.sprite.key + " for " + (stacks || 1) + " damage!");
+      printBattleResults(attacker.sprite.key + " poisoned itself and " + defender.sprite.key + " for " + (stacks || 1) + " damage!");
     }
-  }
+  },
+  "Regeneration": {
+    "desc": "Before attacking, this monster regenerates 1 hp.",
+    "cost": 4,
+    active: function(healing, stacks) {
+      if (healing.hp > healing.maxhp) {
+        healing.hp += stacks || 1;
+        printBattleResults(monster.sprite.key + " regenerated " + (stacks || 1) + " hp.")
+      }
+    }
+  },
+  "First Attack": {
+    "desc": "This monster always attacks first when combat is initiated.",
+    "cost": 2,
+    }
+  
 }
