@@ -468,24 +468,29 @@ class Setup {
         }
         menuBar.width = C.game.width / game.world.scale.x;
         menuBar.height = (C.game.height/10) / game.world.scale.y;
-
         menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/C.game.zoomScale, C.menuBar.width);
         menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/C.game.zoomScale, C.menuBar.height);
         game.world.bringToTop(menuBar);
+        menuBar.attachedToCamera = false;
     } if (battleStarting) {
       var lookAt = focusX; 
       battlePlayer.sprite.x = Phaser.Math.clamp(battlePlayer.sprite.x + C.mech.battleSpeed/2, 0, lookAt + C.mech.battleSpacing);
       battleMonster.sprite.x = Phaser.Math.clamp(battleMonster.sprite.x - C.mech.battleSpeed/2, lookAt - C.mech.battleSpacing, 3000);
       if (battlePlayer.sprite.x === lookAt + C.mech.battleSpacing && battleMonster.sprite.x - 35) {
         
-        menuBar.reset(game.camera.x/C.game.zoomScale, game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale);
-        menuBar.width = game.camera.width/C.game.zoomScale;
-        menuBar.height = game.camera.height/8;
-        //menuBar.y = game.camera.y + game.camera.height/C.game.zoomScale;
-        //menuBar.x = game.camera.x/C.game.zoomScale;
-        game.world.bringToTop(menuBar);
         game.world.scale.set(C.game.zoomScale);
-        var barTween = game.add.tween(menuBar).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8)}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true)
+        if (menuBar.alive === false) {  
+          menuBar.reset(game.camera.x/C.game.zoomScale, game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale);
+          menuBar.width = game.camera.width/C.game.zoomScale;
+          menuBar.height = game.camera.height/8;
+          //menuBar.y = game.camera.y + game.camera.height/C.game.zoomScale;
+          //menuBar.x = game.camera.x/C.game.zoomScale;
+          game.world.bringToTop(menuBar);
+          var barTween = game.add.tween(menuBar).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8)}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
+        menuBar.attachedToCamera = false;
+        } else {
+        //var barTween = game.add.tween(menuBar).to( { x: focusX*3 - game.camera.width/2 , y: focusY*3 + game.camera.height/2 - menuBar.height }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
+        }
         //game.add.tween(menuBar).to( { y: game.world.centerY }, 4000, Phaser.Easing.Bounce.Out, true);
         if (battleMonster.upgrades.indexOf("First Attack") === -1) {
           battleTurn = battlePlayer;
@@ -911,8 +916,9 @@ function countInArray(array, what) {
     return count;
 }
 
-function attemptEscape(method) {
-  var method = this.modifier || method;
+function attemptEscape() {
+  var method = this.modifier;
+  console.log(method);
   if (method === null) {
     var row = parseInt(battlePlayer.key.charAt(2)) - 2;
     if (row < 0) {
@@ -923,7 +929,48 @@ function attemptEscape(method) {
     move(battlePlayer,destination,"running");
   }
   move(battleMonster,destination,"chasing");
-  var moveTween = game.add.tween(game.camera).to( { x: changeValueScale(Space[destination].x,"x"), y: changeValueScale(Space[destination].y,"y")}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
+  var cameraTween = game.add.tween(game.camera).to( { x: changeValueScale(Space[destination].x,"x")*3 - game.camera.width/2 , y: changeValueScale(Space[destination].y,"y")*3 - game.camera.height/2 + game.camera.height/8 }, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
+  cameraTween.onComplete.add(attackOfOppertunity, {attacker: battleMonster, defender: battlePlayer, destination: destination});
+}
+
+function attackOfOppertunity(attacker,defender,destination) {
+  var attacker = attacker || this.attacker;
+  var defender = defender || this.defender;
+  var destination = destination || this.destination;
+  var bhits = rollDie(attacker.batk - (defender.batkDecrease || 0), attacker.batkGoal+1 || 6);
+  var rhits = 0;
+  if (attacker.ratk) {
+    rhits = rollDie(attacker.ratk - (defender.ratkDecrease || 0), attacker.ratkGoal+1 || 6);
+  } 
+  var successes = rhits + bhits;
+  if (defender.guarenteedDef && successes > 0) {
+    successes -= defender.guarenteedDef;
+  }
+  var defences = rollDie(defender.def, defender.defGoal || 5);
+
+  if (successes > defences) {
+    defender.hp -= successes - defences;
+    var damaged = defender;
+    var damageTaken = successes - defences;
+    var text = defender.sprite.key + " took " + damageTaken.toString() + " damage from " + attacker.sprite.key + " while running!";
+  } else if (defences > successes) {
+    var text = defender.sprite.key + " ran away while blocking all damage.";
+  } else {
+    var damaged = undefined;
+    var damageTaken = undefined;
+    var text = defender.sprite.key + " dodged every hit from " + attacker.sprite.key + "!";
+  }
+    printBattleResults(text); 
+    if (attacker.upgrades.indexOf("Poison Aura") > -1) {
+      var stacks = countInArray(attacker.upgrades,"Poison Aura");
+      MU["Poison Aura"].active(attacker,defender,stacks);      
+    }
+  if (damaged && damaged.hp <= 0) {
+    handleDeath(damaged,attacker);   
+  } else {
+    move(defender,destination)
+  }
+  var attackerTween = game.add.tween(attacker.sprite).to( { x: changeValueScale(Space[attacker.sprite.key].x,"x"), y: changeValueScale(Space[attacker.sprite.key].y,"y")}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
 }
 
 function attack(attacker,defender) {
@@ -967,7 +1014,11 @@ function attack(attacker,defender) {
       MU["Poison Aura"].active(attacker,defender,stacks);      
     }
   if (damaged && damaged.hp <= 0) {
-    handleDeath(damaged,survivor);
+    if (damaged === defender) {
+      handleDeath(damaged,attacker);
+    } else if (damaged === attacker) {
+      handleDeath(damaged,defender);
+    }
   }
     if (!damaged || damaged.hp > 0) {
     battleTurn = defender;
