@@ -123,13 +123,18 @@ var MU = {
     },
     active: function(monster) {
       var feignTween = game.add.tween(monster.sprite).to( { alpha: .3 }, 700, Phaser.Easing.Linear.None, true);
-      feignTween.onComplete.add(revive, {monster:monster});
+      feignTween.onComplete.add(MU["Feign Death"].revive, {monster:monster});
+      battleTurn = battlePlayer;
+      battlePlayer.inputEnabled = false;
     },
     revive: function(monster) {
+      monster = this.monster || monster;
       var feignTween = game.add.tween(monster.sprite).to( { alpha: 1 }, 400, Phaser.Easing.Linear.None, true);
       printBattleResults(monster.sprite.key + " feigned its death!");
       monster.hp = 1;
       monster.feigned = true;
+      battlePlayer.inputEnabled = true;
+      battleTurn = battleMonster;
     }
   }
 }

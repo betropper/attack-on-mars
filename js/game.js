@@ -564,8 +564,8 @@ function spawnBoss() {
   boss.maxhp = drawnMonster.hp;
   boss.upgrades = drawnMonster.upgrades;
   for (i = 0; i < boss.upgrades.length; i++) {
-    if (boss.upgrades[i].passive) {
-      boss.upgrades[i].passive(boss);
+    if (MU[boss.upgrades[i]] && MU[boss.upgrades[i]].passive) {
+      MU[boss.upgrades[i]].passive(boss);
     }
   }
   boss.def = drawnMonster.def;
@@ -880,6 +880,11 @@ function checkAttack(sprite,pointer) {
   }
 }
 function printBattleResults(text) {
+  if (resultsList.length > 0) {
+    for (i = 0; i < resultsList.length; i++) {
+      resultsList[i].y -= 40;
+    }
+  }
   var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(focusY - 60), 'attackfont', text, 20);
   battleResults.anchor.x = .5;
   battleResults.anchor.y = .5;
@@ -922,17 +927,10 @@ function attack(attacker,defender) {
     console.log("No damage.");
     var text = defender.sprite.key + " blocked every hit from " + attacker.sprite.key + "!";
   }
-    if (resultsList.length > 0) {
-      for (i = 0; i < resultsList.length; i++) {
-        resultsList[i].y -= 40
-      }
-      printBattleResults(text);
-    } else { 
-      printBattleResults(text);
-    }
+    printBattleResults(text); 
   if (damaged && damaged.hp <= 0) {
     if (damaged.upgrades.indexOf("Feign Death") > -1 && damaged.feigned === false) {
-      MU["Feign Death"].active;
+      MU["Feign Death"].active(damaged);
       return;
     }
     battlePlayer.attacking = false;
@@ -1733,6 +1731,11 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
       obj.maxhp = drawnMonster.hp;
       obj.batk = drawnMonster.batk;
       obj.upgrades = drawnMonster.upgrades;
+      for (i = 0; i < obj.upgrades.length; i++) {
+        if (MU[obj.upgrades[i]] && MU[obj.upgrades[i]].passive) {
+          MU[obj.upgrades[i]].passive(obj);
+        }
+      }
       obj.def = drawnMonster.def;
       obj.rp = 1;
       obj.mr = 2;
@@ -1744,6 +1747,11 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
       obj.maxhp = drawnMonster.hp;
       obj.batk = drawnMonster.batk;
       obj.upgrades = drawnMonster.upgrades;
+      for (i = 0; i < obj.upgrades.length; i++) {
+        if (MU[obj.upgrades[i]] && MU[obj.upgrades[i]].passive) {
+          MU[obj.upgrades[i]].passive(obj);
+        }
+      }
       obj.def = drawnMonster.def;
       obj.rp = 2;
       obj.mr = 3;
@@ -1761,6 +1769,11 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
       obj.maxhp = drawnMonster.hp;
       obj.batk = drawnMonster.batk;
       obj.upgrades = drawnMonster.upgrades;
+      for (i = 0; i < obj.upgrades.length; i++) {
+        if (MU[obj.upgrades[i]] && MU[obj.upgrades[i]].passive) {
+          MU[obj.upgrades[i]].passive(obj);
+        }
+      }
       obj.def = drawnMonster.def;
       obj.rp = 3;
       obj.mr = 4;
@@ -1812,8 +1825,8 @@ function spawnSpecific(object,space) {
       obj.batk = drawnMonster.batk;
       obj.upgrades = drawnMonster.upgrades;
       for (i = 0; i < obj.upgrades.length; i++) {
-        if (obj.upgrades[i].passive) {
-          obj.upgrades[i].passive(obj);
+        if (MU[obj.upgrades[i]] && MU[obj.upgrades[i]].passive) {
+          MU[obj.upgrades[i]].passive(obj);
         }
       }
       obj.def = drawnMonster.def;
@@ -1828,8 +1841,9 @@ function spawnSpecific(object,space) {
       obj.maxhp = drawnMonster.hp;
       obj.upgrades = drawnMonster.upgrades;
       for (i = 0; i < obj.upgrades.length; i++) {
-        if (obj.upgrades[i].passive) {
-          obj.upgrades[i].passive(obj);
+        if (MU[obj.upgrades[i]] && MU[obj.upgrades[i]].passive) {
+
+          MU[obj.upgrades[i]].passive(obj);
         }
       }
       obj.def = drawnMonster.def;
@@ -1850,8 +1864,8 @@ function spawnSpecific(object,space) {
       obj.batk = drawnMonster.batk;
       obj.upgrades = drawnMonster.upgrades;
       for (i = 0; i < obj.upgrades.length; i++) {
-        if (obj.upgrades[i].passive) {
-          obj.upgrades[i].passive(obj);
+        if (MU[obj.upgrades[i]] && MU[obj.upgrades[i]].passive) {
+          MU[obj.upgrades[i]].passive(obj);
         }
       }
       obj.def = drawnMonster.def;
