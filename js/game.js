@@ -973,16 +973,9 @@ function attackOfOppertunity() {
   if (damaged && damaged.hp <= 0) {
     handleDeath(damaged,attacker);   
   } else {
-    move(defender,destination)
-    zoomIn = false;
-    zoomOut = true;
-    battleState = false;
-    for (i = 0; i < battleTexts.length; i++) {
-      battleTexts[i].kill();
-      battleTexts.splice(battleTexts[i],1);
-    }
+    finishBattle();
   }
-
+  battleTexts.splice(0,battleTexts.length);
   var attackerTween = game.add.tween(attacker.sprite).to( { x: changeValueScale(Space[attacker.key].x,"x"), y: changeValueScale(Space[attacker.key].y,"y")}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
 }
 
@@ -1076,9 +1069,13 @@ function handleDeath(damaged,survivor) {
     battlePlayer.sprite.events.onDragStop._bindings = [];
     battlePlayer.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
     battlePlayer.sprite.x = focusX;
-
-    console.log("Monster died, moving back to position " + focusX );
+    console.log("Monster died, moving back to position " + focusX )
   }
+  finishBattle();
+
+}
+
+function finishBattle() {
   pendingBattles.splice(0,1);
   if (focusSpace.occupied && focusSpace.occupied !== false) {
     scrubList(focusSpace.occupied);
