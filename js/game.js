@@ -892,13 +892,17 @@ function checkAttack(sprite,pointer) {
     sprite.y = focusY;
   }
 }
-function printBattleResults(text) {
+function printBattleResults(text,position) {
   if (resultsList.length > 0) {
     for (i = 0; i < resultsList.length; i++) {
       resultsList[i].y -= globalScale*40;
     }
   }
-  var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(focusY - 60*globalScale), 'attackfont', text, 30*globalScale);
+  if (!position) {
+    var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(focusY - 60*globalScale), 'attackfont', text, 30*globalScale);
+  } else {
+    var battleResults = game.add.bitmapText(Math.round(position.x),Math.round(position.y - 60*globalScale), 'attackfont', text, 30*globalScale);
+  }
   battleResults.anchor.x = .5;
   battleResults.anchor.y = .5;
   game.world.bringToTop(battleResults);
@@ -933,10 +937,11 @@ function attemptEscape() {
   cameraTween.onComplete.add(attackOfOppertunity, {attacker: battleMonster, defender: battlePlayer, destination: destination});
 }
 
-function attackOfOppertunity(attacker,defender,destination) {
+function attackOfOppertunity() {
   var attacker = attacker || this.attacker;
   var defender = defender || this.defender;
   var destination = destination || this.destination;
+  console.log(defender);
   var bhits = rollDie(attacker.batk - (defender.batkDecrease || 0), attacker.batkGoal+1 || 6);
   var rhits = 0;
   if (attacker.ratk) {
@@ -960,7 +965,7 @@ function attackOfOppertunity(attacker,defender,destination) {
     var damageTaken = undefined;
     var text = defender.sprite.key + " dodged every hit from " + attacker.sprite.key + "!";
   }
-    printBattleResults(text); 
+    printBattleResults(text, {x: defender.sprite.x, y: defender.sprite.y }); 
     if (attacker.upgrades.indexOf("Poison Aura") > -1) {
       var stacks = countInArray(attacker.upgrades,"Poison Aura");
       MU["Poison Aura"].active(attacker,defender,stacks);      
@@ -969,8 +974,16 @@ function attackOfOppertunity(attacker,defender,destination) {
     handleDeath(damaged,attacker);   
   } else {
     move(defender,destination)
+    zoomIn = false;
+    zoomOut = true;
+    battleState = false;
+    for (i = 0; i < battleTexts.length; i++) {
+      battleTexts[i].kill();
+      battleTexts.splice(battleTexts[i],1);
+    }
   }
-  var attackerTween = game.add.tween(attacker.sprite).to( { x: changeValueScale(Space[attacker.sprite.key].x,"x"), y: changeValueScale(Space[attacker.sprite.key].y,"y")}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
+
+  var attackerTween = game.add.tween(attacker.sprite).to( { x: changeValueScale(Space[attacker.key].x,"x"), y: changeValueScale(Space[attacker.key].y,"y")}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
 }
 
 function attack(attacker,defender) {
