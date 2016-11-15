@@ -1,4 +1,4 @@
-var globalScale = .5;
+var globalScale = 1;
 var C = {
  "game": {
    "zoomScale": 3,
@@ -487,7 +487,18 @@ class Setup {
           //menuBar.x = game.camera.x/C.game.zoomScale;
           game.world.bringToTop(menuBar);
           var barTween = game.add.tween(menuBar).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8)}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
-        menuBar.attachedToCamera = false;
+          menuBar.attachedToCamera = false;
+          if (!playerBar) {
+            var playerBar = game.add.sprite(game.camera.x/C.game.zoomScale + game.camera.width, battlePlayer.sprite.y, 'menubar');
+          } else if (playerBar.alive === false) {
+            playerBar.reset(game.camera.x/C.game.zoomScale + game.camera.width, battlePlayer.sprite.y);
+          }
+          playerBar.height = (game.camera.width/C.game.zoomScale)/5;
+          playerBar.width = game.camera.height/8;
+          var playerBarTween = game.add.tween(playerBar).to({ x: game.camera.x/C.game.zoomScale + game.camera.width/C.game.zoomScale - 300/C.game.zoomScale}, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true);
+          playerBar.anchor.setTo(.5);
+          game.world.bringToTop(playerBar);
+          game.world.bringToTop(menuBar);
         } else {
         //var barTween = game.add.tween(menuBar).to( { x: focusX*3 - game.camera.width/2 , y: focusY*3 + game.camera.height/2 - menuBar.height }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
         }
@@ -849,6 +860,8 @@ var battleStarting = false;
 var pendingBattles = [];
 var threatLevel = 0;
 var menuBar;
+var monsterBar;
+var playerBar;
 var battleState;
 var resultsList = [];
 var buttonsList = [];
@@ -980,7 +993,6 @@ function attackOfOppertunity() {
 }
 
 function attack(attacker,defender) {
-
   var bhits = rollDie(attacker.batk - (defender.batkDecrease || 0), attacker.batkGoal || 5);
   var rhits = 0;
   if (attacker.ratk) {
@@ -1043,10 +1055,6 @@ function handleDeath(damaged,survivor) {
     survivor.siegeMode = false;
     survivor.def += 1;
   }
-  for (i = 0; i < battleTexts.length; i++) {
-    battleTexts[i].kill();
-    battleTexts.splice(battleTexts[i],1);
-  }
   if (damaged === battlePlayer) {
     focusSpace.occupied = removeFromList(playersList[battlePlayer.sprite.number], focusSpace);
     playersList[damaged.sprite.number].sprite.kill();
@@ -1077,6 +1085,9 @@ function handleDeath(damaged,survivor) {
 
 function finishBattle() {
   pendingBattles.splice(0,1);
+  for (i = 0; i < battleTexts.length; i++) {
+    battleTexts[i].kill();
+  }
   if (focusSpace.occupied && focusSpace.occupied !== false) {
     scrubList(focusSpace.occupied);
   }
@@ -1124,8 +1135,7 @@ function rollDie(count, goal){
 function battle(player, monster) {
   //Simple Placeholder battle
   game.world.bringToTop(monster.sprite);
-  game.world.bringToTop(player.sprite);
-  
+  game.world.bringToTop(player.sprite);  
     if (battleTurn === battleMonster && battleMonster.sprite) {
       if (attackText) {
         if (battleMonster.upgrades.indexOf("Regeneration") > -1) {
