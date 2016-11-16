@@ -495,9 +495,19 @@ class Setup {
           }
           playerBar.height = (game.camera.width/C.game.zoomScale)/5;
           playerBar.width = game.camera.height/8;
-          var playerBarTween = game.add.tween(playerBar).to({ x: game.camera.x/C.game.zoomScale + game.camera.width/C.game.zoomScale - 300/C.game.zoomScale}, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true);
+          var playerBarTween = game.add.tween(playerBar).to({ x: game.camera.x/C.game.zoomScale + game.camera.width/C.game.zoomScale - 300/C.game.zoomScale}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           playerBar.anchor.setTo(.5);
           game.world.bringToTop(playerBar);
+          if (!monsterBar) {
+            var monsterBar = game.add.sprite(game.camera.x/C.game.zoomScale - game.camera.height/8, battlePlayer.sprite.y, 'menubar');
+            monsterBar.width = game.camera.height/8;
+            monsterBar.height = (game.camera.width/C.game.zoomScale)/5;
+          } else if (monsterBar.alive === false) {
+            monsterBar.reset(game.camera.x/C.game.zoomScale - monsterBar.width, battlePlayer.sprite.y);
+          }
+          var monsterBarTween = game.add.tween(monsterBar).to({ x: game.camera.x/C.game.zoomScale + 300/C.game.zoomScale}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
+          monsterBar.anchor.setTo(.5);
+          game.world.bringToTop(monsterBar);
           game.world.bringToTop(menuBar);
         } else {
         //var barTween = game.add.tween(menuBar).to( { x: focusX*3 - game.camera.width/2 , y: focusY*3 + game.camera.height/2 - menuBar.height }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
