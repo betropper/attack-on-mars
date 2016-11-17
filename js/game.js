@@ -483,7 +483,7 @@ class Setup {
         battleStarting = false;i
         var barsMoving = true;
       }
-    } else if (battlePlayer.sprite.x === lookAt + C.mech.battleSpacing && battleMonster.sprite.x - 35 && barsMoving) {
+    } else if (battlePlayer && battlePlayer.sprite.x === lookAt + C.mech.battleSpacing && battleMonster.sprite.x - 35 && barsMoving) {
         game.world.scale.set(C.game.zoomScale);
         if (menuBar.alive === false) {  
           menuBar.reset(game.camera.x/C.game.zoomScale, game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale);
