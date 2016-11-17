@@ -1,4 +1,4 @@
-var globalScale = 1;
+var globalScale = .5;
 var C = {
  "game": {
    "zoomScale": 3,
@@ -94,6 +94,8 @@ var upgradeState;
 var confirmState;
 var confirmText;
 var battleTexts = [];
+var playerBattleTexts = [];
+var monsterBattleTexts = [];
 var attackText;
 var siegeText;
 var waitButton;
@@ -140,8 +142,6 @@ var resultsList = [];
 var buttonsList = [];
 var buttonsTextList = [];
 var priceText;
-var jaja = null;
-var donovank = "White";
 var tempFocus;
 class Boot {
   init() {
@@ -310,21 +310,18 @@ class Setup {
   create() {
     console.log(playersList);
     //if (playersList.length === 0) {
-    console.log("memes");
     for (var i = 0; i < obj_keys.length; i++) {
       Space[obj_keys[i]].occupied = false;
     }   
-    
-    //playerCount = parseInt(prompt("How many will be playing?", "2")) || null;
     game.stage.smoothed = true;
-  
   if (Phaser.Device.desktop) {
-    if (window.innerWidth < C.game.width) {
+    /*if (window.innerWidth < C.game.width) {
       game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
     } else {
       game.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
       game.scale.setUserScale((window.innerWidth)/2800,(window.innerHeight)/1280);
-    }
+    }*/
+      game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
   } else {
     alert("You are on mobile!");
     game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
@@ -338,7 +335,6 @@ class Setup {
     } else if (playerCount > 4) {
       playerCount = 4;
     }
-
     game.time.events.add(Phaser.Timer.SECOND * 1, spawnBoss, this);
     for (var i = 1; i <= playerCount; i++) {
       console.log(i);
@@ -347,7 +343,14 @@ class Setup {
       playersList[i] = spawnRandom(playerNames[i-1], i, "0", true); 
       playersList[i].sprite.number = i;
       playersList[i].upgrades = [];
-      playersList[i].colorDiscounts = [{color: "red", discount: 0 },{color: "blue", discount: 0},{color: "green", discount: 0},{color: "yellow",discount: 0},{color: "purple", discount: 0},{color: "black", discount: 0}]
+      playersList[i].colorDiscounts = [
+        {color: "red", discount: 0 },
+        {color: "blue", discount: 0},
+        {color: "green", discount: 0},
+        {color: "yellow",discount: 0},
+        {color: "purple", discount: 0},
+        {color: "black", discount: 0}
+      ]
       playersList[i].sprite.inputEnabled = true;
       playersList[i].sprite.input.enableDrag(true);
       playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
@@ -460,11 +463,12 @@ class Setup {
         game.world.bringToTop(menuBar);
     } else if (zoomOut === true) {
         if (menuBar.alive) {
-        menuBar.kill();
-        var zoomTween = game.add.tween(game.camera).to( { x: 0, y: 0 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
-        //zoomTween.onComplete.add(zoomWorld, {zoomScale: C.game.zoomScale});
-        var scaleTween = game.add.tween(game.world.scale).to( { x: 1, y: 1 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
-        scaleTween.onComplete.add(zoomFalse, this);
+          menuBar.kill();
+          playerBar.kill();
+          monsterBar.kill();
+          var zoomTween = game.add.tween(game.camera).to( { x: 0, y: 0 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
+          var scaleTween = game.add.tween(game.world.scale).to( { x: 1, y: 1 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
+          scaleTween.onComplete.add(zoomFalse, this);
         }
         menuBar.width = C.game.width / game.world.scale.x;
         menuBar.height = (C.game.height/10) / game.world.scale.y;
@@ -477,7 +481,6 @@ class Setup {
       battlePlayer.sprite.x = Phaser.Math.clamp(battlePlayer.sprite.x + C.mech.battleSpeed/2, 0, lookAt + C.mech.battleSpacing);
       battleMonster.sprite.x = Phaser.Math.clamp(battleMonster.sprite.x - C.mech.battleSpeed/2, lookAt - C.mech.battleSpacing, 3000);
       if (battlePlayer.sprite.x === lookAt + C.mech.battleSpacing && battleMonster.sprite.x - 35) {
-        
         game.world.scale.set(C.game.zoomScale);
         if (menuBar.alive === false) {  
           menuBar.reset(game.camera.x/C.game.zoomScale, game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale);
@@ -489,23 +492,25 @@ class Setup {
           var barTween = game.add.tween(menuBar).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8)}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           menuBar.attachedToCamera = false;
           if (!playerBar) {
-            var playerBar = game.add.sprite(game.camera.x/C.game.zoomScale + game.camera.width, battlePlayer.sprite.y, 'menubar');
+            var playerBar = game.add.sprite(focusX + game.camera.width/2, battlePlayer.sprite.y, 'menubar');
+            playerBar.height = (game.camera.width/C.game.zoomScale)/5;
+            playerBar.width = game.camera.height/8;
           } else if (playerBar.alive === false) {
-            playerBar.reset(game.camera.x/C.game.zoomScale + game.camera.width, battlePlayer.sprite.y);
+            playerBar.reset(focusX + game.camera.width/2, battlePlayer.sprite.y);
           }
-          playerBar.height = (game.camera.width/C.game.zoomScale)/5;
-          playerBar.width = game.camera.height/8;
-          var playerBarTween = game.add.tween(playerBar).to({ x: game.camera.x/C.game.zoomScale + game.camera.width/C.game.zoomScale - 300/C.game.zoomScale}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
+          playerBattleTexts.x = game.camera.x/C.game.zoomScale + game.camera.width/C.game.zoomScale - 300/C.game.zoomScale;
+          var playerBarTween = game.add.tween(playerBar).to({ x: playerBattleTexts.x }, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           playerBar.anchor.setTo(.5);
           game.world.bringToTop(playerBar);
           if (!monsterBar) {
-            var monsterBar = game.add.sprite(game.camera.x/C.game.zoomScale - game.camera.height/8, battlePlayer.sprite.y, 'menubar');
+            var monsterBar = game.add.sprite(focusX - game.camera.width/2, battlePlayer.sprite.y, 'menubar');
             monsterBar.width = game.camera.height/8;
             monsterBar.height = (game.camera.width/C.game.zoomScale)/5;
           } else if (monsterBar.alive === false) {
-            monsterBar.reset(game.camera.x/C.game.zoomScale - monsterBar.width, battlePlayer.sprite.y);
+            monsterBar.reset(focusX - game.camera.width/2, battlePlayer.sprite.y);
           }
-          var monsterBarTween = game.add.tween(monsterBar).to({ x: game.camera.x/C.game.zoomScale + 300/C.game.zoomScale}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
+          monsterBattleTexts.x = game.camera.x/C.game.zoomScale + ((300*globalScale)/C.game.zoomScale);
+          var monsterBarTween = game.add.tween(monsterBar).to({ x: monsterBattleTexts.x}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           monsterBar.anchor.setTo(.5);
           game.world.bringToTop(monsterBar);
           game.world.bringToTop(menuBar);
@@ -583,11 +588,23 @@ class Setup {
   }
 }
 function addBattleText(text, action, modifier) {
-      var battleText = game.add.bitmapText(battleTexts[battleTexts.length - 1].x + battleTexts[battleTexts.length - 1].width/2 + 80*globalScale, menuBar.y + 20, 'attackfont', text, 40*globalScale);
-      battleText.anchor.y = 0.5;
-      battleText.inputEnabled = true;
-      battleText.events.onInputDown.add(action, {attacker: battlePlayer, modifier: modifier});
-      battleTexts.push(battleText);
+  var battleText = game.add.bitmapText(battleTexts[battleTexts.length - 1].x + battleTexts[battleTexts.length - 1].width/2 + 80*globalScale, menuBar.y + 40*globalScale, 'attackfont', text, 40*globalScale);
+  battleText.anchor.y = 0.5;
+  battleText.inputEnabled = true;
+  battleText.events.onInputDown.add(action, {attacker: battlePlayer, modifier: modifier});
+  battleTexts.push(battleText);
+}
+
+function addBattleInfo(text, value, list) {
+  if (list === monsterBattleTexts) {
+    var x = monsterBattleTexts.x;
+  } else if (list === playerBattleTexts) {
+    var x = playerBattleTexts.x;
+  }
+  var battleInfo = game.add.bitmapText(x,(list[list.length - 1].y + 30*globalScale) || (playerBar.y - playerBar.height/2.4), 'attackfont', text, 20*globalScale);
+  battleInfo.value = value;
+  battleInfo.lastValue = value;
+  list.push(battleInfo);
 }
 
 function spawnBoss() {  
