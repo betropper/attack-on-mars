@@ -608,11 +608,13 @@ function addBattleText(text, action, modifier) {
 }
 
 //'name' is the name of the variable
-function addBattleInfo(text, value, list) {
-  if (list === monsterBattleTexts) {
-    var x = monsterBattleTexts.x;
-  } else if (list === playerBattleTexts) {
+function addBattleInfo(text, value) {
+  if (playersList.indexOf(this) > -1) {
     var x = playerBattleTexts.x;
+    var list = playerBattleTexts;
+  } else if (monstersList.indexOf(this) > -1) {
+    var x = monsterBattleTexts.x;
+    var list = monsterBattleTexts;
   }
   //Adds the battle info into an appropriate spot relative to the bars
 
@@ -631,10 +633,12 @@ function addBattleInfo(text, value, list) {
     valueDisplay: valueDisplay,
     value: value
   }
+  console.log(battleDescObj.parent);
   battleDescObj.update = function() {
-    //if (value != trueValue) {
-      this.valueDisplay.text = parent[value];
-    //}
+    if (this.value != this.parent[value].toString()) {
+      this.value = this.parent[value].toString();
+      this.valueDisplay.text = this.parent[value].toString();
+    }
   }
   list.push(battleDescObj);
 }
