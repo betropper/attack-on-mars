@@ -77,8 +77,8 @@ var C = {
  
  },
  "icons": {
-  "width": 1379/7,
-  "height": (1275/9)*2
+  "width": 953/7,
+  "height": (535/3)
 
  }
 }
@@ -622,7 +622,7 @@ function addBattleInfo(text, value, frame) {
     var x = playerBattleTexts.x;
     var list = playerBattleTexts;
     var bar = playerBar;
-  } else if (monstersList.indexOf(this) > -1) {
+  } else {
     var x = monsterBattleTexts.x;
     var list = monsterBattleTexts;
     var bar = monsterBar;
@@ -653,7 +653,7 @@ function addBattleInfo(text, value, frame) {
     var valueDisplay = game.add.bitmapText(x - 150*globalScale,iconY + 30*globalScale, 'attackfont', this[value], 20*globalScale);
   }
   var valueDescription = game.add.sprite(iconX,iconY, 'icons');
-  valueDescription.scale.setTo(.5*globalScale);
+  valueDescription.scale.setTo(.35*globalScale);
   valueDescription.frame = frame;
   valueDisplay.anchor.setTo(.5);
   valueDescription.anchor.setTo(.5);
@@ -705,6 +705,7 @@ function spawnBoss() {
     bossScaleTween.onComplete.add(shakeSprite,{sprite: boss.sprite});
   }
   boss.sprite.inputEnabled = true;
+  boss.addBattleInfo = addBattleInfo;
   globalList.push(boss);
 }
 
