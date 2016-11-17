@@ -98,6 +98,7 @@ var playerBattleTexts = [];
 var monsterBattleTexts = [];
 var attackText;
 var siegeText;
+var barsMoving;
 var waitButton;
 var mineButton;
 var repairButton;
@@ -464,26 +465,29 @@ class Setup {
         */
         game.world.bringToTop(menuBar);
     } else if (zoomOut === true) {
-        if (menuBar.alive) {
+      if (menuBar.alive) {   
           var zoomTween = game.add.tween(game.camera).to( { x: 0, y: 0 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
           var scaleTween = game.add.tween(game.world.scale).to( { x: 1, y: 1 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
           scaleTween.onComplete.add(zoomFalse, this);
-        }
-        menuBar.width = C.game.width / game.world.scale.x;
+          menuBar.kill();
+          playerBar.kill();
+          monsterBar.kill();
+      }
+        /*menuBar.width = C.game.width / game.world.scale.x;
         menuBar.height = (C.game.height/10) / game.world.scale.y;
         menuBar.width = Phaser.Math.clamp(menuBar.width, C.menuBar.width/C.game.zoomScale, C.menuBar.width);
         menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/C.game.zoomScale, C.menuBar.height);
-        game.world.bringToTop(menuBar);
+        game.world.bringToTop(menuBar);*/
         menuBar.attachedToCamera = false;
     } if (battleStarting) {
       var lookAt = focusX; 
       battlePlayer.sprite.x = Phaser.Math.clamp(battlePlayer.sprite.x + C.mech.battleSpeed/2, 0, lookAt + C.mech.battleSpacing);
       battleMonster.sprite.x = Phaser.Math.clamp(battleMonster.sprite.x - C.mech.battleSpeed/2, lookAt - C.mech.battleSpacing, 3000);
-      if (battlePlayer.sprite.x === lookat + C.mech.battleSpacing) {
-        battleStarting = false;i
-        var barsMoving = true;
+      if (battlePlayer.sprite.x === lookAt + C.mech.battleSpacing) {
+        battleStarting = false;
+        barsMoving = true;
       }
-    } else if (battlePlayer && battlePlayer.sprite.x === lookAt + C.mech.battleSpacing && battleMonster.sprite.x - 35 && barsMoving) {
+    } else if (battlePlayer && barsMoving) {
         game.world.scale.set(C.game.zoomScale);
         if (menuBar.alive === false) {  
           menuBar.reset(game.camera.x/C.game.zoomScale, game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale);
@@ -603,7 +607,8 @@ function addBattleText(text, action, modifier) {
   battleTexts.push(battleText);
 }
 
-function addBattleInfo(text, value, list) {
+//'name' is the name of the variable
+function addBattleInfo(text, value, name, list) {
   if (list === monsterBattleTexts) {
     var x = monsterBattleTexts.x;
   } else if (list === playerBattleTexts) {
@@ -612,9 +617,9 @@ function addBattleInfo(text, value, list) {
   //Adds the battle info into an appropriate spot relative to the bars
 
   if (list.length > 0) {
-    var valueDescription = game.add.bitmapText(x,list[list.length - 1].y + 30*globalScale, 'attackfont', text, 20*globalScale);
+    var valueDescription = game.add.bitmapText(x,list[list.length - 1].valueDisplay.y + 40*globalScale, 'attackfont', text, 20*globalScale);
   } else {
-    var valueDescription = game.add.bitmapText(x,playerBar.y - playerBar.height/2.4, 'attackfont', text, 20*globalScale);
+    var valueDescription = game.add.bitmapText(x,playerBar.y - playerBar.height/3, 'attackfont', text, 20*globalScale);
   }
   var valueDisplay = game.add.bitmapText(x,valueDescription.y + 30*globalScale, 'attackfont', value, 20*globalScale);
   valueDisplay.anchor.setTo(.5);
@@ -623,12 +628,14 @@ function addBattleInfo(text, value, list) {
   battleDescObj = {
     description: valueDescription,
     valueDisplay: valueDisplay,
-    value: value
+    value: value,
+    trueValue: window[name]
   }
-  battleDescObj.update = function() {
-    if (this.value != value) {
-      console.log(value + " " + this.value);
-      this.value = value;
+  battleDescObj.update = function(value,trueValue) {
+    if (value != trueValue) {
+      value = trueValue;
+      console.log(trueValue + " " + value);
+      valueDisplay.text = value;
     }
   }
   list.push(battleDescObj);
@@ -989,6 +996,9 @@ function countInArray(array, what) {
 
 function attemptEscape() {
   var method = this.modifier;
+  menuBar.kill();
+  playerBar.kill();
+  monsterBar.kill();
   console.log(method);
   if (method === null) {
     var row = parseInt(battlePlayer.key.charAt(2)) - 2;
@@ -1143,23 +1153,28 @@ function finishBattle() {
     battleTexts[i].kill();
   }
   for (i = 0; i < playerBattleTexts.length; i++) {
-    playerBattleTexts[i].kill();
+    playerBattleTexts[i].valueDisplay.destroy();
+    playerBattleTexts[i].description.destroy();
   }
   for (i = 0; i < monsterBattleTexts.length; i++) {
-    monsterBattleTexts[i].kill();
+    monsterBattleTexts[i].valueDisplay.destroy();
+    monsterBattleTexts[i].description.destroy();
   }
+  playerBattleTexts = [];
+  monsterBattleTexts = [];
   if (focusSpace.occupied && focusSpace.occupied !== false) {
     scrubList(focusSpace.occupied);
   }
-  menuBar.kill();
-  playerBar.kill();
-  monsterBar.kill();
+
   for (i = 1; i < playersList.length; i++) {
     playersList[i].sprite.inputEnabled = true;
     playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
   }
   if (pendingBattles.length > 0) {
     console.log("There are more battles.");
+    menuBar.kill();
+    playerBar.kill();
+    monsterBar.kill();
     battleMonster = pendingBattles[0].pendingMonster;
     battlePlayer = pendingBattles[0].pendingPlayer;
     focusSpace = pendingBattles[0].space;
@@ -1172,6 +1187,9 @@ function finishBattle() {
     battleState = false;
     battleStarting = true;
   } else {
+    if (!menuBar.alive) {
+      menuBar.reset();
+    }
     zoomIn = false;
     zoomOut = true;
     battleState = false;
@@ -1200,10 +1218,10 @@ function battle(player, monster) {
   game.world.bringToTop(monster.sprite);
   game.world.bringToTop(player.sprite);  
   for (i = 0; i < playerBattleTexts.length; i++) {
-    playerBattleTexts[i].update(); 
+    playerBattleTexts[i].update(playerBattleTexts[i].value,playerBattleTexts[i].trueValue);
   }
   for (i = 0; i < monsterBattleTexts.length; i++) {
-    monsterBattleTexts[i].update(); 
+    monsterBattleTexts[i].update(monsterBattleTexts[i].value,monsterBattleTexts[i].trueValue); 
   }
   if (battleTurn === battleMonster && battleMonster.sprite) {
       if (attackText) {
