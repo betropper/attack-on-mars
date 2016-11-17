@@ -549,7 +549,6 @@ class Setup {
           game.world.bringToTop(battleTexts[i]);
         }
         barsMoving = false;
-        }
     } else if (battleState === true) {
       battle(battlePlayer,battleMonster);
       // Change this, placeholder ending.
