@@ -75,6 +75,11 @@ var C = {
   "height": 2350,
   "scale": 1.3 * globalScale
  
+ },
+ "icons": {
+  "width": 1379/7,
+  "height": (1275/9)*2
+
  }
 }
 var bossNames = ["The Bloat","The Deciever","The Brute"] 
@@ -175,6 +180,7 @@ class Load {
   });
 
     console.log("Loading.");
+    this.load.spritesheet('icons', "assets/Icons1.png", C.icons.width, C.icons.height)
     this.load.image("upgradeMat","assets/UpgradeMat.png",469,676);
     this.load.image("gameboard",C.bg.file,C.bg.width,C.bg.height);
     this.load.image("blue", "assets/PlayerIcon1.png",C.mech.width,C.mech.height);
@@ -519,8 +525,8 @@ class Setup {
           monsterBattleTexts.x = game.camera.x/C.game.zoomScale + ((300*globalScale)/C.game.zoomScale);
           var monsterBarTween = game.add.tween(monsterBar).to({ x: monsterBattleTexts.x}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           monsterBar.anchor.setTo(.5);
-          battleMonster.addBattleInfo("HP","hp");
-          battlePlayer.addBattleInfo("HP","hp");
+          battleMonster.addBattleInfo("HP","hp",8);
+          battlePlayer.addBattleInfo("HP","hp",8);
           game.world.bringToTop(menuBar);
         } else {
         //var barTween = game.add.tween(menuBar).to( { x: focusX*3 - game.camera.width/2 , y: focusY*3 + game.camera.height/2 - menuBar.height }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
@@ -611,7 +617,7 @@ function addBattleText(text, action, modifier) {
   battleTexts.push(battleText);
 }
 //'value' is the name of the changed value as a string.
-function addBattleInfo(text, value) {
+function addBattleInfo(text, value, frame) {
   if (playersList.indexOf(this) > -1) {
     var x = playerBattleTexts.x;
     var list = playerBattleTexts;
@@ -624,19 +630,31 @@ function addBattleInfo(text, value) {
   //Adds the battle info into an appropriate spot relative to the bars
   if (bar === playerBar) {
     if (list.length > 0) {
-      var valueDescription = game.add.bitmapText(x + 150*globalScale,list[list.length - 1].valueDisplay.y + 40*globalScale, 'attackfont', text, 20*globalScale);
+      //var valueDescription = game.add.bitmapText(x + 150*globalScale,list[list.length - 1].valueDisplay.y + 40*globalScale, 'attackfont', text, 20*globalScale);
+      //var valueDescription = game.add.sprite.(x + 150*globalScale,list[list.length - 1].valueDisplay.y + 40*globalScale, 'icons');
+      var iconX = x + 150*globalScale;
+      var iconY = list[list.length - 1].valueDisplay.y + 40*globalScale;
     } else {
-      var valueDescription = game.add.bitmapText(x + 150*globalScale,playerBar.y - playerBar.height/3, 'attackfont', text, 20*globalScale);
+      //var valueDescription = game.add.bitmapText(x + 150*globalScale,playerBar.y - playerBar.height/3, 'attackfont', text, 20*globalScale);
+      var iconX = x + 150*globalScale;
+      var iconY = playerBar.y - playerBar.height/3;
     }
-    var valueDisplay = game.add.bitmapText(x + 150*globalScale,valueDescription.y + 30*globalScale, 'attackfont', this[value], 20*globalScale);
+    var valueDisplay = game.add.bitmapText(x + 150*globalScale,iconY + 30*globalScale, 'attackfont', this[value], 20*globalScale);
   } else if (bar === monsterBar) {
     if (list.length > 0) {
-      var valueDescription = game.add.bitmapText(x - 150*globalScale ,list[list.length - 1].valueDisplay.y + 40*globalScale, 'attackfont', text, 20*globalScale);
+      //var valueDescription = game.add.bitmapText(x - 150*globalScale ,list[list.length - 1].valueDisplay.y + 40*globalScale, 'attackfont', text, 20*globalScale);
+      var iconX = x - 150*globalScale;
+      var iconY = list[list.length - 1].valueDisplay.y + 40*globalScale;
     } else {
-      var valueDescription = game.add.bitmapText(x - 150*globalScale ,playerBar.y - playerBar.height/3, 'attackfont', text, 20*globalScale);
+      //var valueDescription = game.add.bitmapText(x - 150*globalScale ,playerBar.y - playerBar.height/3, 'attackfont', text, 20*globalScale);
+      var iconX = x - 150*globalScale;
+      var iconY = monsterBar.y - monsterBar.height/3;
     }
-    var valueDisplay = game.add.bitmapText(x - 150*globalScale ,valueDescription.y + 30*globalScale, 'attackfont', this[value], 20*globalScale);
+    var valueDisplay = game.add.bitmapText(x - 150*globalScale,iconY + 30*globalScale, 'attackfont', this[value], 20*globalScale);
   }
+  var valueDescription = game.add.sprite(iconX,iconY, 'icons');
+  valueDescription.scale.setTo(.5*globalScale);
+  valueDescription.frame = frame;
   valueDisplay.anchor.setTo(.5);
   valueDescription.anchor.setTo(.5);
 
