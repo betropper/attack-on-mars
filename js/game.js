@@ -463,9 +463,6 @@ class Setup {
         game.world.bringToTop(menuBar);
     } else if (zoomOut === true) {
         if (menuBar.alive) {
-          menuBar.kill();
-          playerBar.kill();
-          monsterBar.kill();
           var zoomTween = game.add.tween(game.camera).to( { x: 0, y: 0 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
           var scaleTween = game.add.tween(game.world.scale).to( { x: 1, y: 1 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
           scaleTween.onComplete.add(zoomFalse, this);
@@ -498,7 +495,7 @@ class Setup {
           } else if (playerBar.alive === false) {
             playerBar.reset(focusX + game.camera.width/2, battlePlayer.sprite.y);
           }
-          playerBattleTexts.x = game.camera.x/C.game.zoomScale + game.camera.width/C.game.zoomScale - 300/C.game.zoomScale;
+          playerBattleTexts.x = game.camera.x/C.game.zoomScale + game.camera.width/C.game.zoomScale - (300*globalScale)/C.game.zoomScale;
           var playerBarTween = game.add.tween(playerBar).to({ x: playerBattleTexts.x }, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           playerBar.anchor.setTo(.5);
           game.world.bringToTop(playerBar);
@@ -601,10 +598,21 @@ function addBattleInfo(text, value, list) {
   } else if (list === playerBattleTexts) {
     var x = playerBattleTexts.x;
   }
-  var battleInfo = game.add.bitmapText(x,(list[list.length - 1].y + 30*globalScale) || (playerBar.y - playerBar.height/2.4), 'attackfont', text, 20*globalScale);
-  battleInfo.value = value;
-  battleInfo.lastValue = value;
-  list.push(battleInfo);
+  //Adds the battle info into an appropriate spot relative to the bars
+  var valueDescription = game.add.bitmapText(x,(list[list.length - 1].y + 30*globalScale) || (playerBar.y - playerBar.height/2.4), 'attackfont', text, 20*globalScale);
+  var valueDisplay = game.add.bitmapText(x,valueDescription.y + 30*globalScale, 'attackfont', value, 20*globalScale);
+  //battleInfo.lastValue = value;
+  battleDescObj = {
+    description: valueDescription,
+    valueDisplay: valueDisplay,
+    value: value
+  }
+  battleDescObj.update = function() {
+    if (this.value != value) {
+      this.value = value;
+    }
+  }
+  list.push(battleDescObj);
 }
 
 function spawnBoss() {  
@@ -1115,9 +1123,18 @@ function finishBattle() {
   for (i = 0; i < battleTexts.length; i++) {
     battleTexts[i].kill();
   }
+  for (i = 0; i < playerBattleTexts.length; i++) {
+    playerBattleTexts[i].kill();
+  }
+  for (i = 0; i < monsterBattleTexts.length; i++) {
+    monsterBattleTexts[i].kill();
+  }
   if (focusSpace.occupied && focusSpace.occupied !== false) {
     scrubList(focusSpace.occupied);
   }
+  menuBar.kill();
+  playerBar.kill();
+  monsterBar.kill();
   for (i = 1; i < playersList.length; i++) {
     playersList[i].sprite.inputEnabled = true;
     playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
@@ -1163,7 +1180,13 @@ function battle(player, monster) {
   //Simple Placeholder battle
   game.world.bringToTop(monster.sprite);
   game.world.bringToTop(player.sprite);  
-    if (battleTurn === battleMonster && battleMonster.sprite) {
+  for (i = 0; i < playerBattleTexts.length; i++) {
+    playerBattleTexts[i].update(); 
+  }
+  for (i = 0; i < monsterBattleTexts.length; i++) {
+    monsterBattleTexts[i].update(); 
+  }
+  if (battleTurn === battleMonster && battleMonster.sprite) {
       if (attackText) {
         if (battleMonster.upgrades.indexOf("Regeneration") > -1) {
           var stacks = countInArray(battleMonster.upgrades,"Regeneration");
