@@ -96,6 +96,7 @@ var confirmText;
 var battleTexts = [];
 var playerBattleTexts = [];
 var monsterBattleTexts = [];
+var extraBattleTexts = [];
 var attackText;
 var siegeText;
 var barsMoving;
@@ -469,9 +470,7 @@ class Setup {
           var zoomTween = game.add.tween(game.camera).to( { x: 0, y: 0 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
           var scaleTween = game.add.tween(game.world.scale).to( { x: 1, y: 1 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
           scaleTween.onComplete.add(zoomFalse, this);
-          menuBar.kill();
-          playerBar.kill();
-          monsterBar.kill();
+          killBattleInfo()
       }
         /*menuBar.width = C.game.width / game.world.scale.x;
         menuBar.height = (C.game.height/10) / game.world.scale.y;
@@ -598,6 +597,10 @@ function allowBattle() {
   battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
   battleStarting = false;
   battleState = true;
+  for (i = 0; i < extraBattleTexts.length; i++) {
+    game.add.tween(extraBattleTexts[i].valueDescription).to({ x: extraBattleTexts[i].bar.x }, C.game.zoomSpeed*1, Phaser.Easing.Back.InOut, true)
+    game.add.tween(extraBattleTexts[i].valueDisplay).to({ x: extraBattleTexts[i].bar.x  }, C.game.zoomSpeed*1, Phaser.Easing.Back.InOut, true)
+  }
 }
 
 function addBattleText(text, action, modifier) {
@@ -636,26 +639,26 @@ function addBattleInfo(text, value) {
   }
   valueDisplay.anchor.setTo(.5);
   valueDescription.anchor.setTo(.5);
-  game.add.tween(valueDescription).to({ x: x }, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true)
-  game.add.tween(valueDisplay).to({ x: x }, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true)
+
   //battleInfo.lastValue = value;
   battleDescObj = {
     parent: this,
-    description: valueDescription,
+    valueDescription: valueDescription,
     valueDisplay: valueDisplay,
     value: value,
     bar: bar
   }
   console.log(battleDescObj.parent);
   battleDescObj.update = function() {
-    this.description.x = this.bar.x;
-    this.valueDisplay.x = this.bar.x;
+    //this.description.x = this.bar.x;
+    //this.valueDisplay.x = this.bar.x;
     if (this.value != this.parent[value].toString()) {
       this.value = this.parent[value].toString();
       this.valueDisplay.text = this.parent[value].toString();
     }
   }
   list.push(battleDescObj);
+  extraBattleTexts.push(battleDescObj);
 }
 
 function spawnBoss() {  
@@ -1013,9 +1016,7 @@ function countInArray(array, what) {
 
 function attemptEscape() {
   var method = this.modifier;
-  menuBar.kill();
-  playerBar.kill();
-  monsterBar.kill();
+  killBattleInfo();
   console.log(method);
   if (method === null) {
     var row = parseInt(battlePlayer.key.charAt(2)) - 2;
@@ -1068,6 +1069,7 @@ function attackOfOppertunity() {
     handleDeath(damaged,attacker);   
   } else {
     finishBattle();
+    move(battlePlayer,destination);
   }
   battleTexts.splice(0,battleTexts.length);
   var attackerTween = game.add.tween(attacker.sprite).to( { x: changeValueScale(Space[attacker.key].x,"x"), y: changeValueScale(Space[attacker.key].y,"y")}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
@@ -1155,8 +1157,6 @@ function handleDeath(damaged,survivor) {
     battlePlayer.rp += damaged.rp;
     monstersList.splice(damaged.sprite.number, 1);
     damaged.sprite.destroy();
-    battlePlayer.sprite.events.onDragStop._bindings = [];
-    battlePlayer.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
     battlePlayer.sprite.x = focusX;
     console.log("Monster died, moving back to position " + focusX )
   }
@@ -1171,11 +1171,11 @@ function finishBattle() {
   }
   for (i = 0; i < playerBattleTexts.length; i++) {
     playerBattleTexts[i].valueDisplay.destroy();
-    playerBattleTexts[i].description.destroy();
+    playerBattleTexts[i].valueDescription.destroy();
   }
   for (i = 0; i < monsterBattleTexts.length; i++) {
     monsterBattleTexts[i].valueDisplay.destroy();
-    monsterBattleTexts[i].description.destroy();
+    monsterBattleTexts[i].valueDescription.destroy();
   }
   playerBattleTexts = [];
   monsterBattleTexts = [];
@@ -1187,11 +1187,11 @@ function finishBattle() {
     playersList[i].sprite.inputEnabled = true;
     playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
   }
+  battlePlayer.sprite.events.onDragStop._bindings = [];
+  battlePlayer.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
   if (pendingBattles.length > 0) {
     console.log("There are more battles.");
-    menuBar.kill();
-    playerBar.kill();
-    monsterBar.kill();
+    killBattleInfo();
     battleMonster = pendingBattles[0].pendingMonster;
     battlePlayer = pendingBattles[0].pendingPlayer;
     focusSpace = pendingBattles[0].space;
@@ -1213,12 +1213,27 @@ function finishBattle() {
   }
 }
 
+function killBattleInfo() {
+  menuBar.kill();
+  playerBar.kill();
+  monsterBar.kill();
+  for (i = 0; i < playerBattleTexts.length; i++) {
+    playerBattleTexts[i].valueDescription.destroy();
+    playerBattleTexts[i].valueDisplay.destroy();
+  }
+  playerBattleTexts = [];
+  for (i = 0; i < monsterBattleTexts.length; i++) {
+    monsterBattleTexts[i].valueDescription.destroy();
+    monsterBattleTexts[i].valueDisplay.destroy();
+  }
+  monsterBattleTexts = [];
+}
+
 function killResults(results) {
   results.destroy();
   resultsList.splice(results,1);
   console.log(results + " has been destroyed.");
 }
-
 
 function rollDie(count, goal){ 
   var hits = 0;
