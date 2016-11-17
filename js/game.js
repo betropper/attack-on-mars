@@ -137,6 +137,8 @@ var battleStarting = false;
 var pendingBattles = [];
 var threatLevel = 0;
 var menuBar;
+var playerBar;
+var monsterBar;
 var battleState;
 var resultsList = [];
 var buttonsList = [];
@@ -489,7 +491,7 @@ class Setup {
           var barTween = game.add.tween(menuBar).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8)}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           menuBar.attachedToCamera = false;
           if (!playerBar) {
-            var playerBar = game.add.sprite(focusX + game.camera.width/2, battlePlayer.sprite.y, 'menubar');
+            playerBar = game.add.sprite(focusX + game.camera.width/2, battlePlayer.sprite.y, 'menubar');
             playerBar.height = (game.camera.width/C.game.zoomScale)/5;
             playerBar.width = game.camera.height/8;
           } else if (playerBar.alive === false) {
@@ -497,10 +499,11 @@ class Setup {
           }
           playerBattleTexts.x = game.camera.x/C.game.zoomScale + game.camera.width/C.game.zoomScale - (300*globalScale)/C.game.zoomScale;
           var playerBarTween = game.add.tween(playerBar).to({ x: playerBattleTexts.x }, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
+          playerBarTween.onComplete.add(allowBattle,this);
           playerBar.anchor.setTo(.5);
           game.world.bringToTop(playerBar);
           if (!monsterBar) {
-            var monsterBar = game.add.sprite(focusX - game.camera.width/2, battlePlayer.sprite.y, 'menubar');
+            monsterBar = game.add.sprite(focusX - game.camera.width/2, battlePlayer.sprite.y, 'menubar');
             monsterBar.width = game.camera.height/8;
             monsterBar.height = (game.camera.width/C.game.zoomScale)/5;
           } else if (monsterBar.alive === false) {
@@ -541,10 +544,7 @@ class Setup {
           game.add.tween(battleTexts[i]).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + menuBar.height/2}, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true)
           game.world.bringToTop(battleTexts[i]);
         }
-        battlePlayer.sprite.events.onDragStop._bindings = [];
-        battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
-        battleStarting = false;
-        battleState = true;
+
         }
     } else if (battleState === true) {
       battle(battlePlayer,battleMonster);
@@ -584,6 +584,14 @@ class Setup {
 
   }
 }
+
+function allowBattle() {
+  battlePlayer.sprite.events.onDragStop._bindings = [];
+  battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
+  battleStarting = false;
+  battleState = true;
+}
+
 function addBattleText(text, action, modifier) {
   var battleText = game.add.bitmapText(battleTexts[battleTexts.length - 1].x + battleTexts[battleTexts.length - 1].width/2 + 80*globalScale, menuBar.y + 40*globalScale, 'attackfont', text, 40*globalScale);
   battleText.anchor.y = 0.5;
@@ -599,8 +607,15 @@ function addBattleInfo(text, value, list) {
     var x = playerBattleTexts.x;
   }
   //Adds the battle info into an appropriate spot relative to the bars
-  var valueDescription = game.add.bitmapText(x,(list[list.length - 1].y + 30*globalScale) || (playerBar.y - playerBar.height/2.4), 'attackfont', text, 20*globalScale);
+
+  if (list.length > 0) {
+    var valueDescription = game.add.bitmapText(x,list[list.length - 1].y + 30*globalScale, 'attackfont', text, 20*globalScale);
+  } else {
+    var valueDescription = game.add.bitmapText(x,playerBar.y - playerBar.height/2.4, 'attackfont', text, 20*globalScale);
+  }
   var valueDisplay = game.add.bitmapText(x,valueDescription.y + 30*globalScale, 'attackfont', value, 20*globalScale);
+  valueDisplay.anchor.setTo(.5);
+  valueDescription.anchor.setTo(.5);
   //battleInfo.lastValue = value;
   battleDescObj = {
     description: valueDescription,
@@ -609,6 +624,7 @@ function addBattleInfo(text, value, list) {
   }
   battleDescObj.update = function() {
     if (this.value != value) {
+      console.log(value + " " + this.value);
       this.value = value;
     }
   }
@@ -932,7 +948,7 @@ function changeValueScale(value,xory) {
 }
 
 function checkAttack(sprite,pointer) {
-  if (sprite.overlap(battleMonster.sprite)) {
+  if (battleState === true && sprite.overlap(battleMonster.sprite)) {
     attack(battlePlayer,battleMonster)
   }
   if (battleState === true) {
