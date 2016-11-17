@@ -520,7 +520,8 @@ class Setup {
           monsterBattleTexts.x = game.camera.x/C.game.zoomScale + ((300*globalScale)/C.game.zoomScale);
           var monsterBarTween = game.add.tween(monsterBar).to({ x: monsterBattleTexts.x}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           monsterBar.anchor.setTo(.5);
-          game.world.bringToTop(monsterBar);
+          battleMonster.addBattleInfo("HP","hp");
+          battlePlayer.addBattleInfo("HP","hp");
           game.world.bringToTop(menuBar);
         } else {
         //var barTween = game.add.tween(menuBar).to( { x: focusX*3 - game.camera.width/2 , y: focusY*3 + game.camera.height/2 - menuBar.height }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
@@ -606,35 +607,49 @@ function addBattleText(text, action, modifier) {
   battleText.events.onInputDown.add(action, {attacker: battlePlayer, modifier: modifier});
   battleTexts.push(battleText);
 }
-
-//'name' is the name of the variable
+//'value' is the name of the changed value as a string.
 function addBattleInfo(text, value) {
   if (playersList.indexOf(this) > -1) {
     var x = playerBattleTexts.x;
     var list = playerBattleTexts;
+    var bar = playerBar;
   } else if (monstersList.indexOf(this) > -1) {
     var x = monsterBattleTexts.x;
     var list = monsterBattleTexts;
+    var bar = monsterBar;
   }
   //Adds the battle info into an appropriate spot relative to the bars
-
-  if (list.length > 0) {
-    var valueDescription = game.add.bitmapText(x,list[list.length - 1].valueDisplay.y + 40*globalScale, 'attackfont', text, 20*globalScale);
-  } else {
-    var valueDescription = game.add.bitmapText(x,playerBar.y - playerBar.height/3, 'attackfont', text, 20*globalScale);
+  if (bar === playerBar) {
+    if (list.length > 0) {
+      var valueDescription = game.add.bitmapText(x + 150*globalScale,list[list.length - 1].valueDisplay.y + 40*globalScale, 'attackfont', text, 20*globalScale);
+    } else {
+      var valueDescription = game.add.bitmapText(x + 150*globalScale,playerBar.y - playerBar.height/3, 'attackfont', text, 20*globalScale);
+    }
+    var valueDisplay = game.add.bitmapText(x + 150*globalScale,valueDescription.y + 30*globalScale, 'attackfont', this[value], 20*globalScale);
+  } else if (bar === monsterBar) {
+    if (list.length > 0) {
+      var valueDescription = game.add.bitmapText(x - 150*globalScale ,list[list.length - 1].valueDisplay.y + 40*globalScale, 'attackfont', text, 20*globalScale);
+    } else {
+      var valueDescription = game.add.bitmapText(x - 150*globalScale ,playerBar.y - playerBar.height/3, 'attackfont', text, 20*globalScale);
+    }
+    var valueDisplay = game.add.bitmapText(x - 150*globalScale ,valueDescription.y + 30*globalScale, 'attackfont', this[value], 20*globalScale);
   }
-  var valueDisplay = game.add.bitmapText(x,valueDescription.y + 30*globalScale, 'attackfont', this[value], 20*globalScale);
   valueDisplay.anchor.setTo(.5);
   valueDescription.anchor.setTo(.5);
+  game.add.tween(valueDescription).to({ x: x }, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true)
+  game.add.tween(valueDisplay).to({ x: x }, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true)
   //battleInfo.lastValue = value;
   battleDescObj = {
     parent: this,
     description: valueDescription,
     valueDisplay: valueDisplay,
-    value: value
+    value: value,
+    bar: bar
   }
   console.log(battleDescObj.parent);
   battleDescObj.update = function() {
+    this.description.x = this.bar.x;
+    this.valueDisplay.x = this.bar.x;
     if (this.value != this.parent[value].toString()) {
       this.value = this.parent[value].toString();
       this.valueDisplay.text = this.parent[value].toString();
