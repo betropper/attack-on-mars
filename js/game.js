@@ -621,7 +621,7 @@ function addBattleInfo(text, value, list) {
   } else {
     var valueDescription = game.add.bitmapText(x,playerBar.y - playerBar.height/3, 'attackfont', text, 20*globalScale);
   }
-  var valueDisplay = game.add.bitmapText(x,valueDescription.y + 30*globalScale, 'attackfont', value, 20*globalScale);
+  var valueDisplay = game.add.bitmapText(x,valueDescription.y + 30*globalScale, 'attackfont', this[value], 20*globalScale);
   valueDisplay.anchor.setTo(.5);
   valueDescription.anchor.setTo(.5);
   //battleInfo.lastValue = value;
