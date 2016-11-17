@@ -608,7 +608,7 @@ function addBattleText(text, action, modifier) {
 }
 
 //'name' is the name of the variable
-function addBattleInfo(text, value, name, list) {
+function addBattleInfo(text, value, list) {
   if (list === monsterBattleTexts) {
     var x = monsterBattleTexts.x;
   } else if (list === playerBattleTexts) {
@@ -626,17 +626,15 @@ function addBattleInfo(text, value, name, list) {
   valueDescription.anchor.setTo(.5);
   //battleInfo.lastValue = value;
   battleDescObj = {
+    parent: this,
     description: valueDescription,
     valueDisplay: valueDisplay,
-    value: value,
-    trueValue: window[name]
+    value: value
   }
-  battleDescObj.update = function(value,trueValue) {
-    if (value != trueValue) {
-      value = trueValue;
-      console.log(trueValue + " " + value);
-      valueDisplay.text = value;
-    }
+  battleDescObj.update = function() {
+    //if (value != trueValue) {
+      this.valueDisplay.text = parent[value];
+    //}
   }
   list.push(battleDescObj);
 }
@@ -1218,10 +1216,10 @@ function battle(player, monster) {
   game.world.bringToTop(monster.sprite);
   game.world.bringToTop(player.sprite);  
   for (i = 0; i < playerBattleTexts.length; i++) {
-    playerBattleTexts[i].update(playerBattleTexts[i].value,playerBattleTexts[i].trueValue);
+    playerBattleTexts[i].update();
   }
   for (i = 0; i < monsterBattleTexts.length; i++) {
-    monsterBattleTexts[i].update(monsterBattleTexts[i].value,monsterBattleTexts[i].trueValue); 
+    monsterBattleTexts[i].update(); 
   }
   if (battleTurn === battleMonster && battleMonster.sprite) {
       if (attackText) {
@@ -1897,10 +1895,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     } else if (space.key === "d30" || space.key === "d20") {
       random.angle += 10;
     }
-      
-      
       /*if(random.angle < 0) {
-
       random.angle = 360 - (-random.angle);
     }*/
     occupiedRows.push(space.key.substring(0,2));
@@ -1919,6 +1914,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     sprite: random
   };
   globalList.push(obj);
+  obj.addBattleInfo = addBattleInfo;
   if (space.selectedSpace.occupied === false) {
     space.selectedSpace.occupied = [obj];
   } else {
