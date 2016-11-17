@@ -479,7 +479,11 @@ class Setup {
       var lookAt = focusX; 
       battlePlayer.sprite.x = Phaser.Math.clamp(battlePlayer.sprite.x + C.mech.battleSpeed/2, 0, lookAt + C.mech.battleSpacing);
       battleMonster.sprite.x = Phaser.Math.clamp(battleMonster.sprite.x - C.mech.battleSpeed/2, lookAt - C.mech.battleSpacing, 3000);
-      if (battlePlayer.sprite.x === lookAt + C.mech.battleSpacing && battleMonster.sprite.x - 35) {
+      if (battlePlayer.sprite.x === lookat + C.mech.battleSpacing) {
+        battleStarting = false;i
+        var barsMoving = true;
+      }
+    } else if (battlePlayer.sprite.x === lookAt + C.mech.battleSpacing && battleMonster.sprite.x - 35 && barsMoving) {
         game.world.scale.set(C.game.zoomScale);
         if (menuBar.alive === false) {  
           menuBar.reset(game.camera.x/C.game.zoomScale, game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale);
@@ -544,7 +548,7 @@ class Setup {
           game.add.tween(battleTexts[i]).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + menuBar.height/2}, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true)
           game.world.bringToTop(battleTexts[i]);
         }
-
+        barsMoving = false;
         }
     } else if (battleState === true) {
       battle(battlePlayer,battleMonster);
