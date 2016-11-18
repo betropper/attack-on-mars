@@ -549,7 +549,7 @@ class Setup {
         battleTexts.push(attackText);
         if (battlePlayer.upgrades.indexOf("Emergency Jump Jets") > -1) {  
           addBattleText("Run",attemptEscape, "Emergency Jump Jets");
-        } else {
+        } else if (battleMonster != boss && battlePlayer.key.charAt(2) != "0" ){
           addBattleText("Run",attemptEscape, null);
         }
         if (battlePlayer.canSiege) {
@@ -1151,8 +1151,9 @@ function attackOfOppertunity() {
   if (damaged && damaged.hp <= 0) {
     handleDeath(damaged,attacker);   
   } else {
-    finishBattle();
     move(battlePlayer,destination);
+    focusSpace.occupied = removeFromList(playersList[battlePlayer.sprite.number], focusSpace);
+    finishBattle();
   }
   battleTexts = [];
   var attackerTween = game.add.tween(attacker.sprite).to( { x: changeValueScale(Space[attacker.key].x,"x"), y: changeValueScale(Space[attacker.key].y,"y")}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
@@ -1580,6 +1581,9 @@ function move(object,destination,escaping) {
     }
   }
   removeFromList(object, Space[object.key]);
+  if (playersList.indexOf(object) > -1) {
+    removeFromList(playersList[object.sprite.number], Space[object.key]);
+  }
   object.key = destination;
   object.sprite.closestSpaces = getClosestSpaces(object.key);
   object.space = Space[destination];
