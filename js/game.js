@@ -2,7 +2,7 @@ var globalScale = .5;
 var C = {
  "game": {
    "zoomScale": 3,
-   "zoomSpeed": 600,
+   "zoomSpeed": 500,
     "moveSpeed": 900,
    "width": 2800*globalScale,
     "height": 1280*globalScale,
@@ -665,12 +665,18 @@ function addBattleInfo(text, value, frame) {
     list: list
   }
   console.log(battleDescObj.parent);
+  if (battleDescObj.value === "hp") {
+    battleDescObj.valueDisplay.text = battleDescObj.parent[value].toString() + "/" + battleDescObj.parent["maxhp"].toString();
+  }
   battleDescObj.update = function() {
     //this.description.x = this.bar.x;
     //this.valueDisplay.x = this.bar.x;
     if (this.value != this.parent[value].toString()) {
       this.value = this.parent[value].toString();
       this.valueDisplay.text = this.parent[value].toString();
+      if (this.value === "hp") {
+        this.valueDisplay.text = this.parent[value].toString() + "/" + this.parent["maxhp"].toString();
+      }
     }
   }
   list.push(battleDescObj);
