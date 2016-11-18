@@ -524,13 +524,13 @@ class Setup {
           monsterBattleTexts.x = game.camera.x/C.game.zoomScale + ((300*globalScale)/C.game.zoomScale);
           var monsterBarTween = game.add.tween(monsterBar).to({ x: monsterBattleTexts.x}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           monsterBar.anchor.setTo(.5);
-          battleMonster.addBattleInfo("HP","hp",8);
-          battlePlayer.addBattleInfo("HP","hp",8);
-          battleMonster.addBattleInfo("Blue Attack","batk",5);
-          battlePlayer.addBattleInfo("Blue Attack","batk",5);
-          battlePlayer.addBattleInfo("Red Attack","ratk",4);
-          battlePlayer.addBattleInfo("Defence","def",7);
-          battleMonster.addBattleInfo("Defence","def",7);
+          battleMonster.addBattleInfo("HP",8,"hp", "maxhp");
+          battlePlayer.addBattleInfo("HP",8,"hp", "maxhp");
+          battleMonster.addBattleInfo("Blue Attack",5,"batk", "batkGoal" || 5);
+          battlePlayer.addBattleInfo("Blue Attack",5,"batk", "batkGoal" || 5);
+          battlePlayer.addBattleInfo("Red Attack",4,"ratk","ratkGoal" || 5);
+          battlePlayer.addBattleInfo("Defence",7,"def", "defGoal" || 5);
+          battleMonster.addBattleInfo("Defence",7,"def","defGoal" || 5);
           game.world.bringToTop(menuBar);
         } else {
         //var barTween = game.add.tween(menuBar).to( { x: focusX*3 - game.camera.width/2 , y: focusY*3 + game.camera.height/2 - menuBar.height }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
@@ -621,7 +621,7 @@ function addBattleText(text, action, modifier) {
   battleTexts.push(battleText);
 }
 //'value' is the name of the changed value as a string.
-function addBattleInfo(text, value, frame) {
+function addBattleInfo(text, frame, value, secondaryValue) {
   if (playersList.indexOf(this) > -1) {
     var x = playerBattleTexts.x;
     var list = playerBattleTexts;
@@ -662,13 +662,14 @@ function addBattleInfo(text, value, frame) {
     valueIcon: valueIcon,
     valueDisplay: valueDisplay,
     value: value,
+    secondaryValue,
     valueName: value.toString(),
     bar: bar,
     list: list
   }
   console.log(battleDescObj.parent);
-  if (battleDescObj.valueName === "hp") {
-    battleDescObj.valueDisplay.text = battleDescObj.parent[value].toString() + " [" + battleDescObj.parent["maxhp"].toString() + "]";
+  if (secondaryValue) {
+    battleDescObj.valueDisplay.text = battleDescObj.parent[value].toString() + " [" + battleDescObj.parent[secondaryValue].toString() + "]";
   }
   battleDescObj.update = function() {
     //this.description.x = this.bar.x;
@@ -676,8 +677,8 @@ function addBattleInfo(text, value, frame) {
     if (this.value != this.parent[value].toString()) {
       this.value = this.parent[value].toString();
       this.valueDisplay.text = this.parent[value].toString();
-      if (this.valueName === "hp") {
-        this.valueDisplay.text = this.parent[value].toString() + " [" + this.parent["maxhp"].toString() + "]";
+      if (this.secondaryValue) {
+        this.valueDisplay.text = this.parent[value].toString() + " [" + this.parent[secondaryValue].toString() + "]";
       }
     }
   }
@@ -1989,6 +1990,9 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     obj.def = 3;
     obj.ratk = 4;
     obj.batk = 4;
+    obj.batkGoal = 5;
+    obj.ratkGoal = 5;
+    obj.defGoal = 5;
     obj.sprite.inputEnabled = true;
     obj.sprite.input.enableDrag(true);
   } else if (object === "monster") {
@@ -2050,7 +2054,10 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
       obj.rp = 3;
       obj.mr = 4;
     } 
-    drawnMonster.drawn;
+    drawnMonster.drawn = true;
+    obj.batkGoal = 5;
+    obj.ratkGoal = 5;
+    obj.defGoal = 5;
   }
   return obj
 }
