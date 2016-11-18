@@ -693,6 +693,9 @@ function spawnBoss() {
   boss.batk = drawnMonster.batk;
   boss.maxhp = drawnMonster.hp;
   boss.upgrades = drawnMonster.upgrades;
+  boss.batkGoal = 5;
+  boss.ratkGoal = 5;
+  boss.defGoal = 5;
   for (i = 0; i < boss.upgrades.length; i++) {
     if (MU[boss.upgrades[i]] && MU[boss.upgrades[i]].passive) {
       MU[boss.upgrades[i]].passive(boss);
@@ -1999,6 +2002,9 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     threatLevel += 1;
     game.world.bringToTop(random);
     obj.sprite.inputEnabled = true;
+    obj.batkGoal = 5;
+    obj.ratkGoal = 5;
+    obj.defGoal = 5;
     if (threatLevel <= 12) {
       do {
         var drawnMonster = MonstersDeck.initialMonsters[Math.floor(Math.random() * MonstersDeck.initialMonsters.length)];
@@ -2055,9 +2061,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
       obj.mr = 4;
     } 
     drawnMonster.drawn = true;
-    obj.batkGoal = 5;
-    obj.ratkGoal = 5;
-    obj.defGoal = 5;
+
   }
   return obj
 }
