@@ -77,9 +77,8 @@ var C = {
  
  },
  "icons": {
-  "width": 953/7,
+  "width": (953/7),
   "height": (535/3)
-
  }
 }
 var bossNames = ["The Bloat","The Deciever","The Brute"] 
@@ -527,6 +526,11 @@ class Setup {
           monsterBar.anchor.setTo(.5);
           battleMonster.addBattleInfo("HP","hp",8);
           battlePlayer.addBattleInfo("HP","hp",8);
+          battleMonster.addBattleInfo("Blue Attack","batk",5);
+          battlePlayer.addBattleInfo("Blue Attack","batk",5);
+          battlePlayer.addBattleInfo("Red Attack","ratk",4);
+          battlePlayer.addBattleInfo("Defence","def",7);
+          battleMonster.addBattleInfo("Defence","def",7);
           game.world.bringToTop(menuBar);
         } else {
         //var barTween = game.add.tween(menuBar).to( { x: focusX*3 - game.camera.width/2 , y: focusY*3 + game.camera.height/2 - menuBar.height }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
@@ -604,8 +608,8 @@ function allowBattle() {
   battleStarting = false;
   battleState = true;
   for (i = 0; i < extraBattleTexts.length; i++) {
-    game.add.tween(extraBattleTexts[i].valueDescription).to({ x: extraBattleTexts[i].bar.x }, C.game.zoomSpeed*1, Phaser.Easing.Back.InOut, true)
-    game.add.tween(extraBattleTexts[i].valueDisplay).to({ x: extraBattleTexts[i].bar.x  }, C.game.zoomSpeed*1, Phaser.Easing.Back.InOut, true)
+    game.add.tween(extraBattleTexts[i].valueIcon).to({ x: extraBattleTexts[i].list.x - 20*globalScale }, C.game.zoomSpeed*1, Phaser.Easing.Back.InOut, true)
+    game.add.tween(extraBattleTexts[i].valueDisplay).to({ x: extraBattleTexts[i].list.x + 20*globalScale  }, C.game.zoomSpeed*1, Phaser.Easing.Back.InOut, true)
   }
 }
 
@@ -630,41 +634,35 @@ function addBattleInfo(text, value, frame) {
   //Adds the battle info into an appropriate spot relative to the bars
   if (bar === playerBar) {
     if (list.length > 0) {
-      //var valueDescription = game.add.bitmapText(x + 150*globalScale,list[list.length - 1].valueDisplay.y + 40*globalScale, 'attackfont', text, 20*globalScale);
-      //var valueDescription = game.add.sprite.(x + 150*globalScale,list[list.length - 1].valueDisplay.y + 40*globalScale, 'icons');
       var iconX = x + 150*globalScale;
       var iconY = list[list.length - 1].valueDisplay.y + 40*globalScale;
     } else {
-      //var valueDescription = game.add.bitmapText(x + 150*globalScale,playerBar.y - playerBar.height/3, 'attackfont', text, 20*globalScale);
       var iconX = x + 150*globalScale;
       var iconY = playerBar.y - playerBar.height/3;
     }
-    var valueDisplay = game.add.bitmapText(x + 150*globalScale,iconY + 30*globalScale, 'attackfont', this[value], 20*globalScale);
+    var valueDisplay = game.add.bitmapText(x + 150*globalScale + 20*globalScale,iconY, 'attackfont', this[value], 20*globalScale);
   } else if (bar === monsterBar) {
     if (list.length > 0) {
-      //var valueDescription = game.add.bitmapText(x - 150*globalScale ,list[list.length - 1].valueDisplay.y + 40*globalScale, 'attackfont', text, 20*globalScale);
       var iconX = x - 150*globalScale;
       var iconY = list[list.length - 1].valueDisplay.y + 40*globalScale;
     } else {
-      //var valueDescription = game.add.bitmapText(x - 150*globalScale ,playerBar.y - playerBar.height/3, 'attackfont', text, 20*globalScale);
       var iconX = x - 150*globalScale;
       var iconY = monsterBar.y - monsterBar.height/3;
     }
-    var valueDisplay = game.add.bitmapText(x - 150*globalScale,iconY + 30*globalScale, 'attackfont', this[value], 20*globalScale);
+    var valueDisplay = game.add.bitmapText(x - 150*globalScale + 20*globalScale,iconY, 'attackfont', this[value], 20*globalScale);
   }
-  var valueDescription = game.add.sprite(iconX,iconY, 'icons');
-  valueDescription.scale.setTo(.35*globalScale);
-  valueDescription.frame = frame;
+  var valueIcon = game.add.sprite(iconX - 20*globalScale,iconY, 'icons');
+  valueIcon.scale.setTo(.25*globalScale);
+  valueIcon.frame = frame;
   valueDisplay.anchor.setTo(.5);
-  valueDescription.anchor.setTo(.5);
-
-  //battleInfo.lastValue = value;
+  valueIcon.anchor.setTo(.5);
   battleDescObj = {
     parent: this,
-    valueDescription: valueDescription,
+    valueIcon: valueIcon,
     valueDisplay: valueDisplay,
     value: value,
-    bar: bar
+    bar: bar,
+    list: list
   }
   console.log(battleDescObj.parent);
   battleDescObj.update = function() {
@@ -1090,7 +1088,7 @@ function attackOfOppertunity() {
     finishBattle();
     move(battlePlayer,destination);
   }
-  battleTexts.splice(0,battleTexts.length);
+  battleTexts = [];
   var attackerTween = game.add.tween(attacker.sprite).to( { x: changeValueScale(Space[attacker.key].x,"x"), y: changeValueScale(Space[attacker.key].y,"y")}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
 }
 
@@ -1186,15 +1184,16 @@ function handleDeath(damaged,survivor) {
 function finishBattle() {
   pendingBattles.splice(0,1);
   for (i = 0; i < battleTexts.length; i++) {
-    battleTexts[i].kill();
+    battleTexts[i].destroy();
   }
+  battleTexts = [];
   for (i = 0; i < playerBattleTexts.length; i++) {
     playerBattleTexts[i].valueDisplay.destroy();
-    playerBattleTexts[i].valueDescription.destroy();
+    playerBattleTexts[i].valueIcon.destroy();
   }
   for (i = 0; i < monsterBattleTexts.length; i++) {
     monsterBattleTexts[i].valueDisplay.destroy();
-    monsterBattleTexts[i].valueDescription.destroy();
+    monsterBattleTexts[i].valueIcon.destroy();
   }
   playerBattleTexts = [];
   monsterBattleTexts = [];
@@ -1237,12 +1236,12 @@ function killBattleInfo() {
   playerBar.kill();
   monsterBar.kill();
   for (i = 0; i < playerBattleTexts.length; i++) {
-    playerBattleTexts[i].valueDescription.destroy();
+    playerBattleTexts[i].valueIcon.destroy();
     playerBattleTexts[i].valueDisplay.destroy();
   }
   playerBattleTexts = [];
   for (i = 0; i < monsterBattleTexts.length; i++) {
-    monsterBattleTexts[i].valueDescription.destroy();
+    monsterBattleTexts[i].valueIcon.destroy();
     monsterBattleTexts[i].valueDisplay.destroy();
   }
   monsterBattleTexts = [];
