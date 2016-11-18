@@ -656,17 +656,19 @@ function addBattleInfo(text, value, frame) {
   valueIcon.frame = frame;
   valueDisplay.anchor.setTo(.5);
   valueIcon.anchor.setTo(.5);
+  console.log(value);
   battleDescObj = {
     parent: this,
     valueIcon: valueIcon,
     valueDisplay: valueDisplay,
     value: value,
+    valueName: value.toString(),
     bar: bar,
     list: list
   }
   console.log(battleDescObj.parent);
-  if (battleDescObj.value === "hp") {
-    battleDescObj.valueDisplay.text = battleDescObj.parent[value].toString() + "/" + battleDescObj.parent["maxhp"].toString();
+  if (battleDescObj.valueName === "hp") {
+    battleDescObj.valueDisplay.text = battleDescObj.parent[value].toString() + " [" + battleDescObj.parent["maxhp"].toString() + "]";
   }
   battleDescObj.update = function() {
     //this.description.x = this.bar.x;
@@ -674,8 +676,8 @@ function addBattleInfo(text, value, frame) {
     if (this.value != this.parent[value].toString()) {
       this.value = this.parent[value].toString();
       this.valueDisplay.text = this.parent[value].toString();
-      if (this.value === "hp") {
-        this.valueDisplay.text = this.parent[value].toString() + "/" + this.parent["maxhp"].toString();
+      if (this.valueName === "hp") {
+        this.valueDisplay.text = this.parent[value].toString() + " [" + this.parent["maxhp"].toString() + "]";
       }
     }
   }
