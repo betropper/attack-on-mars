@@ -915,7 +915,62 @@ function setLastClicked(sprite) {
 }
 
 function reloadGame() {
-  game.state.start("Setup");
+  game.state.start("MainMenu");
+}
+
+function isOdd(num) { return num % 2;}
+
+function winGame(winner) {
+  for (i = 0; i < battleTexts.length; i++) {
+    battleTexts[i].destroy();
+  }
+  battleTexts = [];
+  for (i = 0; i < playerBattleTexts.length; i++) {
+    playerBattleTexts[i].valueDisplay.destroy();
+    playerBattleTexts[i].valueIcon.destroy();
+  }
+  for (i = 0; i < monsterBattleTexts.length; i++) {
+    monsterBattleTexts[i].valueDisplay.destroy();
+    monsterBattleTexts[i].valueIcon.destroy();
+  }
+  playerBattleTexts = [];
+  monsterBattleTexts = [];
+  if (focusSpace.occupied && focusSpace.occupied !== false) {
+    scrubList(focusSpace.occupied);
+  }
+  for (i = 1; i < playersList.length; i++) {
+    playersList[i].sprite.inputEnabled = true;
+    playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
+  }
+  battlePlayer.sprite.events.onDragStop._bindings = [];
+  battlePlayer.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
+  winner = this.winner;
+  var plusorneg = 1;
+  var monsterTween = game.add.tween(monsterBar.sprite).to( { alpha: 0 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
+  var winTween = game.add.tween(playerBar.sprite).to( { alpha: 0 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
+  
+  if (isOdd(playerCount)=== 1) {
+    var victoryTween = game.add.tween(winner.sprite).to({ x: focusX, y: focusY }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
+  } else {
+    var victoryTween = game.add.tween(winner.sprite).to({ x: focusX - 100*globalScale, y: focusY }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
+  }
+  var victoryTween.onComplete.add(victoryScreen, this);
+  for (i = 1; i < playersList.length; i++) {
+    if (playersList != winner) {
+      game.add.tween(playersList[i].sprite).to({ x: focusX + (100*globalScale)*plusorneg, y: focusY }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
+      if (plusorneg < 0) {
+        plusorneg = plusorneg*2;
+      }
+      plusorneg = -plusorneg;
+    }
+  }
+}
+
+function victoryScreen() {
+
+  var victoryText = game.add.bitmapText(focusX,focusY - game.camera.height*C.game.zoomScale, 'attackfont', "YOU WIN!", 70*globalScale);
+  victoryText.anchor.setTo(.5);
+  game.add.tween(victoryText).to( { y: menuBar.y }, 4000, Phaser.Easing.Bounce.Out, true);   
 }
 
 class GameOver {
@@ -1181,13 +1236,17 @@ function handleDeath(damaged,survivor) {
       zoomOut = true;
       game.state.start("GameOver");
     }
-  } else if (damaged === battleMonster) {
+  } else if (damaged === battleMonster && damaged != boss) {
     focusSpace.occupied = removeFromList(monstersList[damaged.sprite.number], focusSpace);
     battlePlayer.rp += damaged.rp;
     monstersList.splice(damaged.sprite.number, 1);
     damaged.sprite.destroy();
     battlePlayer.sprite.x = focusX;
     console.log("Monster died, moving back to position " + focusX )
+  } else if (damaged === boss) {
+    var winTween = game.add.tween(damaged.sprite).to( { alpha: 0 }, 1000, Phaser.Easing.Linear.None, true);
+    winTween.onComplete.add(winGame, {winner: survivor});
+    return
   }
   finishBattle();
 
