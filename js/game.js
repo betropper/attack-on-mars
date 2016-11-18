@@ -946,31 +946,30 @@ function winGame(winner) {
   battlePlayer.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
   winner = this.winner;
   var plusorneg = 1;
-  var monsterTween = game.add.tween(monsterBar.sprite).to( { alpha: 0 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
-  var winTween = game.add.tween(playerBar.sprite).to( { alpha: 0 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
-  
+  var increment = 1;
+  var monsterTween = game.add.tween(monsterBar).to( { alpha: 0 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
+  var winTween = game.add.tween(playerBar).to( { alpha: 0 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
   if (isOdd(playerCount)=== 1) {
     var victoryTween = game.add.tween(winner.sprite).to({ x: focusX, y: focusY }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
   } else {
     var victoryTween = game.add.tween(winner.sprite).to({ x: focusX - 100*globalScale, y: focusY }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
   }
-  var victoryTween.onComplete.add(victoryScreen, this);
+  victoryTween.onComplete.add(victoryScreen, this);
   for (i = 1; i < playersList.length; i++) {
-    if (playersList != winner) {
-      game.add.tween(playersList[i].sprite).to({ x: focusX + (100*globalScale)*plusorneg, y: focusY }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
-      if (plusorneg < 0) {
-        plusorneg = plusorneg*2;
+    if (playersList[i] != winner) {
+      if (plusorneg < 0 && isOdd(playerCount) === 0) {
+        increment += 2;
       }
+      game.add.tween(playersList[i].sprite).to({ x: (focusX + (100*globalScale)*(increment*plusorneg)), y: focusY }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
       plusorneg = -plusorneg;
     }
   }
 }
 
 function victoryScreen() {
-
-  var victoryText = game.add.bitmapText(focusX,focusY - game.camera.height*C.game.zoomScale, 'attackfont', "YOU WIN!", 70*globalScale);
+  var victoryText = game.add.bitmapText(focusX,focusY - game.camera.height/C.game.zoomScale, 'attackfont', "YOU WIN!", 70*globalScale);
   victoryText.anchor.setTo(.5);
-  game.add.tween(victoryText).to( { y: menuBar.y }, 4000, Phaser.Easing.Bounce.Out, true);   
+  game.add.tween(victoryText).to( { y: menuBar.y + menuBar.height/2 }, 1500, Phaser.Easing.Bounce.Out, true);   
 }
 
 class GameOver {
