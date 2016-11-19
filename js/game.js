@@ -389,14 +389,21 @@ class Setup {
     //menuBar.fixedToCamera = true;
     game.world.bringToTop(menuBar);
     menuBar.kill();
-    waitButton = game.add.button(70*globalScale, game.world.centerX + game.world.width/2 - 90*globalScale, 'purplecircle', waitOneAction);
+    waitButton = game.add.button(game.world.centerX + game.world.width/2 - 90*globalScale, 140*globalScale, 'purplecircle', waitOneAction);
     waitButton.anchor.x = .5;
     waitButton.anchor.y = .5;
     //waitButton.scale.y = .6;
     waitButton.battleButton = false;
     buttonsList.push(waitButton);
     game.world.bringToTop(waitButton);
-    
+    upgradeButton = game.add.sprite(waitButton.x, waitButton.y + 180*globalScale, turn.sprite.key);
+    upgradeButton.anchor.set(0.5);
+    upgradeButton.inputEnabled = true;
+    upgradeButton.width = 160*globalScale;
+    upgradeButton.height = 160*globalScale;
+    upgradeButton.battleButton = false;
+    buttonsList.push(upgradeButton);
+    upgradeButton.events.onInputUp.add(upgrade, {upgrading: turn});
     }
   update() {
   /*if (Phaser.Device.desktop) {
@@ -812,31 +819,7 @@ function setLastClicked(sprite) {
       repairButton.kill();
     }
     
-    if (!upgradeButton && normalState) { 
-      //upgradeText = game.add.text(spaceDisplay.x + 200*globalScale, attributeDisplay.y, "Upgrade " + sprite.key, C.game.textStyle);
-      //upgradeText.anchor.set(0.5);
-      //upgradeText.inputEnabled = true;
-      //upgradeText.events.onInputUp.add(upgrade, {upgrading: lastClicked});
-      upgradeButton = game.add.sprite(0, 0, lastClicked.sprite.key);
-      upgradeButton.anchor.set(0.5);
-      upgradeButton.inputEnabled = true;
-      upgradeButton.width = 80;
-      upgradeButton.height = 80;
-      upgradeButton.battleButton = false;
-      buttonsList.push(upgradeButton);
-      //buttonsTextList.push(upgradeText);
-      upgradeButton.events.onInputUp.add(upgrade, {upgrading: lastClicked});
-    } else if (normalState) {
-      //upgradeText.reset(upgradeText.x, upgradeText.y);
-      //upgradeText.setText("Upgrade " + sprite.key);
-      //upgradeText.events.onInputUp._bindings = [];
-      //upgradeText.events.onInputUp.add(upgrade, {upgrading: lastClicked});
-      upgradeButton.reset(upgradeButton.x, upgradeButton.y);
-      upgradeButton.loadTexture(lastClicked.sprite.key);
-      game.world.bringToTop(upgradeButton);
-      upgradeButton.events.onInputUp._bindings = [];
-      upgradeButton.events.onInputUp.add(upgrade, {upgrading: lastClicked});
-    }
+
 
     if (!wallButton && normalState && lastClicked.upgrades.indexOf("Drop Wall") > -1 && !lastClicked.wallDeployed) { 
       wallButton = game.add.sprite(300, menuBar.y + 77, 'dropwall');
@@ -906,7 +889,7 @@ function setLastClicked(sprite) {
       if (lastButton) {
         buttonsList[i].y = lastButton.y + 90;
       } else {
-        buttonsList[i].y = 70;
+        buttonsList[i].y = 140*globalScale;
       }
       var lastButton = buttonsList[i];
      }
@@ -1655,13 +1638,12 @@ function move(object,destination,escaping) {
             upgrading.rp -= (boughtUpgrade.cost - discountValue);
             console.log("cost was " + (boughtUpgrade.cost-discountValue));
           }
-          lastClicked.upgrades.push(this.boughtUpgrade);
+          turn.upgrades.push(this.boughtUpgrade);
           boughtBool = true;
         }
     }
     console.log("Upgrading " + upgrading.sprite.key);
     //upgradeText.kill();
-    upgradeButton.kill();
     menuBar.kill();
     if (!upgradeMenu) {
     upgradeMenu = game.add.sprite(game.world.centerX, game.world.centerY + C.game.height/2 + (C.upgradeMenu.height*C.upgradeMenu.scale)/2 + 200*globalScale, 'upgradeMat');
@@ -1701,7 +1683,7 @@ function chooseUpgrade(event) {
       console.log("Event was at " + x + " " + y);
       game.camera.y = game.camera.y;
       game.input.onTap._bindings = [];
-      confirmUpgrade(lastClicked,choice);
+      confirmUpgrade(turn,choice);
       game.kineticScrolling.stop();
     } 
   }
@@ -1712,9 +1694,9 @@ function confirmUpgrade(player,upgradeName) {
       game.camera.y = upgradeMenu.y + upgradeMenu.height/2 + game.camera.height/2;
       var consideredUpgrade = U[upgradeName];
       if (confirmText) {
-        confirmText.setText("Are you sure you would like to purchase " + upgradeName + " on " + lastClicked.sprite.key +"?\n\n" + consideredUpgrade.desc);
+        confirmText.setText("Are you sure you would like to purchase " + upgradeName + " on " + turn.sprite.key +"?\n\n" + consideredUpgrade.desc);
       } else {
-        confirmText = game.add.text(game.camera.x + game.camera.width/2,game.camera.y + game.camera.height/2 - 230,"Are you sure you would like to purchase " + upgradeName + " on " + lastClicked.sprite.key +"?\n\n" + consideredUpgrade.desc, C.game.textStyle);
+        confirmText = game.add.text(game.camera.x + game.camera.width/2,game.camera.y + game.camera.height/2 - 230,"Are you sure you would like to purchase " + upgradeName + " on " + turn.sprite.key +"?\n\n" + consideredUpgrade.desc, C.game.textStyle);
         confirmText.anchor.setTo(.5,.5);
       }
       for (i = 0; i < player.colorDiscounts.length; i++) {
@@ -1732,11 +1714,11 @@ function confirmUpgrade(player,upgradeName) {
       var yes = game.add.text(confirmText.x - 150, priceText.y + 100, "Yes", C.game.ynStyle);
       yes.anchor.setTo(.5,.5);
       yes.inputEnabled = true;
-      yes.events.onInputUp.add(upgrade, {upgrading: lastClicked, yn: "yes", boughtUpgrade: upgradeName});
+      yes.events.onInputUp.add(upgrade, {upgrading: turn, yn: "yes", boughtUpgrade: upgradeName});
       var no = game.add.text(confirmText.x + 150, priceText.y + 100, "No", C.game.ynStyle);
       no.anchor.setTo(.5,.5);
       no.inputEnabled = true;
-      no.events.onInputUp.add(upgrade, {upgrading: lastClicked, yn: "no"});
+      no.events.onInputUp.add(upgrade, {upgrading: turn, yn: "no"});
 }
 
 
@@ -1833,6 +1815,11 @@ function changeTurn() {
       if (turn.rpPerTurn && turn.sprite.alive) {
         turn.rp += turn.rpPerTurn;
       }
+      upgradeButton.reset(upgradeButton.x, upgradeButton.y);
+      upgradeButton.loadTexture(turn.sprite.key);
+      game.world.bringToTop(upgradeButton);
+      upgradeButton.events.onInputUp._bindings = [];
+      upgradeButton.events.onInputUp.add(upgrade, {upgrading: turn});
     //if (turn.sprite.inputEnabled === false) {
     //}
 }
