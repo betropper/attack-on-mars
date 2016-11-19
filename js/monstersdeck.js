@@ -5,12 +5,15 @@ var MonstersDeck = {
    "def": 2,
    "hp": 4,
    "upgrades": ["Poison Aura","-1 Mech Def"]
+   "hiddenUpgrades": ["Die -#"];
    },
    {
    "batk": 4,
    "def": 2,
    "hp": 1,
    "upgrades": ["Feign Death","-1 Mech Red Attack"]
+
+   "hiddenUpgrades": ["Die -#"];
    },
 
    {
@@ -18,6 +21,7 @@ var MonstersDeck = {
    "def": 4,
    "hp": 1,
    "upgrades": ["Feign Death","-1 Mech Blue Attack"]
+   "hiddenUpgrades": ["Die -#"];
    },
 
    {
@@ -46,6 +50,7 @@ var MonstersDeck = {
    "def": 2,
    "hp": 4,
    "upgrades": ["-1 Mech Red Attack"]
+   "hiddenUpgrades": ["Die -#"];
    },
     
    {
@@ -53,6 +58,7 @@ var MonstersDeck = {
    "def": 2,
    "hp": 3,
    "upgrades": ["-1 Mech Def"]
+   "hiddenUpgrades": ["Die -#"];
    },
 
    {
@@ -60,6 +66,7 @@ var MonstersDeck = {
    "def": 3,
    "hp": 1,
    "upgrades": ["-1 Mech Blue Attack"]
+   "hiddenUpgrades": ["Die -#"];
    },
 
   {
@@ -97,6 +104,7 @@ var MonstersDeck = {
    "def": 4,
    "hp": 5,
    "upgrades": ["-1 Mech Blue Attack"]
+   "hiddenUpgrades": ["Die -#"];
    }
 
  ],
@@ -159,6 +167,33 @@ var MU = {
   "First Attack": {
     "desc": "This monster always attacks first when combat is initiated.",
     "cost": 2,
+    },
+  "Dice -#": {
+    "desc": "The Mecha fighting this monster has 1 less die from the listed pool",
+    "cost": 2,
+    active: function(mech,pool,amount) {
+      var playerDie = {
+        "Blue Attack": mech.batk,
+        "Red Attack": mech.ratk,
+        "Def": mech.def
+      };
+      if (playerDie[pool] > 0) {
+        playerDie[pool] -= amount;
+        if (mech.tempStolen) {
+          mech.tempStolen.push({pool: pool, amount: amount});
+        } else {
+          mech.tempStolen = [{pool: pool, amount: amount}];
+        }
+      }
     }
-  
+    returnStolen: function(mech,pool,amount) {
+      var playerDie = {
+        "Blue Attack": mech.batk,
+        "Red Attack": mech.ratk,
+        "Def": mech.def
+      };
+      playerDie[pool] += amount;
+      mech.tempStolen.splice({pool: pool, amount: amount},1);
+    }
+  }
 }

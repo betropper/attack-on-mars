@@ -536,6 +536,18 @@ class Setup {
         //var barTween = game.add.tween(menuBar).to( { x: focusX*3 - game.camera.width/2 , y: focusY*3 + game.camera.height/2 - menuBar.height }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
         }
         //game.add.tween(menuBar).to( { y: game.world.centerY }, 4000, Phaser.Easing.Bounce.Out, true);
+
+        var playerDie = {
+          "Blue Attack": battlePlayer.batk,
+          "Red Attack": battlePlayer.ratk,
+          "Def": battlePlayer.def
+        };
+        for (i = 0; i < battleMonster.upgrades.length; i++) {
+          if (battleMonster.upgrades[i].indexOf("-1 Mech") > -1) {
+            MU["Dice -#"].active(battlePlayer,battleMonster.upgrades[i].substring(8),1);
+            printBattleResults(battleMonster.sprite.key + " drained the mech's " + battleMonster.upgrades[i].substring(8) + "!");
+          }
+        }
         if (battleMonster.upgrades.indexOf("First Attack") === -1) {
           battleTurn = battlePlayer;
         } else {
@@ -1252,8 +1264,17 @@ function handleDeath(damaged,survivor) {
 
 }
 
+function resetDie(player,monster) {
+  for (i = 0; i < monster.upgrades.length; i++) {
+    if (monster.upgrades[i].indexOf("-1 Mech") > -1) {
+      MU["Dice -#"].returnStolen(player,monster.upgrades[i].substring(8),1);
+    }
+  }
+}
+
 function finishBattle() {
   pendingBattles.splice(0,1);
+
   for (i = 0; i < battleTexts.length; i++) {
     battleTexts[i].destroy();
   }
@@ -1497,8 +1518,7 @@ function battle(player, monster) {
           }
           if (containsMonsters && !containsPlayers) {
             var newDestination = monstersList[i].key;
-          }
-        
+          }    
         console.log("Monster is moving to " + newDestination);
         move(monstersList[i], newDestination);
       } else {
@@ -1588,8 +1608,7 @@ function move(object,destination,escaping) {
   object.sprite.closestSpaces = getClosestSpaces(object.key);
   object.space = Space[destination];
   addToOccupied(object, Space[destination]);
-  game.world.bringToTop(object.sprite);
-  
+  game.world.bringToTop(object.sprite); 
   if (playersList.indexOf(object) > -1) {
     checkBattle(Space[object.key]);
   } else {
