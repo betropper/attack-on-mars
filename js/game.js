@@ -545,7 +545,7 @@ class Setup {
         for (i = 0; i < battleMonster.upgrades.length; i++) {
           if (battleMonster.upgrades[i].indexOf("-1 Mech") > -1) {
             MU["Dice -#"].active(battlePlayer,battleMonster.upgrades[i].substring(8),1);
-            printBattleResults(battleMonster.sprite.key + " drained the mech's " + battleMonster.upgrades[i].substring(8) + "!");
+            printBattleResults(battleMonster.sprite.key + " drained " + battlePlayer.sprite.key + " " + battleMonster.upgrades[i].substring(8) + "!");
           }
         }
         if (battleMonster.upgrades.indexOf("First Attack") === -1) {
@@ -1230,10 +1230,6 @@ function handleDeath(damaged,survivor) {
   battlePlayer.attacking = false;
   console.log("DED with " + damaged.hp);
   scrubList(globalList);
-  if (survivor.siegeMode) {
-    survivor.siegeMode = false;
-    survivor.def += 1;
-  }
   if (damaged === battlePlayer) {
     focusSpace.occupied = removeFromList(playersList[battlePlayer.sprite.number], focusSpace);
     playersList[damaged.sprite.number].sprite.kill();
@@ -1265,16 +1261,27 @@ function handleDeath(damaged,survivor) {
 }
 
 function resetDie(player,monster) {
-  for (i = 0; i < monster.upgrades.length; i++) {
-    if (monster.upgrades[i].indexOf("-1 Mech") > -1) {
-      MU["Dice -#"].returnStolen(player,monster.upgrades[i].substring(8),1);
+  var playerDie = {
+    "Blue Attack": "batk",
+    "Red Attack": "ratk",
+    "Def": "def"
+  };
+  if (player.tempStolen) {
+    for (i = 0; i < player.tempStolen.length; i++) {
+      player[playerDie[player.tempStolen[i].pool]] += player.tempStolen[i].amount;
     }
   }
+  player.tempStolen = [];
+  if (player.siegeMode) {
+    player.siegeMode = false;
+    player.def += 1;
+  }
+
 }
 
 function finishBattle() {
   pendingBattles.splice(0,1);
-
+  resetDie(battlePlayer,battleMonster);
   for (i = 0; i < battleTexts.length; i++) {
     battleTexts[i].destroy();
   }
