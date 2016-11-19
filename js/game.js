@@ -38,6 +38,14 @@ var C = {
    "scale": .46 * globalScale,
    "file": "assets/gameboard.jpg"
  },
+ "mbg": {
+   "width": 5291,
+   "height": 4701,
+   //"resizeX": 3300/5291,
+   //"resizeY": 2787/5291,
+   "scale": 1.4*globalScale,
+   "file": "assets/rsz_1mainmenubackground.jpg"
+ },
  "mech": {
    "width": 72,
    "height": 72,
@@ -182,6 +190,7 @@ class Load {
     this.load.spritesheet('icons', "assets/Icons1.png", C.icons.width, C.icons.height)
     this.load.image("upgradeMat","assets/UpgradeMat.png",469,676);
     this.load.image("gameboard",C.bg.file,C.bg.width,C.bg.height);
+    this.load.image("background",C.mbg.file,C.mbg.width,C.mbg.height);
     this.load.image("blue", "assets/PlayerIcon1.png",C.mech.width,C.mech.height);
     this.load.image("red", "assets/PlayerIcon2.png",C.mech.width,C.mech.height);
     this.load.image("green", "assets/PlayerIcon3.png",C.mech.width,C.mech.height);
@@ -226,6 +235,9 @@ class MainMenu {
   }
 
   create() {
+    game.mbg = game.add.sprite(game.world.centerX, game.world.centerY, "background");
+    game.mbg.anchor.setTo(.5);
+    game.mbg.scale.setTo(C.mbg.scale, C.mbg.scale);
     var titleText = game.add.bitmapText(game.world.centerX, game.world.centerY - game.height/3, 'attackfont', "ATTACK ON MARS", 90*globalScale);
     titleText.anchor.set(0.5);
     playerCount = 4;
