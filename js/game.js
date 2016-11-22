@@ -1719,9 +1719,16 @@ function confirmUpgrade(player,upgradeName) {
       }
       if (priceText) {
         priceText.setText(upgradeName + " is a tier " + consideredUpgrade.cost + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue));
+      } else if (consideredUpgrade.color === "blue" || consideredUpgrade.color === "purple") {
+       priceText.setText("You have selected a " + consideredUpgrade.color + " upgrade. Blue and Purple upgrades are not available in the Demo version of Attack on Mars, purchase the full game to try them out!"); 
+        var back = game.add.text(confirmText.x, priceText.y + 100, "Back", C.game.ynStyle);
+        back.anchor.setTo(.5,.5);
+        back.inputEnabled = true;
+        back.events.onInputUp.add(upgrade, {upgrading: turn, yn: "no"});
+        return;
       } else {
-      priceText = game.add.text(confirmText.x, confirmText.y + 400, upgradeName + " is a tier " + consideredUpgrade.cost + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue),C.game.smallStyle)
-      priceText.anchor.setTo(.5,.5);
+        priceText = game.add.text(confirmText.x, confirmText.y + 400, upgradeName + " is a tier " + consideredUpgrade.cost + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue),C.game.smallStyle)
+        priceText.anchor.setTo(.5,.5);
       }
       var yes = game.add.text(confirmText.x - 150, priceText.y + 100, "Yes", C.game.ynStyle);
       yes.anchor.setTo(.5,.5);
