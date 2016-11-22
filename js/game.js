@@ -241,9 +241,9 @@ class MainMenu {
     var titleText = game.add.bitmapText(game.world.centerX, game.world.centerY - game.height/3, 'attackfont', "ATTACK ON MARS", 90*globalScale);
     titleText.anchor.set(0.5);
     playerCount = 4;
-    var countNumber = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/6, 'attackfont', playerCount, 90*globalScale) 
+    var countNumber = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/7.5, 'attackfont', playerCount, 90*globalScale) 
     countNumber.anchor.set(0.5);
-    var left = game.add.sprite(game.world.centerX - 140*globalScale, game.world.centerY + game.height/6, "leftright");
+    /*var left = game.add.sprite(game.world.centerX - 140*globalScale, game.world.centerY + game.height/6, "leftright");
     left.frame = 0;
     left.anchor.set(0.5);
     left.inputEnabled = true;
@@ -257,9 +257,10 @@ class MainMenu {
     right.width = 90 * globalScale;
     right.height = 90 * globalScale;
     right.events.onInputDown.add(changePlayerCount, {action: 1, display: countNumber});
-    var playerCountText = game.add.bitmapText(game.world.centerX, countNumber.y - 140*globalScale, 'attackfont', "Player Count", 90*globalScale);
+    */
+    var playerCountText = game.add.bitmapText(game.world.centerX, countNumber.y - 140*globalScale, 'attackfont', "Player Count (Locked)", 90*globalScale);
     playerCountText.anchor.set(.5);
-    game.input.onUp.add(checkButtons, {left: left, right: right});
+    //game.input.onUp.add(checkButtons, {left: left, right: right});
     var playButton = game.add.bitmapText(game.world.centerX, countNumber.y + 140*globalScale, 'attackfont', "Play Game", 90*globalScale);
     playButton.anchor.set(.5);
     playButton.inputEnabled = true;
@@ -267,8 +268,7 @@ class MainMenu {
     var settingsButton = game.add.bitmapText(game.world.centerX, playButton.y + 140*globalScale, 'attackfont', "Settings", 90*globalScale);
     settingsButton.anchor.set(.5);
     settingsButton.inputEnabled = true;
-    var menuList = [left, countNumber, right, playerCountText, playButton, settingsButton];
-
+    var menuList = [/*left,*/ countNumber, /*right,*/ playerCountText, playButton, settingsButton];
     var returnButton = game.add.bitmapText(game.world.centerX + game.width, game.world.centerY - game.height/8, 'attackfont', "Return to Menu", 90*globalScale);
     returnButton.anchor.set(.5);
     //Off screen settings menu
@@ -276,9 +276,33 @@ class MainMenu {
     var settingsList = [returnButton]
     settingsButton.events.onInputUp.add(shiftSettings, {menuList: menuList, settingsList:settingsList});
     returnButton.events.onInputUp.add(shiftSettings, {menuList: menuList, settingsList:settingsList});
+    fade("in");
   }
 }
 
+
+
+function startGame() {
+  game.state.start("Setup");
+}
+
+function fade(inorout, event) {
+  var inorout = inorout || this.inorout;
+  if (inorout === "out") {
+    var start = 1;
+    var end = 0;
+  } else if (inorout === "in") {
+    var start = 0;
+    var end = 1;
+  }
+  for (var i = 0; i < game.world.children.length; i++) {
+    game.world.children[i].alpha = start;
+    var fadeTween = game.add.tween(game.world.children[i]).to({alpha: end}, 1000, Phaser.Easing.Linear.None, true)
+  }
+  if (event) {
+    fadeTween.onComplete.add(event, this);
+  }
+}
 
 function shiftSettings() {
   //game.camera.y += game.camera.width;

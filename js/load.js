@@ -16,6 +16,7 @@
     var name = document.currentScript.dataset.file;
     document.write('<script src="js/phaser.js"></script>');
     document.write('<script src="js/phaser-kinetic-scrolling-plugin.js"></script>');
+    document.write('<script src="js/phaser-state-transition.js"></script>');
     document.write('<script src="' + name + '"></script>');
   } else {
     document.write("<h1>Sorry, your browser is too old to play this game.</h1>"); 
