@@ -237,5 +237,5 @@ var U = {
       "cost": 6,
       passive: function(player) {
       }
-    },
+    }
 }

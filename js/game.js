@@ -587,7 +587,7 @@ class Setup {
           addBattleText("Siege Mode",queAttack,"Siege Mode");
         }
         if (battlePlayer.weaponizedResearchCharges && battlePlayer.weaponizedResearchCharges > 0) {
-          addBattleText("Weaponized Research",queAttack,"Siege Mode");
+          addBattleText("Weaponized Research",changeDieMenu,"Weaponized Research");
         }
         for (i = 0; i < battleTexts.length; i++) {
           game.add.tween(battleTexts[i]).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + menuBar.height/2}, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true)
@@ -787,6 +787,13 @@ function zoomFalse() {
     }
     game.world.scale.set(1);
   }
+}
+
+function changeDieMenu(attacker,modifier) {
+  attacker = this.attacker || attacker;
+  method = this.modifier || method;
+  
+
 }
 
 function queAttack() {
