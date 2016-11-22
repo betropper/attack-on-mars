@@ -268,6 +268,7 @@ class MainMenu {
     var settingsButton = game.add.bitmapText(game.world.centerX, playButton.y + 140*globalScale, 'attackfont', "Settings", 90*globalScale);
     settingsButton.anchor.set(.5);
     settingsButton.inputEnabled = true;
+    var creditsButton = game.add.bitmapText(game.world.centerX, settingsButton.y + 140*globalScale, 'attackfont', "Credits", 90*globalScale);
     var menuList = [/*left,*/ countNumber, /*right,*/ playerCountText, playButton, settingsButton];
     var returnButton = game.add.bitmapText(game.world.centerX + game.width, game.world.centerY - game.height/8, 'attackfont', "Return to Menu", 90*globalScale);
     returnButton.anchor.set(.5);
@@ -275,12 +276,36 @@ class MainMenu {
     returnButton.inputEnabled = true;
     var settingsList = [returnButton]
     settingsButton.events.onInputUp.add(shiftSettings, {menuList: menuList, settingsList:settingsList});
+    creditsButton.events.onInputUp.add(fade, {inorout: "out", event: displayCredits});
     returnButton.events.onInputUp.add(shiftSettings, {menuList: menuList, settingsList:settingsList});
     fade("in");
   }
 }
 
+class Credits {
+  preload() {
+    var credits = '''Illustration: Alice Bessoni\n\n
+      Game Programming: Benjamin Muhlestein\n\n
+      Game Design: Paul Ference\n\n
+      Graphical Design: Helen Tian'''
+      var creditsDisplay = game.add.bitmapText(game.world.centerX, game.world.centerY - game.world.height/2.5, 'attackfont', credits, 90*globalScale);
+      var creditsTween = game.add.tween(creditsDisplay).to({y: game.world.centerY + game.world.height/2.5}, 5000, Phaser.Easing.Linear.None, true);
+      creditsTween.onComplete.add(returnToMenu, this);
+  }
+  
+  load() {
+    fade("in");
+    game.input.onTap.add(fade,{inorout: "out", event: returnToMenu});
+  }
+}
 
+function returnToMenu() {
+  game.state.start("MainMenu");
+}
+
+function displayCredits() {
+ game.state.start("Credits");
+}
 
 function startGame() {
   game.state.start("Setup");
@@ -288,6 +313,7 @@ function startGame() {
 
 function fade(inorout, event) {
   var inorout = inorout || this.inorout;
+  var event = event || this.event;
   if (inorout === "out") {
     var start = 1;
     var end = 0;
