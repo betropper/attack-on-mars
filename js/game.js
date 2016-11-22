@@ -1661,11 +1661,10 @@ function move(object,destination,escaping) {
     upgradeMenu = game.add.sprite(game.world.centerX, game.world.centerY + C.game.height/2 + (C.upgradeMenu.height*C.upgradeMenu.scale)/2 + 200*globalScale, 'upgradeMat');
     upgradeMenu.anchor.setTo(.5,.5);
     upgradeMenu.scale.x = C.upgradeMenu.scale;
-    upgradeMenu.scale.y = C.upgradeMenu.scale;
-  console.log(upgradeDescription);
-  }
+    upgradeMenu.scale.y = C.upgradeMenu.scale;i
     var upgradeDescription = game.add.text(upgradeMenu.x, upgradeMenu.y - upgradeMenu.height/2 - 100*globalScale, "Click on an upgrade to see its details, scroll up to return to the game", C.game.textStyle);
     upgradeDescription.anchor.setTo(.5,.5);
+  }
   game.kineticScrolling.start();
   game.input.onTap.add(chooseUpgrade, {menu: upgradeMenu});
   game.camera.y = game.height;
@@ -1717,15 +1716,32 @@ function confirmUpgrade(player,upgradeName) {
           break
         }
       }
-      if (priceText) {
-        priceText.setText(upgradeName + " is a tier " + consideredUpgrade.cost + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue));
-      } else if (consideredUpgrade.color === "blue" || consideredUpgrade.color === "purple") {
-       priceText.setText("You have selected a " + consideredUpgrade.color + " upgrade. Blue and Purple upgrades are not available in the Demo version of Attack on Mars, purchase the full game to try them out!"); 
+      var destroyTexts = ["Yes","No","Back"]
+      for (i = 0; i < game.world.children.length; i++) {
+        if (game.world.children[i].text && destroyTexts.indexOf(game.world.children[i].text) > -1) {
+          game.world.children[i].destroy();
+          console.log("KILLED.");
+        }
+      }
+      if (consideredUpgrade.color === "black" || consideredUpgrade.color === "purple") {
+        if (!priceText) {
+          priceText = game.add.text(confirmText.x, confirmText.y + 400,"You have selected a " + consideredUpgrade.color + " upgrade. Blue and Purple upgrades are not available in the Demo version of Attack on Mars, purchase the full game to try them out!", C.game.smallStyle); 
+          priceText.anchor.setTo(.5);
+        } else {
+          priceText.setText("You have selected a " + consideredUpgrade.color + " upgrade. Blue and Purple upgrades are not available in the Demo version of Attack on Mars, purchase the full game to try them out!"); 
+        }
+        for (i = 0; i < game.world.children.length; i++) {
+          if (game.world.children[i].text && (game.world.children[i].text === "Yes"  || game.world.children[i].text === "No")) {
+            game.world.children[i].destroy();
+          }
+        }
         var back = game.add.text(confirmText.x, priceText.y + 100, "Back", C.game.ynStyle);
         back.anchor.setTo(.5,.5);
         back.inputEnabled = true;
         back.events.onInputUp.add(upgrade, {upgrading: turn, yn: "no"});
         return;
+      } else if (priceText) {
+        priceText.setText(upgradeName + " is a tier " + consideredUpgrade.cost + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue));
       } else {
         priceText = game.add.text(confirmText.x, confirmText.y + 400, upgradeName + " is a tier " + consideredUpgrade.cost + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue),C.game.smallStyle)
         priceText.anchor.setTo(.5,.5);
