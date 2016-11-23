@@ -910,7 +910,6 @@ function zoomWorld() {
   scaleTween.onComplete.add(zoomFalse, this);
  }
 }
-
 function zoomFalse() {
   if (zoomIn === true) {
     zoomIn = false;
@@ -1238,7 +1237,8 @@ function printBattleResults(text,position) {
   battleResults.anchor.y = .5;
   game.world.bringToTop(battleResults);
   resultsList.push(battleResults);
-  game.time.events.add(Phaser.Timer.SECOND * 3, killResults, this, battleResults);
+  //game.time.events.add(Phaser.Timer.SECOND * 3, killResults, this, battleResults);
+  return battleResults;
 }
 
 function countInArray(array, what) {
@@ -1486,6 +1486,10 @@ function killBattleInfo() {
     monsterBattleTexts[i].valueDisplay.destroy();
   }
   monsterBattleTexts = [];
+  for (i = 0; i < resultsList.length; i++) {
+    resultsList[i].destroy();
+  }
+  resultsList = []
 }
 
 function killResults(results) {
@@ -1497,12 +1501,53 @@ function killResults(results) {
 function rollDie(count, goal){ 
   var hits = 0;
   for (i = 1; i < count; i++) {
-    if (Math.floor(Math.random() * ((6-1)+1) + 1) >= goal) {
+    rollResult = Math.floor(Math.random() * ((6-1)+1) + 1);
+    if (rollResult >= goal) {
       hits += 1;
     }
   }
   return hits;
 } 
+
+var rollingAnimation;
+
+function updateRollText(rolling,type) {
+  if (type === "atk") {
+    if (playersList.indexOf(rolling) > -1) {
+      var rollingCount = rolling["ratk"] + rolling["batk"];
+    } else {
+      var rollingCount = rolling["batk"];
+    }
+  } else {
+    var rollingCount = rolling[type]
+  }
+console.log(rollingCount);
+  var hits = 0;
+  var diceKeys = {
+    "batk": "Blue Attack",
+    "atk": "Attack",
+    "def": "Defence"
+  };
+  var diceKey = diceKeys[type];
+  var text = "Rolling for " + rolling.sprite.key + "s " + diceKey + " ";
+  for (i = 0; i < rollingCount; i++) {
+    rollResult = Math.floor(Math.random() * ((6-1)+1) + 1);
+    if (rollResult >= rolling[type+"Goal"]) {
+      hits += 1;
+    }
+    text += " +  " + rollResult;
+  }
+  if (!rollingAnimation) {
+    rollingAnimation = printBattleResults(text);
+  } else {
+    rollingAnimation.text = text;
+  }
+  rollingAnimation.hits = hits;
+  return {
+    text: text, 
+    hits: hits
+  }
+}
 
 function battle(player, monster) {
   //Simple Placeholder battle
@@ -1525,6 +1570,8 @@ function battle(player, monster) {
         }
         battlePlayer.sprite.events.onDragStop._bindings = [];
         battlePlayer.sprite.inputEnabled = false;
+        var increment = C.game.moveSpeed/10
+        game.time.events.repeat(increment, 5, updateRollText, this,battleMonster,"atk");
       }
       battleMonster.sprite.x += C.mech.battleSpeed - battleSpeedDecrease;
       battleSpeedDecrease += .02;
@@ -1547,6 +1594,8 @@ function battle(player, monster) {
         }
         battlePlayer.sprite.events.onDragStop._bindings = [];
         battlePlayer.sprite.inputEnabled = false;
+        var increment = C.game.moveSpeed/10
+        game.time.events.repeat(increment, 5, updateRollText, this,battlePlayer,"atk");
       }
 
       battlePlayer.sprite.x -= C.mech.battleSpeed - battleSpeedDecrease;
