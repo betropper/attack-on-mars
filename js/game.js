@@ -1842,20 +1842,28 @@ function chooseUpgrade(event) {
       game.camera.y = game.camera.y;
       game.input.onTap._bindings = [];
       confirmUpgrade(turn,choice);
-      game.kineticScrolling.stop();
     } 
   }
 }
 
 function confirmUpgrade(player,upgradeName) {
+      var consideredUpgrade = U[upgradeName];
+      if (consideredUpgrade && consideredUpgrade.desc) {
+      game.kineticScrolling.stop();
       confirmState = true;
       game.camera.y = upgradeMenu.y + upgradeMenu.height/2 + game.camera.height/2;
-      var consideredUpgrade = U[upgradeName];
-      if (confirmText) {
+      if (confirmText && consideredUpgrade && consideredUpgrade.desc) {
         confirmText.setText("Are you sure you would like to purchase " + upgradeName + " on " + turn.sprite.key +"?\n\n" + consideredUpgrade.desc);
-      } else {
+      } else if (consideredUpgrade && consideredUpgrade.desc){
         confirmText = game.add.text(game.camera.x + game.camera.width/2,game.camera.y + game.camera.height/2 - 230,"Are you sure you would like to purchase " + upgradeName + " on " + turn.sprite.key +"?\n\n" + consideredUpgrade.desc, C.game.textStyle);
         confirmText.anchor.setTo(.5,.5);
+      } else {
+        if (!confirmText) {
+          confirmText = game.add.text(game.camera.x + game.camera.width/2,game.camera.y + game.camera.height/2 - 230,"Currently a WIP! Check back later to access this upgrade!", C.game.textStyle);
+          confirmText.anchor.setTo(.5,.5);
+        } else {
+          confirmText.setText("Currently a WIP! Check back later to access this upgrade!");
+        }
       }
       for (i = 0; i < player.colorDiscounts.length; i++) {
         if (player.colorDiscounts[i].color === consideredUpgrade.color) {
@@ -1863,7 +1871,7 @@ function confirmUpgrade(player,upgradeName) {
           break
         }
       }
-      var destroyTexts = ["Yes","No","Back"]
+      var destroyTexts = ["Yes","No","Back"];
       for (i = 0; i < game.world.children.length; i++) {
         if (game.world.children[i].text && destroyTexts.indexOf(game.world.children[i].text) > -1) {
           game.world.children[i].destroy();
@@ -1901,6 +1909,9 @@ function confirmUpgrade(player,upgradeName) {
       no.anchor.setTo(.5,.5);
       no.inputEnabled = true;
       no.events.onInputUp.add(upgrade, {upgrading: turn, yn: "no"});
+      } else {
+        game.input.onTap.add(chooseUpgrade, {menu: upgradeMenu});
+      }
 }
 
 
