@@ -1872,10 +1872,10 @@ function confirmUpgrade(player,upgradeName) {
       }
       if (consideredUpgrade.color === "black" || consideredUpgrade.color === "purple") {
         if (!priceText) {
-          priceText = game.add.text(confirmText.x, confirmText.y + 400,"You have selected a " + consideredUpgrade.color + " upgrade. Blue and Purple upgrades are not available in the Demo version of Attack on Mars, purchase the full game to try them out!", C.game.smallStyle); 
+          priceText = game.add.text(confirmText.x, confirmText.y + 400,"You have selected a " + consideredUpgrade.color + " upgrade.\nBlack and Purple upgrades are not available in the Demo version of Attack on Mars, purchase the full game to try them out!", C.game.smallStyle); 
           priceText.anchor.setTo(.5);
         } else {
-          priceText.setText("You have selected a " + consideredUpgrade.color + " upgrade. Blue and Purple upgrades are not available in the Demo version of Attack on Mars, purchase the full game to try them out!"); 
+          priceText.setText("You have selected a " + consideredUpgrade.color + " upgrade.\nBlack and Purple upgrades are not available in the Demo version of Attack on Mars, purchase the full game to try them out!"); 
         }
         for (i = 0; i < game.world.children.length; i++) {
           if (game.world.children[i].text && (game.world.children[i].text === "Yes"  || game.world.children[i].text === "No")) {
