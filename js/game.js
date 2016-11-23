@@ -238,10 +238,10 @@ class MainMenu {
     game.mbg = game.add.sprite(game.world.centerX, game.world.centerY, "background");
     game.mbg.anchor.setTo(.5);
     game.mbg.scale.setTo(C.mbg.scale, C.mbg.scale);
-    var titleText = game.add.bitmapText(game.world.centerX, game.world.centerY - game.height/3, 'attackfont', "ATTACK ON MARS", 90*globalScale);
+    var titleText = game.add.bitmapText(game.world.centerX, game.world.centerY - game.height/2.5, 'attackfont', "ATTACK ON MARS", 90*globalScale);
     titleText.anchor.set(0.5);
     playerCount = 4;
-    var countNumber = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/7.5, 'attackfont', playerCount, 90*globalScale) 
+    var countNumber = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/9, 'attackfont', playerCount, 90*globalScale) 
     countNumber.anchor.set(0.5);
     /*var left = game.add.sprite(game.world.centerX - 140*globalScale, game.world.centerY + game.height/6, "leftright");
     left.frame = 0;
@@ -264,19 +264,21 @@ class MainMenu {
     var playButton = game.add.bitmapText(game.world.centerX, countNumber.y + 140*globalScale, 'attackfont', "Play Game", 90*globalScale);
     playButton.anchor.set(.5);
     playButton.inputEnabled = true;
-    playButton.events.onInputUp.add(changeState, {state: "Setup"});
+    playButton.events.onInputUp.add(clickFade, {inorout:"out", state: "Setup"});
     var settingsButton = game.add.bitmapText(game.world.centerX, playButton.y + 140*globalScale, 'attackfont', "Settings", 90*globalScale);
     settingsButton.anchor.set(.5);
     settingsButton.inputEnabled = true;
     var creditsButton = game.add.bitmapText(game.world.centerX, settingsButton.y + 140*globalScale, 'attackfont', "Credits", 90*globalScale);
-    var menuList = [/*left,*/ countNumber, /*right,*/ playerCountText, playButton, settingsButton];
+    creditsButton.anchor.set(.5);
+    creditsButton.inputEnabled = true;
+    var menuList = [/*left,*/ countNumber, /*right,*/ playerCountText, playButton, settingsButton, creditsButton];
     var returnButton = game.add.bitmapText(game.world.centerX + game.width, game.world.centerY - game.height/8, 'attackfont', "Return to Menu", 90*globalScale);
     returnButton.anchor.set(.5);
     //Off screen settings menu
     returnButton.inputEnabled = true;
     var settingsList = [returnButton]
     settingsButton.events.onInputUp.add(shiftSettings, {menuList: menuList, settingsList:settingsList});
-    creditsButton.events.onInputUp.add(fade, {inorout: "out", event: displayCredits});
+    creditsButton.events.onInputUp.add(clickFade, {inorout: "out", state: "Credits"});
     returnButton.events.onInputUp.add(shiftSettings, {menuList: menuList, settingsList:settingsList});
     fade("in");
   }
@@ -284,18 +286,17 @@ class MainMenu {
 
 class Credits {
   preload() {
-    var credits = '''Illustration: Alice Bessoni\n\n
-      Game Programming: Benjamin Muhlestein\n\n
-      Game Design: Paul Ference\n\n
-      Graphical Design: Helen Tian'''
-      var creditsDisplay = game.add.bitmapText(game.world.centerX, game.world.centerY - game.world.height/2.5, 'attackfont', credits, 90*globalScale);
-      var creditsTween = game.add.tween(creditsDisplay).to({y: game.world.centerY + game.world.height/2.5}, 5000, Phaser.Easing.Linear.None, true);
-      creditsTween.onComplete.add(returnToMenu, this);
+      var credits = "Illustration:        Alice Bessoni\n\nGame Programming:       Benjamin Muhlestein\n\nGame Design:        Paul Ference\n\nGraphical Design:        Helen Tian";
+      var creditsDisplay = game.add.bitmapText(game.world.centerX, game.world.centerY - game.world.height, 'attackfont', credits, 90*globalScale);
+      var creditsTween = game.add.tween(creditsDisplay).to({y: game.world.centerY}, 4000, Phaser.Easing.Linear.None, true);
+      creditsDisplay.anchor.setTo(.5);
+      //creditsTween.onComplete.add(returnToMenu, this);
   }
   
-  load() {
+  create() {
     fade("in");
-    game.input.onTap.add(fade,{inorout: "out", event: returnToMenu});
+    game.input.enabled = true;
+    game.input.onTap.add(clickFade,{inorout: "out", state: "MainMenu"});
   }
 }
 
@@ -311,9 +312,13 @@ function startGame() {
   game.state.start("Setup");
 }
 
-function fade(inorout, event) {
-  var inorout = inorout || this.inorout;
-  var event = event || this.event;
+function clickFade(event) {
+  fade(this.inorout, this.state);
+}
+
+function fade(inorout, state) {
+  console.log("Fading " + inorout);
+  console.log(state);
   if (inorout === "out") {
     var start = 1;
     var end = 0;
@@ -325,8 +330,9 @@ function fade(inorout, event) {
     game.world.children[i].alpha = start;
     var fadeTween = game.add.tween(game.world.children[i]).to({alpha: end}, 1000, Phaser.Easing.Linear.None, true)
   }
-  if (event) {
-    fadeTween.onComplete.add(event, this);
+  if (state) {
+    console.log(state);
+    fadeTween.onComplete.add(changeState, {state: state});
   }
 }
 
@@ -377,6 +383,9 @@ function checkButtons() {
 }
 
 class Setup {
+
+  preload() {
+  }
 
   create() {
     console.log(playersList);
@@ -466,7 +475,8 @@ class Setup {
     upgradeButton.battleButton = false;
     buttonsList.push(upgradeButton);
     upgradeButton.events.onInputUp.add(upgrade, {upgrading: turn});
-    }
+    fade("in");  
+  }
   update() {
   /*if (Phaser.Device.desktop) {
       if (window.innerWidth < C.game.width) {
@@ -2351,5 +2361,6 @@ game.state.add("Load",Load);
 game.state.add("Setup",Setup);
 game.state.add("GameOver",GameOver);
 game.state.add("MainMenu",MainMenu);
+game.state.add("Credits",Credits);
 game.state.start("Boot");
 
