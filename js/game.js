@@ -187,6 +187,7 @@ class Boot {
     } else {
       game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
     }
+    game.load.bitmapFont('attackfont','assets/attackfont.png', 'assets/attackfont.fnt');
   }
   create() {
     this.state.start("Load");
@@ -205,7 +206,8 @@ class Load {
       verticalWheel: true,
       deltaWheel: 40
   });
-
+    var loadingText = game.add.bitmapText(game.world.centerX, game.world.centerY, 'attackfont', "Loading", 120*globalScale);
+    loadingText.anchor.setTo(.5);
     console.log("Loading.");
     this.load.spritesheet('icons', "assets/Icons1.png", C.icons.width, C.icons.height)
     this.load.image("upgradeMat","assets/UpgradeMat.png",469,676);
@@ -230,7 +232,6 @@ class Load {
     this.load.image("dropwall", "assets/DropWall.png", C.extras.width, C.extras.height);
     this.load.image("obliterationray", "assets/ObliterationRay.png", C.extras.width, C.extras.height);
     this.load.image("The Bloat", "assets/bloat.jpg");
-    game.load.bitmapFont('attackfont','assets/attackfont.png', 'assets/attackfont.fnt');
   }
   create() {
     console.log("Loaded!");
@@ -417,7 +418,9 @@ function shiftSettings() {
       } else if (mainMenuTweens[i].position === "left") {
         mainMenuTweens[i] = game.add.tween(this.menuList[i]).to({x: this.menuList[i].x + game.width}, 700, Phaser.Easing.Back.InOut, true);
         mainMenuTweens[i].position = "center";
+        mainMenuTweens[i].onComplete.add(reEnable,this);
       }
+      mainMenuTweens[i].inputEnabled = false;
     }
     for (i = 0; i < this.settingsList.length; i++) {
       if (!settingsMenuTweens[i] || (settingsMenuTweens[i].position && settingsMenuTweens[i].position === "right")) {
@@ -426,9 +429,16 @@ function shiftSettings() {
       } else if (settingsMenuTweens[i].position === "center") {
         settingsMenuTweens[i] = game.add.tween(this.settingsList[i]).to({x: this.settingsList[i].x + game.width}, 700, Phaser.Easing.Back.InOut, true);
         settingsMenuTweens[i].position = "right";
+        settingsMenuTweens[i].onComplete.add(reEnable,this);
       }
+      settingsMenuTweens[i].inputEnabled = false;
     }
 }
+
+function reEnable() {
+  this.inputEnabled = true;
+}
+
 function changeState() {
     game.state.start(this.state);
 }
