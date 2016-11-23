@@ -305,7 +305,7 @@ class MainMenu {
   }
   update() {
     if (changingQuality) {
-      returnButton.text = "Restart with " + qualitySetting + " Setting";
+      returnButton.text = "Restart with " + qualitySetting + " Settings";
     } else {
       returnButton.text = "Return to Menu";
     }
@@ -1125,7 +1125,7 @@ class GameOver {
         gg.anchor.setTo(.5);
         restart.anchor.setTo(.5);
         restart.inputEnabled = true;
-        restart.events.onInputDown.add(resetGame, this);
+        restart.events.onInputDown.add(completeKill, this);
         game.world.pivot.x = 0;
         game.world.pivot.y = 0;
         game.camera.x = 0;
