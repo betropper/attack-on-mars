@@ -1,4 +1,12 @@
-var globalScale = .5;
+if (localStorage && localStorage.getItem("quality")) {
+  var globalScale = localStorage.getItem('quality');
+  var qualitySetting = localStorage.getItem('qualityKey');
+} else {
+  var globalScale = .5;
+  var qualitySetting = "Low";
+}
+localStorage.setItem('quality', globalScale);
+localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
    "zoomScale": 3,
@@ -97,8 +105,9 @@ var focusX,
  zoomInTweens,
  mainMenuTweens = [],
  settingsMenuTweens = [],
- bossSprite
- fortifiedList = [];
+ bossSprite,
+ fortifiedList = [],
+ changingQuality;
 var boss = {};
 var battleSpeedDecrease = 0;
 var boughtBool;
@@ -167,6 +176,17 @@ class Boot {
     this.scale.pageAlignHorizontally = true;
     game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
     this.scale.pageAlignVertically = true;
+    if (Phaser.Device.desktop) {
+      /*if (window.innerWidth < C.game.width) {
+        game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+      } else {
+        game.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
+        game.scale.setUserScale((window.innerWidth)/2800,(window.innerHeight)/1280);
+      }*/
+      game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+    } else {
+      game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
+    }
   }
   create() {
     this.state.start("Load");
@@ -218,20 +238,11 @@ class Load {
   }
 }
 
+var returnButton;
 class MainMenu {
-  
   preload() {
-    if (Phaser.Device.desktop) {
-      /*if (window.innerWidth < C.game.width) {
-        game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-      } else {
-        game.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
-        game.scale.setUserScale((window.innerWidth)/2800,(window.innerHeight)/1280);
-      }*/
-      game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-    } else {
-      game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
-    }
+
+
   }
 
   create() {
@@ -272,15 +283,32 @@ class MainMenu {
     creditsButton.anchor.set(.5);
     creditsButton.inputEnabled = true;
     var menuList = [/*left,*/ countNumber, /*right,*/ playerCountText, playButton, settingsButton, creditsButton];
-    var returnButton = game.add.bitmapText(game.world.centerX + game.width, game.world.centerY - game.height/8, 'attackfont', "Return to Menu", 90*globalScale);
+    returnButton = game.add.bitmapText(game.world.centerX + game.width, game.world.centerY - game.height/8, 'attackfont', "Return to Menu", 90*globalScale);
     returnButton.anchor.set(.5);
     //Off screen settings menu
     returnButton.inputEnabled = true;
-    var settingsList = [returnButton]
+    var lowButton = game.add.bitmapText(returnButton.x, returnButton.y + 200*globalScale, 'attackfont', "Low", 90*globalScale);
+    var medButton = game.add.bitmapText(lowButton.x, lowButton.y + 140*globalScale, 'attackfont', "Medium", 90*globalScale);
+    var highButton = game.add.bitmapText(medButton.x, medButton.y + 140*globalScale,'attackfont', "High", 90*globalScale);
+    var qualityDisplay = game.add.bitmapText(highButton.x, highButton.y + 160*globalScale, 'attackfont', "You are currently on " + localStorage.getItem('qualityKey'), 90*globalScale);
+    var settingsList = [returnButton,lowButton,medButton,highButton,qualityDisplay];
+    console.log(settingsList);
+    for (var i = 1; i < settingsList.length; i++) {
+      settingsList[i].inputEnabled = true;
+      settingsList[i].anchor.setTo(.5);
+      settingsList[i].events.onInputUp.add(changeQuality, {quality: settingsList[i].text});
+    }
     settingsButton.events.onInputUp.add(shiftSettings, {menuList: menuList, settingsList:settingsList});
     creditsButton.events.onInputUp.add(clickFade, {inorout: "out", state: "Credits"});
     returnButton.events.onInputUp.add(shiftSettings, {menuList: menuList, settingsList:settingsList});
     fade("in");
+  }
+  update() {
+    if (changingQuality) {
+      returnButton.text = "Restart with " + qualitySetting + " Setting";
+    } else {
+      returnButton.text = "Return to Menu";
+    }
   }
 }
 
@@ -316,6 +344,39 @@ function clickFade(event) {
   fade(this.inorout, this.state);
 }
 
+function changeQuality() {
+  if (this.quality === "Low") {
+    globalScale = .5;
+  } else if (this.quality === "Medium") {
+    globalScale = .7;
+  } else if (this.quality === "High") {
+    globalScale = 1;
+  }
+  /*
+   C.game.ynStyle.font = 50*globalScale + 'px Poiret One'
+   C.game.smallStyle.font = 40*globalScale + 'px Poiret One'
+   C.game.textStyle.font = 50*globalScale + 'px Poiret One'
+   C.mbg.scale = 1.4*globalScale;
+   C.bg.scale = .46 * globalScale;
+   C.mech.scale = 1.3 * globalScale;
+   C.mech.battleSpacing = 100*globalScale;
+   C.mech.battleSpeed = 3*globalScale;
+   C.monster.scale = 1.3 * globalScale;
+   C.upgradeMenu.scale = 1.3 * globalScale;
+   C.destroyed.scale = 1.8 * globalScale;
+   C.game.width = 2800*globalScale;
+   C.game.height = 1280*globalScale;
+*/
+   if (localStorage && this.quality === localStorage.getItem('qualityKey')) {
+    changingQuality = false;
+   } else {
+    changingQuality = true;
+   }
+   qualitySetting = this.quality;
+   console.log("Quality changed to " + this.quality);
+}
+
+
 function fade(inorout, state) {
   console.log("Fading " + inorout);
   console.log(state);
@@ -330,15 +391,25 @@ function fade(inorout, state) {
     game.world.children[i].alpha = start;
     var fadeTween = game.add.tween(game.world.children[i]).to({alpha: end}, 1000, Phaser.Easing.Linear.None, true)
   }
-  if (state) {
+  if (state && state === "Restart") {
+    fadeTween.onComplete.add(completeKill, this);
+  } else if (state) {
     console.log(state);
     fadeTween.onComplete.add(changeState, {state: state});
   }
 }
 
+function completeKill() {
+  document.location.href = ""; 
+}
+
 function shiftSettings() {
-  //game.camera.y += game.camera.width;
     console.log("Shifting");
+    if (changingQuality === true) {
+      localStorage.setItem('quality', globalScale);
+      localStorage.setItem('qualityKey', qualitySetting);
+      fade("out","Restart");
+    }
     for (i = 0; i < this.menuList.length; i++) {
       if (!mainMenuTweens[i]|| (mainMenuTweens[i].position && mainMenuTweens[i].position === "center")) {
         mainMenuTweens[i] = game.add.tween(this.menuList[i]).to({x: this.menuList[i].x - game.width}, 700, Phaser.Easing.Back.InOut, true);
@@ -357,7 +428,6 @@ function shiftSettings() {
         settingsMenuTweens[i].position = "right";
       }
     }
-    var settingMenuTween
 }
 function changeState() {
     game.state.start(this.state);
@@ -966,7 +1036,7 @@ function setLastClicked(sprite) {
      if (buttonsList[i].alive) {
       buttonsList[i].x = game.world.centerX + game.world.width/2 - 90*globalScale;
       if (lastButton) {
-        buttonsList[i].y = lastButton.y + 90;
+        buttonsList[i].y = lastButton.y + 180*globalScale;
       } else {
         buttonsList[i].y = 140*globalScale;
       }
