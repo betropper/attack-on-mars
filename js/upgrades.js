@@ -251,7 +251,9 @@ var U = {
     "Nullifier Shield Unlock": {
       "desc": "Regenerate one hp at the start of a round.",
       "color": "yellow",
-      "cost": 8,
+      "cost": 3,
+      "unlock": true,
+      "unlockColor": "green",
       active: function(healing, stacks) {
         if (healing.hp < healing.maxhp) {
           healing.hp += stacks || 1;

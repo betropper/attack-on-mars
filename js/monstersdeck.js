@@ -159,7 +159,7 @@ var MU = {
       if (healing.hp < healing.maxhp) {
         healing.hp += stacks || 1;
         tweenTint(healing.sprite, 0xffffff, 0x98FB98, 500, true);
-        printBattleResults(monster.sprite.key + " regenerated " + (stacks || 1) + " hp.")
+        printBattleResults(healing.sprite.key + " regenerated " + (stacks || 1) + " hp.")
       }
     }
   },

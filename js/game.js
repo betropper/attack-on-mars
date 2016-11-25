@@ -1972,6 +1972,13 @@ function confirmUpgrade(player,upgradeName) {
         back.inputEnabled = true;
         back.events.onInputUp.add(upgrade, {upgrading: turn, yn: "no"});
         return;
+      } else if (consideredUpgrade.unlock) {
+        if (priceText) {
+          priceText.setText(upgradeName + " is a tier " + consideredUpgrade.cost + " unlock upgrade.\nPurchase " + (consideredUpgrade.cost - discountValue) + " more " + consideredUpgrade.unlockColor + " upgrades and " + upgradeName.replace(' Unlock','')  + " to come back and unlock this.");
+        } else {
+          priceText = game.add.text(confirmText.x, confirmText.y + 400, upgradeName + " is a tier " + consideredUpgrade.cost + " unlock upgrade.\nPurchase " + (consideredUpgrade.cost - discountValue) + " more " + consideredUpgrade.unlockColor + " upgrades and " + upgradeName.replace(' Unlock','')  + " to come back and unlock this.", C.game.smallStyle);
+          priceText.anchor.setTo(.5,.5);
+        }
       } else if (priceText) {
         priceText.setText(upgradeName + " is a tier " + consideredUpgrade.cost + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue));
       } else {
@@ -2073,11 +2080,14 @@ function changeTurn() {
         turn = playersList[turn.sprite.number + 1];
       } else if (turn && turn.sprite.number && turn.sprite.number === playerCount || turn === undefined) {
         for (i = 1; i < playersList.length; i++) {
-          if (playersList[i].upgrades.indexOf("Siege Mode") && playersList[i].canSiege === false) {
+          if (playersList[i].upgrades.indexOf("Siege Mode") > -1&& playersList[i].canSiege === false) {
             playersList[i].canSiege = true;
           }
-          if (playersList[i].upgrades.indexOf("Nullifier Shield") && playersList[i].shields === false) {
+          if (playersList[i].upgrades.indexOf("Nullifier Shield") > -1 && playersList[i].shields === false) {
             playersList[i].shields = true;
+          }
+          if (playersList[i].upgrades.indexOf("Nullifier Shield Unlock") > -1 ) {
+            U["Nullifier Shield Unlock"].active(playersList[i],1);
           }
         }
         turn = playersList[1];
