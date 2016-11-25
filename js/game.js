@@ -1848,7 +1848,6 @@ function move(object,destination,escaping) {
       repairing.hp = repairing.maxhp;
       tweenTint(repairing.sprite, 0xffffff, 0x98FB98, 500, true);
       actionPoints -= 1;
-      repairText.kill();
       repairButton.kill();
     }
   }
