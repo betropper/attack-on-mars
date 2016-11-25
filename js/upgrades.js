@@ -261,5 +261,15 @@ var U = {
           //printBattleResults(healing.sprite.key + " regenerated " + (stacks || 1) + " hp.")
         }
       }
+  },
+  "Obliteration Ray": {
+    "desc": "Spend an action to place an Obliteration Ray in an adjacent space.\nThis ray fires in a row after monsters spawn, dealing 3 defendable damage to anything in the row.",
+    "color": "purple",
+    "cost": 8
+  },
+  "Fusion Cannon": {
+    "desc": "Spend an action to attack an adjacent monster with Red Die. This cannot cause counter damage.",
+    "color": "red",
+    "cost": 8
   }
 }

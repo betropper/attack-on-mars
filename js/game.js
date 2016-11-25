@@ -517,9 +517,15 @@ class Setup {
       closestSpaces = getClosestSpaces(playersList[i].key);
       playersList[i].sprite.closestSpaces = closestSpaces;
       playersList[i].sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
-      monstersList[i-1] = spawnRandom("monster", i, "3", true);
-      monstersList[i-1].sprite.number = i - 1;
-
+    }
+    for (var i = 0; i <= 5; i++) {
+      if (i <= 3) {
+        monstersList[i] = spawnRandom("monster", i + 1, "3");
+        monstersList[i].sprite.number =  i;
+      } else {
+        monstersList[i] = spawnRandom("monster", "random", "3");
+        monstersList[i].sprite.number =  i;
+      }
     }
     turn = playersList[1];
     turn.sprite.inputEnabled = true;
@@ -1392,6 +1398,11 @@ function handleDeath(damaged,survivor) {
   console.log("DED with " + damaged.hp);
   scrubList(globalList);
   if (damaged === battlePlayer) {
+    if (damaged.key.charAt(2) === "0") {
+      var destroyedCityColumn = spawnSpecific("destroyedCity", newDestination);
+      destroyedCities.push(destroyedCityColumn);
+      occupiedRows.push(destroyedCityColumn.key.substring(0,2));
+    }
     focusSpace.occupied = removeFromList(playersList[battlePlayer.sprite.number], focusSpace);
     playersList[damaged.sprite.number].sprite.kill();
     var destroyedPlayers = 0;
@@ -2265,16 +2276,22 @@ function getRandomSpace() {
 
 function spawnRandom(object,quadrant,row,occupiedCheck) {
   var condition = true;
-  while (condition === true) {
-      var space = getRandomSpace();
+  var failSafe = 1;
+  while (condition === true && failSafe < 2000) {
+    failSafe += 1;
+    var space = getRandomSpace();
     if (quadrant === "random" && occupiedCheck === true) {
-        condition = space.key.indexOf("0") || selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1; 
+        if (row === "random") {
+          condition = space.key.indexOf("0") || space.selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1;
+        } else {
+          condition = space.key.indexOf("0") || space.selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1 || space.key.charAt(2) != "3";
+        }
     } else if (quadrant && row && occupiedCheck === true) {
         var chr = String.fromCharCode(96 + quadrant);
-        condition = space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0 || selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1;
+        condition = space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0 || space.selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1;
     } else if (quadrant && row && quadrant === "random") {
         var chr = String.fromCharCode(96 + Math.floor(Math.random() * (playerCount)) + 1);
-        condition = space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0 || selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1;
+        condition = space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0 || space.selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1;
     } else if (quadrant === "random") {
         condition = space.key.indexOf("0");
     } 
@@ -2359,6 +2376,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
   } else if (object === "monster") {
     threatLevel += 1;
     game.world.bringToTop(random);
+    occupiedRows.push(space.key.substring(0,2));
     obj.sprite.inputEnabled = true;
     obj.batkGoal = 5;
     obj.ratkGoal = 5;
