@@ -904,6 +904,23 @@ function shrinkSprite(sprite) {
  }
 }
 
+function tweenTint(obj, startColor, endColor, time, yoyo) {
+  // create an object to tween with our step value at 0   
+  var colorBlend = {step: 0};
+  // create the tween on this object and tween its step property to 100
+  var colorTween = game.add.tween(colorBlend).to({step: 100}, time);
+  // run the interpolateColor function every time the tween updates, feeding it the updated value of our tween each time, and set the result as our tint
+  colorTween.onUpdateCallback(function() { 
+    obj.tint = Phaser.Color.interpolateColor(startColor, endColor, 100, colorBlend.step);
+  });
+  // set the object to the start color straight away
+  obj.tint = startColor;
+  // start the tween
+  colorTween.start();
+  if (yoyo) {
+    colorTween.yoyo(true);
+  }
+}
 function zoomWorld() {
  if (this.zoomScale) {
   var scaleTween = game.add.tween(game.world.scale).to( { x: this.zoomScale, y: this.zoomScale }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
@@ -1332,14 +1349,16 @@ function attack(attacker,defender) {
   var defences = rollDie(defender.def, defender.defGoal || 5);
   console.log(defender.sprite.key + " defended " + defences + " hit/hits!");
   if (successes > defences) {
-    defender.hp -= successes - defences;
-    var damaged = defender;
     var damageTaken = successes - defences;
+    damageTaken = shieldDamage(defender,damageTaken)
+    defender.hp -= damageTaken;
+    var damaged = defender;
     var text = defender.sprite.key + " took " + damageTaken.toString() + " damage from " + attacker.sprite.key + ".";
   } else if (defences > successes) {
-    attacker.hp -= defences - successes;
-    var damaged = attacker;
     var damageTaken = defences - successes;
+    damageTaken = shieldDamage(attacker,damageTaken)
+    attacker.hp -= damageTaken;
+    var damaged = attacker;
     var text = attacker.sprite.key + " took " + damageTaken.toString() + " damage from " + defender.sprite.key + " defences!";
   } else {
     var damaged = undefined;
@@ -1400,6 +1419,15 @@ function handleDeath(damaged,survivor) {
   }
   finishBattle();
 
+}
+
+function shieldDamage(obj,damage) {
+  if (obj.upgrades.indexOf("Nullifier Shield") > -1 && obj.shields === true) {
+    damage -= 1;
+    printBattleResults(obj.sprite.key + " blocked 1 damage with Nullifier Shield.");
+    obj.shields = false;
+  }
+  return damage;
 }
 
 function resetDie(player,monster) {
@@ -1877,7 +1905,7 @@ function chooseUpgrade(event) {
     console.log(event.worldX + " " + event.worldY);
     if (event.worldX > x1 && event.worldX < x2 && event.worldY > y1 && event.worldY < y2 ){
       var options = ["Electric Fists","Targeting Computer","Siege Mode","Nullifier Shield","The Payload",
-        "Bigger Fists","Weakpoint Analysis","Weaponized Research","Nullifier Shield","The Payload",
+        "Bigger Fists","Weakpoint Analysis","Weaponized Research","Nullifier Shield Unlock","The Payload",
         "Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Gast",
         "More Armor","Field Repair","Even More Armor","Obliteration Ray","Super Go Fast",
         "5D Accelerators","Autododge","Emergency Jump Jets","Fusion Cannon","Mind-Machine Interface",
@@ -2047,6 +2075,9 @@ function changeTurn() {
         for (i = 1; i < playersList.length; i++) {
           if (playersList[i].upgrades.indexOf("Siege Mode") && playersList[i].canSiege === false) {
             playersList[i].canSiege = true;
+          }
+          if (playersList[i].upgrades.indexOf("Nullifier Shield") && playersList[i].shields === false) {
+            playersList[i].shields = true;
           }
         }
         turn = playersList[1];

@@ -237,5 +237,27 @@ var U = {
       "cost": 6,
       passive: function(player) {
       }
-    }
+    },
+    
+    "Nullifier Shield": {
+      "desc": "Ignore the first point of damage you take in a round.",
+      "color": "yellow",
+      "cost": 8,
+      passive: function(player) {
+        player.shields = true
+      }
+    },
+
+    "Nullifier Shield Unlock": {
+      "desc": "Regenerate one hp at the start of a round.",
+      "color": "yellow",
+      "cost": 8,
+      active: function(healing, stacks) {
+        if (healing.hp < healing.maxhp) {
+          healing.hp += stacks || 1;
+          tweenTint(healing.sprite, 0xffffff, 0x98FB98, 500, true);
+          //printBattleResults(healing.sprite.key + " regenerated " + (stacks || 1) + " hp.")
+        }
+      }
+  }
 }

@@ -141,17 +141,24 @@ var MU = {
     "desc": "Both Monster and Mech suffer 1 point of damage after combat",
     "cost": 1,
     active(attacker,defender,stacks) {
-      attacker.hp -= stacks || 1;
-      defender.hp -= stacks || 1;
-      printBattleResults(attacker.sprite.key + " poisoned itself and " + defender.sprite.key + " for " + (stacks || 1) + " damage!");
+      var attackerDamage = stacks;
+      var defenderDamage = shieldDamage(defender,stacks);
+      attacker.hp -= attackerDamage
+      defender.hp -= defenderDamage;
+      if (attackerDamage === defenderDamage) {
+        printBattleResults(attacker.sprite.key + " poisoned itself and " + defender.sprite.key + " for " + (stacks || 1) + " damage.");
+      } else {
+        printBattleResults(attacker.sprite.key + " poisoned itself for " + attackerDamage + " damage, and " + defender.sprite.key + " for " + defenderDamage + " damage.");
+      }
     }
   },
   "Regeneration": {
     "desc": "Before attacking, this monster regenerates 1 hp.",
     "cost": 4,
     active: function(healing, stacks) {
-      if (healing.hp > healing.maxhp) {
+      if (healing.hp < healing.maxhp) {
         healing.hp += stacks || 1;
+        tweenTint(healing.sprite, 0xffffff, 0x98FB98, 500, true);
         printBattleResults(monster.sprite.key + " regenerated " + (stacks || 1) + " hp.")
       }
     }
