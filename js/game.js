@@ -107,7 +107,9 @@ var focusX,
  settingsMenuTweens = [],
  bossSprite,
  fortifiedList = [],
- changingQuality;
+ changingQuality,
+ hoverSprite,
+ actionIcons;
 var boss = {};
 var battleSpeedDecrease = 0;
 var boughtBool;
@@ -142,10 +144,10 @@ var playerNames = [First,Second,Third,Fourth];
 var playerCount = 2;
 var turn;
 var actionPoints = 3;
+var actionPointsRecord = 3;
 var closestSpaces;
 var monstersList = [];
 var globalList = [];
-var spaceDisplay;
 var attributeDisplay;
 var destroyedCities = [];
 var obj_keys = Object.keys(Space);
@@ -168,6 +170,10 @@ var buttonsList = [];
 var buttonsTextList = [];
 var priceText;
 var tempFocus;
+var batkDisplay;
+var ratkDisplay;
+var defDisplay;
+
 class Boot {
   init() {
 
@@ -533,9 +539,7 @@ class Setup {
     closestSpaces = getClosestSpaces(turn.key);
     turn.sprite.closestSpaces = closestSpaces;
     // Add in text that is displayed.
-    spaceDisplay = game.add.text(game.world.centerX + game.world.width/4, game.world.centerY - game.world.height/3,"Valid Movements for " + turn.sprite.key +":\n" + turn.sprite.closestSpaces.keys.join(" "),C.game.textStyle);
-    attributeDisplay = game.add.text(spaceDisplay.x, spaceDisplay.y + 300*globalScale, "", C.game.textStyle);
-    spaceDisplay.anchor.setTo(.5); 
+    attributeDisplay = game.add.text(game.world.centerX + game.world.width/4, game.world.centerY - game.world.height/3 + 300*globalScale, "", C.game.textStyle);
     attributeDisplay.anchor.setTo(.5);
     upgradeDisplay = game.add.text(attributeDisplay.x, attributeDisplay.y + 450*globalScale, "", C.game.textStyle);
     upgradeDisplay.anchor.setTo(.5);
@@ -553,7 +557,7 @@ class Setup {
     waitButton.battleButton = false;
     buttonsList.push(waitButton);
     game.world.bringToTop(waitButton);
-    upgradeButton = game.add.sprite(waitButton.x, waitButton.y + 180*globalScale, turn.sprite.key);
+    upgradeButton = game.add.sprite(0, game.bg.width, turn.sprite.key);
     upgradeButton.anchor.set(0.5);
     upgradeButton.inputEnabled = true;
     upgradeButton.width = 160*globalScale;
@@ -561,6 +565,8 @@ class Setup {
     upgradeButton.battleButton = false;
     buttonsList.push(upgradeButton);
     upgradeButton.events.onInputUp.add(upgrade, {upgrading: turn});
+    actionIcons = game.add.group()
+
     fade("in");  
   }
   update() {
@@ -748,15 +754,23 @@ class Setup {
     // set a minimum and maximum scale value
     //worldScale = Phaser.Math.clamp(worldScale, 1, C.game.zoomScale);
     //game.world.scale.set(worldScale);
-    if (spaceDisplay) {
-      spaceDisplay.setText("Valid Movements for " + turn.sprite.key + ":\n " + turn.sprite.closestSpaces.keys.join(" ") + "\nRemaining Moves: " + actionPoints,C.game.textStyle);
+    if (hoverSprite && actionPointsRecord != actionPoints) {
+      if (actionPointsRecord != actionPoints) {
+         actionIcons.children[actionPointsRecord-1].kill();
+         actionPointsRecord -= 1;
+         if (actionPointsRecord === 0) {
+          actionPointsRecord = 3;
+          actionIcons.callAll('revive');
+         }
+      }
     }
     for (var i = 0; i < globalList.length; i++) {
       if (globalList[i].sprite.input && globalList[i].sprite.input.pointerOver()) {
         var over = globalList[i]; 
       } 
     }
-    if (over) { 
+    if (over) {
+      setAttributeDisplay(over); 
       if (playerNames.indexOf(over.sprite.key) > -1) {
         attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + " / " + over.maxhp + "\nDefence Die (green): " + over.def + "\nRed Attack Die: " + over.ratk + "\nBlue Attack Die: " + over.batk + "\nResearch Points: " + over.rp);
         /*if (attributeDisplay.text && lastClicked !== undefined && repairText && attributeDisplay.text.indexOf(lastClicked.sprite.key) === -1) {
@@ -779,6 +793,46 @@ class Setup {
   }
 }
 
+function setAttributeDisplay(obj) {
+ if (obj.sprite.key === "monster") {
+    var spriteName = obj.sprite.spriteName;
+ } else {
+    var spriteName = obj.sprite.key;
+  }
+  if (!hoverSprite) {
+    hoverSprite = game.add.sprite(game.bg.width,0,spriteName);
+   //if (obj.addHoverInfo) {
+    if (hoverSprite.key === "The Bloat") {
+      hoverSprite.scale.setTo( .16*globalScale);
+    } else {
+      hoverSprite.scale.setTo(2*globalScale);
+    }
+    batkDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width, hoverSprite.y,5,"batk","batkGoal");
+    ratkDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width, hoverSprite.y + batkDisplay.valueIcon.width,4,"ratk","ratkGoal");
+    defDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 250*globalScale, hoverSprite.y,7,"def","defGoal");
+    for (i = 0; i < 3; i++) {
+      var actionPoint = actionIcons.create(ratkDisplay.valueIcon.x + 250*globalScale + (i*(55*globalScale)), ratkDisplay.valueIcon.y + 30*globalScale,'icons',0);
+        actionPoint.scale.setTo(.6*globalScale);
+    }
+
+   //}
+ } else {
+   hoverSprite.loadTexture(spriteName);
+   updateInfoDisplays(obj);
+ }
+  if (hoverSprite.key === "The Bloat") {
+    hoverSprite.scale.setTo( .16*globalScale);
+  } else {
+    hoverSprite.scale.setTo(2*globalScale);
+  }
+}
+
+function updateInfoDisplays(obj) {
+   ratkDisplay.update(obj);
+   batkDisplay.update(obj);
+   defDisplay.update(obj);  
+}
+
 function allowBattle() {
   battlePlayer.sprite.events.onDragStop._bindings = [];
   battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
@@ -798,6 +852,47 @@ function addBattleText(text, action, modifier) {
   battleTexts.push(battleText);
 }
 //'value' is the name of the changed value as a string.
+
+function addHoverInfo(x,y,frame,value,secondaryValue) {
+  var valueIcon = game.add.sprite(x, y, 'icons',frame);
+  valueIcon.scale.setTo(.7*globalScale);
+  if (this[value]) {
+  var valueDisplay = game.add.bitmapText(valueIcon.x + valueIcon.width, valueIcon.y + valueIcon.height/3, 'attackfont', this[value] || 0, 50*globalScale);
+  } else {
+  var valueDisplay = game.add.bitmapText(valueIcon.x + valueIcon.width, valueIcon.y + valueIcon.height/3, 'attackfont', "0", 50*globalScale);
+  }
+  infoDescObj = {
+    parent: this,
+    valueIcon: valueIcon,
+    valueDisplay: valueDisplay,
+    value: value,
+    secondaryValue,
+    valueName: value.toString(),
+  }  
+  if (secondaryValue && infoDescObj.parent[value]) {
+    infoDescObj.valueDisplay.text = infoDescObj.parent[value].toString() + " [" + infoDescObj.parent[secondaryValue].toString() + "]";
+  } else if (!infoDescObj.parent[infoDescObj.valueName]) {
+    infoDescObj.valueDisplay.text = "";
+   }
+  infoDescObj.update = function(obj) {
+    this.parent = obj;
+    if (obj[this.valueName]) {
+      if (this.value != obj[this.valueName].toString()) {
+        this.value = obj[value].toString();
+        this.valueDisplay.text = obj[value].toString();
+        if (this.secondaryValue) {
+          this.valueDisplay.text = obj[value].toString() + " [" + obj[secondaryValue].toString() + "]";
+          console.log(this.valueDisplay.text);
+        }
+      }
+    } else {
+      this.valueDisplay.text = "0";
+      this.value = 0;
+    }
+  }
+  return infoDescObj
+}
+
 function addBattleInfo(text, frame, value, secondaryValue) {
   if (playersList.indexOf(this) > -1) {
     var x = playerBattleTexts.x;
@@ -871,7 +966,6 @@ function spawnBoss() {
   boss.maxhp = drawnMonster.hp;
   boss.upgrades = drawnMonster.upgrades;
   boss.batkGoal = 5;
-  boss.ratkGoal = 5;
   boss.defGoal = 5;
   for (i = 0; i < boss.upgrades.length; i++) {
     if (MU[boss.upgrades[i]] && MU[boss.upgrades[i]].passive) {
@@ -891,8 +985,8 @@ function spawnBoss() {
     var bossScaleTween = game.add.tween(boss.sprite.scale).to({x: .96*globalScale, y: .96*globalScale}, 500, Phaser.Easing.Back.InOut, true);
     bossScaleTween.onComplete.add(shakeSprite,{sprite: boss.sprite});
   }
-  boss.sprite.inputEnabled = true;
   boss.addBattleInfo = addBattleInfo;
+  boss.addHoverInfo = addHoverInfo;
   globalList.push(boss);
 }
 
@@ -908,7 +1002,14 @@ function shrinkSprite(sprite) {
  if (sprite.key === "The Bloat") {
    var bossScaleTween = game.add.tween(boss.sprite.scale).to({x: .16*globalScale, y: .16*globalScale}, 500, Phaser.Easing.Back.InOut, true);
  }
+  bossScaleTween.onComplete.add(enableBossInput, {boss: boss});
 }
+
+function enableBossInput(boss) {
+ this.boss.sprite.inputEnabled = true; 
+
+}
+
 
 function tweenTint(obj, startColor, endColor, time, yoyo) {
   // create an object to tween with our step value at 0   
@@ -1185,7 +1286,6 @@ var actionPoints = 3;
 var closestSpaces;
 var monstersList = [];
 var globalList = [];
-var spaceDisplay;
 var attributeDisplay;
 var destroyedCities = [];
 var obj_keys = Object.keys(Space);
@@ -1560,7 +1660,6 @@ function updateRollText(rolling,type) {
   } else {
     var rollingCount = rolling[type]
   }
-console.log(rollingCount);
   var hits = 0;
   var diceKeys = {
     "batk": "Blue Attack",
@@ -1705,9 +1804,6 @@ function battle(player, monster) {
             }
           }
         }
-          
-
-          
           if (parseInt(monstersList[i].key.charAt(2)) !== 0 && parseInt(newDestination.charAt(2)) === 0) {
             if (Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined) {
               console.log("U R DED");
@@ -1793,6 +1889,7 @@ function chase() {
 
 function move(object,destination,escaping) {
   console.log(object);
+  game.input.enabled = false;
   if (playersList.indexOf(object) > -1) {
     setLastClicked(object.sprite);
   }
@@ -1802,10 +1899,11 @@ function move(object,destination,escaping) {
   if (escaping) {
     if (escaping === "running") {
       var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
-      //moveTween.onComplete.add();
+      moveTween.onComplete.add(reEnable,this);
       return;
     } else if (escaping === "chasing") {
       var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
+      moveTween.onComplete.add(reEnable,this);
       return;
     }
   } 
@@ -1816,6 +1914,7 @@ function move(object,destination,escaping) {
     if (Space[destination].wall) {
       var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
       moveTween.onComplete.add(destroyWall,{wallSpace: Space[destination], formerSpace: object.space, object: object});
+      moveTween.onComplete.add(reEnable,this);
       return
     } else if (Space[destination].mine) {
       object.hp -= 1;
@@ -1826,11 +1925,13 @@ function move(object,destination,escaping) {
         /*PLACE TWEEN HERE*/
         var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
         moveTween.onComplete.add(explode, {sprite: object.sprite, mineSpace: Space[destination]})
+        moveTween.onComplete.add(reEnable,this);
         return
       }
       console.log("BOOM!");
     }
     var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
+    moveTween.onComplete.add(reEnable,this);
     for (i = 1; i < playersList.length; i++) {
       if (playersList[i] && playersList[i].sprite) {
         playersList[i].sprite.inputEnabled = false;
@@ -1848,11 +1949,16 @@ function move(object,destination,escaping) {
   game.world.bringToTop(object.sprite); 
   if (playersList.indexOf(object) > -1) {
     checkBattle(Space[object.key]);
+    game.input.enabled = true;
   } else {
       moveTween.onComplete.add(checkBattle, {space:Space[object.key]});
+      moveTween.onComplete.add(reEnable,this);
     }
   }
 
+function reEnable() {
+   game.input.enabled = true;
+}
   function repair(repairing) {
     var repairing = this.repairing || repairing;
     if (repairing.hp < repairing.maxhp) {
@@ -2386,6 +2492,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
   };
   globalList.push(obj);
   obj.addBattleInfo = addBattleInfo;
+  obj.addHoverInfo = addHoverInfo
   if (space.selectedSpace.occupied === false) {
     space.selectedSpace.occupied = [obj];
   } else {
