@@ -1178,7 +1178,6 @@ function setLastClicked(sprite) {
    }
   } else if (sprite.key === "monster") {
     if (repairText) {
-      repairText.kill();
       //buttonsList.splice(repairButton, 1);
       repairButton.kill();
     }
@@ -1757,7 +1756,7 @@ function battle(player, monster) {
   function waitOneAction() {
     actionPoints -= 1;
     if (lastClicked && lastClicked.canRepair) {
-      repair(lastClicked); 
+      repair(lastClicked,1); 
     }
   }
 
@@ -1959,15 +1958,20 @@ function move(object,destination,escaping) {
 function reEnable() {
    game.input.enabled = true;
 }
-  function repair(repairing) {
-    var repairing = this.repairing || repairing;
-    if (repairing.hp < repairing.maxhp) {
+
+function repair(repairing, amount) {
+  var repairing = this.repairing || repairing;
+  if (repairing.hp < repairing.maxhp) {
+    if (amount) {
+      repairing.hp += 1;
+    } else {
       repairing.hp = repairing.maxhp;
-      tweenTint(repairing.sprite, 0xffffff, 0x98FB98, 500, true);
-      actionPoints -= 1;
       repairButton.kill();
+      actionPoints -= 1;
     }
   }
+    tweenTint(repairing.sprite, 0xffffff, 0x98FB98, 500, true);
+}
 
   function upgrade(upgrading) {
     var upgrading = this.upgrading || upgrading 
@@ -2007,11 +2011,10 @@ function reEnable() {
           }
         }
         boughtBool = true;
-    }
+      }
+      setAttributeDisplay(upgrading);
     }
     console.log("Upgrading " + upgrading.sprite.key);
-    //upgradeText.kill();
-    menuBar.kill();
     if (!upgradeMenu) {
     upgradeMenu = game.add.sprite(game.world.centerX, game.world.centerY + C.game.height/2 + (C.upgradeMenu.height*C.upgradeMenu.scale)/2 + 200*globalScale, 'upgradeMat');
     upgradeMenu.anchor.setTo(.5,.5);
