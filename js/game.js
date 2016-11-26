@@ -424,7 +424,7 @@ function shiftSettings() {
       } else if (mainMenuTweens[i].position === "left") {
         mainMenuTweens[i] = game.add.tween(this.menuList[i]).to({x: this.menuList[i].x + game.width}, 700, Phaser.Easing.Back.InOut, true);
         mainMenuTweens[i].position = "center";
-        mainMenuTweens[i].onComplete.add(reEnable,this);
+        mainMenuTweens[i].onComplete.add(reEnableInput,this);
       }
       mainMenuTweens[i].inputEnabled = false;
     }
@@ -435,13 +435,13 @@ function shiftSettings() {
       } else if (settingsMenuTweens[i].position === "center") {
         settingsMenuTweens[i] = game.add.tween(this.settingsList[i]).to({x: this.settingsList[i].x + game.width}, 700, Phaser.Easing.Back.InOut, true);
         settingsMenuTweens[i].position = "right";
-        settingsMenuTweens[i].onComplete.add(reEnable,this);
+        settingsMenuTweens[i].onComplete.add(reEnableInput,this);
       }
       settingsMenuTweens[i].inputEnabled = false;
     }
 }
 
-function reEnable() {
+function reEnableInput() {
   this.inputEnabled = true;
 }
 
@@ -755,13 +755,9 @@ class Setup {
     //worldScale = Phaser.Math.clamp(worldScale, 1, C.game.zoomScale);
     //game.world.scale.set(worldScale);
     if (hoverSprite && actionPointsRecord != actionPoints) {
-      if (actionPointsRecord != actionPoints) {
+      if (actionPointsRecord != actionPoints && actionPointsRecord != 0) {
          actionIcons.children[actionPointsRecord-1].kill();
          actionPointsRecord -= 1;
-         if (actionPointsRecord === 0) {
-          actionPointsRecord = 3;
-          actionIcons.callAll('revive');
-         }
       }
     }
     for (var i = 0; i < globalList.length; i++) {
@@ -1957,6 +1953,8 @@ function move(object,destination,escaping) {
 
 function reEnable() {
    game.input.enabled = true;
+   actionIcons.callAll('revive');
+   actionPointsRecord = 3;
 }
 
 function repair(repairing, amount) {
