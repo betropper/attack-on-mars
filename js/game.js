@@ -1956,6 +1956,7 @@ function confirmUpgrade(player,upgradeName) {
       for (i = 0; i < player.colorDiscounts.length; i++) {
         if (player.colorDiscounts[i].color === consideredUpgrade.color) {
           var discountValue = player.colorDiscounts[i].discount;
+          console.log(discountValue);
           break
         }
       }
@@ -1984,6 +1985,13 @@ function confirmUpgrade(player,upgradeName) {
         back.events.onInputUp.add(upgrade, {upgrading: turn, yn: "no"});
         return;
       } else if (consideredUpgrade.unlock) {
+        for (i = 0; i < player.colorDiscounts.length; i++) {
+          if (player.colorDiscounts[i].color === consideredUpgrade.unlockColor) {
+            discountValue = player.colorDiscounts[i].discount;
+            console.log(discountValue);
+            break
+          }
+        }
         if (priceText) {
           priceText.setText(upgradeName + " is a tier " + consideredUpgrade.cost + " unlock upgrade.\nPurchase " + (consideredUpgrade.cost - discountValue) + " more " + consideredUpgrade.unlockColor + " upgrades and " + upgradeName.replace(' Unlock','')  + " to come back and unlock this.");
         } else {
