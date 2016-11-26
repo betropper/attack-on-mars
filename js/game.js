@@ -1868,6 +1868,7 @@ function move(object,destination,escaping) {
     confirmState = false;
     if (this.yn) {
         var boughtUpgrade = U[this.boughtUpgrade];
+        var unlocks = ["Nullifier Shield", "Obliteration Ray", "Fusion Cannon", "The Payload", "Super Go Fast", "Mind-Machine Interface"];
         if (this.yn === "yes" && boughtUpgrade) {
           if (boughtUpgrade.passive) {
             boughtUpgrade.passive(upgrading);
@@ -1881,13 +1882,26 @@ function move(object,destination,escaping) {
                 }
             }
           }
+
           if ((boughtUpgrade.cost - discountValue) > 0) {
             upgrading.rp -= (boughtUpgrade.cost - discountValue);
             console.log("cost was " + (boughtUpgrade.cost-discountValue));
           }
-          turn.upgrades.push(this.boughtUpgrade);
-          boughtBool = true;
+          upgrading.upgrades.push(this.boughtUpgrade);
+          for (u = 0; u < unlocks.length; u++) {
+            if (upgrading.upgrades.indexOf(unlocks[u]) > -1 && upgrading.upgrades.indexOf(unlocks[u]+" Unlock") === -1 ) {
+              for (i = 0; i < upgrading.colorDiscounts.length; i++) {
+                if (upgrading.colorDiscounts[i].color === U[unlocks[u]+" Unlock"].unlockColor && upgrading.colorDiscounts[i].discount >= 3) { 
+                  if (U[unlocks[u]+" Unlock"].passive) {
+                    U[unlocks[u]+" Unlock"].passive(upgrading);
+                  }
+                  upgrading.upgrades.push(unlocks[u]+" Unlock");
+                }
+              }
+          }
         }
+        boughtBool = true;
+    }
     }
     console.log("Upgrading " + upgrading.sprite.key);
     //upgradeText.kill();
@@ -1993,11 +2007,21 @@ function confirmUpgrade(player,upgradeName) {
           }
         }
         if (priceText) {
-          priceText.setText(upgradeName + " is a tier " + consideredUpgrade.cost + " unlock upgrade.\nPurchase " + (consideredUpgrade.cost - discountValue) + " more " + consideredUpgrade.unlockColor + " upgrades and " + upgradeName.replace(' Unlock','')  + " to come back and unlock this.");
+          priceText.setText(upgradeName + " is a tier " + consideredUpgrade.cost + " unlock upgrade.\nPurchase " + (consideredUpgrade.cost - discountValue) + " more " + consideredUpgrade.unlockColor + " upgrades and " + upgradeName.replace(' Unlock','')  + " to unlock this.");
         } else {
-          priceText = game.add.text(confirmText.x, confirmText.y + 400, upgradeName + " is a tier " + consideredUpgrade.cost + " unlock upgrade.\nPurchase " + (consideredUpgrade.cost - discountValue) + " more " + consideredUpgrade.unlockColor + " upgrades and " + upgradeName.replace(' Unlock','')  + " to come back and unlock this.", C.game.smallStyle);
+          priceText = game.add.text(confirmText.x, confirmText.y + 400, upgradeName + " is a tier " + consideredUpgrade.cost + " unlock upgrade.\nPurchase " + (consideredUpgrade.cost - discountValue) + " more " + consideredUpgrade.unlockColor + " upgrades and " + upgradeName.replace(' Unlock','')  + " to unlock this.", C.game.smallStyle);
           priceText.anchor.setTo(.5,.5);
         }
+        var back = game.add.text(confirmText.x, priceText.y + 100, "Back", C.game.ynStyle);
+        for (i = 0; i < game.world.children.length; i++) {
+          if (game.world.children[i].text && (game.world.children[i].text === "Yes"  || game.world.children[i].text === "No")) {
+            game.world.children[i].destroy();
+          }
+        }
+        back.anchor.setTo(.5,.5);
+        back.inputEnabled = true;
+        back.events.onInputUp.add(upgrade, {upgrading: turn, yn: "no"});
+        return;
       } else if (priceText) {
         priceText.setText(upgradeName + " is a tier " + consideredUpgrade.cost + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue));
       } else {
