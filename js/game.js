@@ -93,8 +93,8 @@ var C = {
  
  },
  "icons": {
-  "width": (953/7),
-  "height": (535/3)
+  "width": (1397/7),
+  "height": (1050/3)
  }
 }
 var bossNames = ["The Bloat","The Deciever","The Brute"] 
@@ -216,7 +216,7 @@ class Load {
     var loadingText = game.add.bitmapText(game.world.centerX, game.world.centerY, 'attackfont', "Loading", 120*globalScale);
     loadingText.anchor.setTo(.5);
     console.log("Loading.");
-    this.load.spritesheet('icons', "assets/Icons1.png", C.icons.width, C.icons.height)
+    this.load.spritesheet('icons', "assets/Icons.png", C.icons.width, C.icons.height)
     this.load.image("upgradeMat","assets/UpgradeMat.png",469,676);
     this.load.image("gameboard",C.bg.file,C.bg.width,C.bg.height);
     this.load.image("background",C.mbg.file,C.mbg.width,C.mbg.height);
