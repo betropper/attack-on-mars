@@ -217,7 +217,7 @@ class Load {
     loadingText.anchor.setTo(.5);
     console.log("Loading.");
     //this.load.spritesheet('icons', "assets/Icons.png", C.icons.width, C.icons.height)
-    game.load.atlasJSONArray('icons', 'assets/Icons.png', 'assets/Icons.json');
+    game.load.atlasJSONArray('icons', 'assets/Icons.png', 'assets/icons.json');
     this.load.image("upgradeMat","assets/UpgradeMat.png",469,676);
     this.load.image("gameboard",C.bg.file,C.bg.width,C.bg.height);
     this.load.image("background",C.mbg.file,C.mbg.width,C.mbg.height);
@@ -809,11 +809,8 @@ function setAttributeDisplay(obj) {
     ratkDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width, hoverSprite.y + batkDisplay.valueIcon.width,4,"ratk","ratkGoal");
     defDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 250*globalScale, hoverSprite.y,7,"def","defGoal");
     rpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width, hoverSprite.y + batkDisplay.valueIcon.width*2,6,"rp");
-    var cropRect = new Phaser.Rectangle(10, 0, rpDisplay.valueIcon.width+20, rpDisplay.valueIcon.height);
-    rpDisplay.valueIcon.crop(cropRect);
-    
     for (i = 0; i < 3; i++) {
-      var actionPoint = actionIcons.create(ratkDisplay.valueIcon.x + 250*globalScale + (i*(55*globalScale)), ratkDisplay.valueIcon.y + 30*globalScale,'icons','0');
+      var actionPoint = actionIcons.create(ratkDisplay.valueIcon.x + 250*globalScale + (i*(55*globalScale)), ratkDisplay.valueIcon.y + 30*globalScale,'icons',0);
         actionPoint.scale.setTo(.6*globalScale);
     }
 
@@ -857,8 +854,8 @@ function addBattleText(text, action, modifier) {
 //'value' is the name of the changed value as a string.
 
 function addHoverInfo(x,y,frame,value,secondaryValue) {
-  var valueIcon = game.add.sprite(x, y, 'icons',frame.toString());
-  valueIcon.scale.setTo(.7*globalScale);
+  var valueIcon = game.add.sprite(x, y, 'icons',frame);
+  valueIcon.scale.setTo(.5*globalScale);
   if (this[value]) {
   var valueDisplay = game.add.text(valueIcon.x + valueIcon.width, valueIcon.y + valueIcon.height/3, this[value] || 0, C.game.textStyle);
   } else {
@@ -926,9 +923,8 @@ function addBattleInfo(text, frame, value, secondaryValue) {
     }
     var valueDisplay = game.add.bitmapText(x - 150*globalScale + 20*globalScale,iconY, 'attackfont', this[value], 20*globalScale);
   }
-  var valueIcon = game.add.sprite(iconX - 20*globalScale,iconY, 'icons',frame.toString());
+  var valueIcon = game.add.sprite(iconX - 20*globalScale,iconY, 'icons',frame);
   valueIcon.scale.setTo(.25*globalScale);
-  valueIcon.frame = frame;
   valueDisplay.anchor.setTo(.5);
   valueIcon.anchor.setTo(.5);
   console.log(value);
