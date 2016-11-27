@@ -1208,7 +1208,7 @@ function winGame(winner) {
   playerBattleTexts = [];
   monsterBattleTexts = [];
   if (focusSpace.occupied && focusSpace.occupied !== false) {
-    scrubList(focusSpace.occupied);
+    focusSpace.occupied = scrubList(focusSpace.occupied);
   }
   for (i = 1; i < playersList.length; i++) {
     playersList[i].sprite.inputEnabled = true;
@@ -1303,11 +1303,13 @@ var buttonsList = [];
 }
 
 function scrubList(list) {
+  var tempList = []
   for (i = 0; i < list.length; i++) {
-    if (!list[i] || list[i].hp && list[i].hp <= 0) {
-      list.splice(list[i],1);
+    if (list[i] && list[i].hp > 0) {
+      tempList.push(list[i]);
     }
   }
+  return tempList;
 }
 
 function attachToCamera(obj) {
@@ -1491,14 +1493,14 @@ function handleDeath(damaged,survivor) {
   }
   battlePlayer.attacking = false;
   console.log("DED with " + damaged.hp);
-  scrubList(globalList);
+  globalList = scrubList(globalList);
   if (damaged === battlePlayer) {
     if (damaged.key.charAt(2) === "0") {
       var destroyedCityColumn = spawnSpecific("destroyedCity", newDestination);
       destroyedCities.push(destroyedCityColumn);
       occupiedRows.push(destroyedCityColumn.key.substring(0,2));
     }
-    focusSpace.occupied = removeFromList(playersList[battlePlayer.sprite.number], focusSpace);
+    focusSpace.occupied = scrubList(focusSpace.occupied);
     playersList[damaged.sprite.number].sprite.kill();
     var destroyedPlayers = 0;
     for (var i = 1; i < playersList.length; i++) {
@@ -1512,7 +1514,7 @@ function handleDeath(damaged,survivor) {
       game.state.start("GameOver");
     }
   } else if (damaged === battleMonster && damaged != boss) {
-    focusSpace.occupied = removeFromList(monstersList[damaged.sprite.number], focusSpace);
+    focusSpace.occupied = scrubList(focusSpace.occupied);
     battlePlayer.rp += damaged.rp;
     monstersList.splice(damaged.sprite.number, 1);
     damaged.sprite.destroy();
@@ -1573,7 +1575,7 @@ function finishBattle() {
   playerBattleTexts = [];
   monsterBattleTexts = [];
   if (focusSpace.occupied && focusSpace.occupied !== false) {
-    scrubList(focusSpace.occupied);
+    focusSpace.occupied = scrubList(focusSpace.occupied);
   }
 
   for (i = 1; i < playersList.length; i++) {
@@ -1582,6 +1584,7 @@ function finishBattle() {
   }
   battlePlayer.sprite.events.onDragStop._bindings = [];
   battlePlayer.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
+  checkBattle(focusSpace);
   if (pendingBattles.length > 0) {
     console.log("There are more battles.");
     killBattleInfo();
@@ -1757,7 +1760,7 @@ function battle(player, monster) {
   }
 
   function moveMonsters() {
-   scrubList(monstersList);   
+   monstersList = scrubList(monstersList);   
     for (var i = 0; i < monstersList.length ; i++) {
         if (monstersList[i].key.charAt(2) !== "0") {
           var newDestination = monstersList[i].key.substring(0,2) + (parseInt(monstersList[i].key.charAt(2)) - 1);
@@ -2174,15 +2177,17 @@ function checkBattle(space) {
   if (this.space) {
     space = this.space;
   }
-  scrubList(globalList);
-  scrubList(space.occupied);
+  globalList = scrubList(globalList);
+  space.occupied = scrubList(space.occupied);
   var pendingMonster = null;
+  var pendingMonsters = [];
   var pendingPlayer = null;
 
   if (space.occupied != false) {
     for (i = 0; i < space.occupied.length; i++) {
       if (space.occupied[i] && space.occupied[i].sprite.key.indexOf('monster') > -1) {
           if (space.occupied[i].hp > 0) {
+            pendingMonsters.push(space.occupied[i]);
             pendingMonster = space.occupied[i];
           }
       } else if (space.occupied[i] && playerNames.indexOf(space.occupied[i].sprite.key) > -1) {
@@ -2194,30 +2199,38 @@ function checkBattle(space) {
     }
     if (space === Space["center"]) {
       pendingMonster = boss;
+      pendingMonsters.push(boss);
     }
+    console.log(pendingMonsters);
     if (pendingPlayer === null || pendingMonster === null) {
       pendingMonster = null;
       pendingPlayer = null;
 
     } else {
       console.log("BATTLE with " + pendingPlayer.sprite.key + pendingMonster.sprite.key);
-      if (pendingBattles.length > 0) {
-        pendingBattles.push({pendingPlayer,pendingMonster,space});
-      } else {
-        pendingBattles.push({pendingPlayer,pendingMonster,space});
-        battlePlayer = pendingPlayer;
-        battleMonster = pendingMonster;
-        focusSpace = space;
+      for (i = 0; i < pendingMonsters.length; i++) {
+        pendingMonster = pendingMonsters[i]
+        var pendingObject = {pendingPlayer: pendingPlayer, pendingMonster: pendingMonsters[i], space:space}
+        if (pendingBattles.length > 0) {
+          if (pendingBattles.indexOf(pendingObject) === -1) {
+            pendingBattles.push();
+          }
+        } else if (pendingBattles.indexOf(pendingObject) === -1) {
+          pendingBattles.push(pendingObject);
+          battlePlayer = pendingPlayer;
+          battleMonster = pendingMonster;
+          focusSpace = space;
           focusX = changeValueScale(focusSpace.x,"x");
           focusY = changeValueScale(focusSpace.y,"y");
           yPivot = (battlePlayer.sprite.y *C.game.zoomScale) - game.camera.height/2; 
           xPivot = (battlePlayer.sprite.x *C.game.zoomScale) - game.camera.width/2;
           findIncrementsTo(focusSpace);
-        zoomIn = true;
-        battleStarting = true;
+          zoomIn = true;
+          battleStarting = true;
       }
     }
   }
+}
 }
 
 
