@@ -109,7 +109,8 @@ var focusX,
  fortifiedList = [],
  changingQuality,
  hoverSprite,
- actionIcons;
+ actionIcons,
+ monsterResources = 0;
 var boss = {};
 var battleSpeedDecrease = 0;
 var boughtBool;
@@ -806,6 +807,10 @@ function setAttributeDisplay(obj) {
     batkDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width, hoverSprite.y,5,"batk","batkGoal");
     ratkDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width, hoverSprite.y + batkDisplay.valueIcon.width,4,"ratk","ratkGoal");
     defDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 250*globalScale, hoverSprite.y,7,"def","defGoal");
+    rpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width, hoverSprite.y + batkDisplay.valueIcon.width*2,6,"rp");
+    var cropRect = new Phaser.Rectangle(10, 0, rpDisplay.valueIcon.width+20, rpDisplay.valueIcon.height);
+    rpDisplay.valueIcon.crop(cropRect);
+    
     for (i = 0; i < 3; i++) {
       var actionPoint = actionIcons.create(ratkDisplay.valueIcon.x + 250*globalScale + (i*(55*globalScale)), ratkDisplay.valueIcon.y + 30*globalScale,'icons',0);
         actionPoint.scale.setTo(.6*globalScale);
@@ -826,7 +831,8 @@ function setAttributeDisplay(obj) {
 function updateInfoDisplays(obj) {
    ratkDisplay.update(obj);
    batkDisplay.update(obj);
-   defDisplay.update(obj);  
+   defDisplay.update(obj); 
+   rpDisplay.update(obj);
 }
 
 function allowBattle() {
@@ -853,9 +859,9 @@ function addHoverInfo(x,y,frame,value,secondaryValue) {
   var valueIcon = game.add.sprite(x, y, 'icons',frame);
   valueIcon.scale.setTo(.7*globalScale);
   if (this[value]) {
-  var valueDisplay = game.add.bitmapText(valueIcon.x + valueIcon.width, valueIcon.y + valueIcon.height/3, 'attackfont', this[value] || 0, 50*globalScale);
+  var valueDisplay = game.add.text(valueIcon.x + valueIcon.width, valueIcon.y + valueIcon.height/3, this[value] || 0, C.game.textStyle);
   } else {
-  var valueDisplay = game.add.bitmapText(valueIcon.x + valueIcon.width, valueIcon.y + valueIcon.height/3, 'attackfont', "0", 50*globalScale);
+  var valueDisplay = game.add.text(valueIcon.x + valueIcon.width, valueIcon.y + valueIcon.height/3, "0", C.game.textStyle);
   }
   infoDescObj = {
     parent: this,
@@ -1516,6 +1522,7 @@ function handleDeath(damaged,survivor) {
   } else if (damaged === battleMonster && damaged != boss) {
     focusSpace.occupied = scrubList(focusSpace.occupied);
     battlePlayer.rp += damaged.rp;
+    battlePlayer.mr += damaged.mr;
     monstersList.splice(damaged.sprite.number, 1);
     damaged.sprite.destroy();
     battlePlayer.sprite.x = focusX;
@@ -1919,6 +1926,7 @@ function move(object,destination,escaping) {
       if (object.hp <= 0) {
         object.space.occupied = removeFromList(monstersList[object.sprite.number], object.space);
         Space[destination].mine.owner.rp += object.rp;
+        Space[destination].mine.owner.mr += object.mr;
         monstersList.splice(object.sprite.number, 1);
         /*PLACE TWEEN HERE*/
         var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
@@ -2516,6 +2524,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
   //deal with hitpoint values and other values
   if (playerNames.indexOf(object) > -1) {
     obj.rp = 3;
+    obj.mr =  0;
     obj.hp = 4;
     obj.maxhp = 4;
     obj.def = 3;
