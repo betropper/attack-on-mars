@@ -924,7 +924,7 @@ function addBattleInfo(text, frame, value, secondaryValue) {
     var valueDisplay = game.add.bitmapText(x - 150*globalScale + 20*globalScale,iconY, 'attackfont', this[value], 20*globalScale);
   }
   var valueIcon = game.add.sprite(iconX - 20*globalScale,iconY, 'icons',frame);
-  valueIcon.scale.setTo(.25*globalScale);
+  valueIcon.scale.setTo(.18*globalScale);
   valueDisplay.anchor.setTo(.5);
   valueIcon.anchor.setTo(.5);
   console.log(value);
