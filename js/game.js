@@ -94,7 +94,7 @@ var C = {
  },
  "icons": {
   "width": (1397/7),
-  "height": (1050/3)
+  "height": (800/4)
  }
 }
 var bossNames = ["The Bloat","The Deciever","The Brute"] 
