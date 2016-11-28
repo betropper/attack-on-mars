@@ -89,7 +89,67 @@ var MonstersDeck = {
    "def": 4,
    "hp": 4,
    "upgrades": ["Regeneration","Poison Aura"]
-   }
+   },
+   {
+   "batk": 4,
+   "def": 4,
+   "hp": 4,
+   "upgrades": ["Regeneration","Poison Aura"]
+   },
+   {
+   "batk": 6,
+   "def": 5,
+   "hp": 4,
+   "upgrades": ["Feign Death"]
+   },
+   {
+   "batk": 6,
+   "def": 4,
+   "hp": 3,
+   "upgrades": ["First Attack"]
+   },
+   {
+   "batk": 6,
+   "def": 3,
+   "hp": 4,
+   "upgrades": ["First Attack"]
+   },
+   {
+   "batk": 6,
+   "def": 6,
+   "hp": 3,
+   "upgrades": ["Feign Death"]
+   },
+   {
+   "batk": 5,
+   "def": 5,
+   "hp": 4,
+   "upgrades": ["+1 Mecha Target Red"]
+   },
+   {
+   "batk": 4,
+   "def": 4,
+   "hp": 6,
+   "upgrades": ["+1 Mecha Target Defense"]
+   },
+   {
+   "batk": 5,
+   "def": 5,
+   "hp": 4,
+   "upgrades": ["+1 Mecha Target Blue"]
+   },
+   {
+   "batk": 6,
+   "def": 4,
+   "hp": 3,
+   "upgrades": ["+1 Monster Target Attack", "+1 Monster Target Defense"]
+   },
+   {
+   "batk": 6,
+   "def": 3,
+   "hp": 4,
+   "upgrades": ["+1 Monster Target Attack", "+1 Monster Target Defense"]
+   },
  ],
  "extinctionMonsters": [
    {
@@ -168,7 +228,7 @@ var MU = {
     "cost": 2,
     },
   "Dice -#": {
-    "desc": "The Mecha fighting this monster has 1 less die from the listed pool",
+    "desc": "The Mecha fighting this monster has less die from the listed pool",
     "cost": 2,
     active: function(mech,pool,amount) {
       console.log(mech + pool + amount);
