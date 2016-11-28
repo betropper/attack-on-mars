@@ -2097,7 +2097,7 @@ function chooseUpgrade(event) {
 
 function confirmUpgrade(player,upgradeName) {
       var consideredUpgrade = U[upgradeName];
-      if (consideredUpgrade && consideredUpgrade.desc) {
+      if ((player.upgrades.indexOf(upgradeName) === -1) && consideredUpgrade && consideredUpgrade.desc) {
       game.kineticScrolling.stop();
       confirmState = true;
       game.camera.y = upgradeMenu.y + upgradeMenu.height/2 + game.camera.height/2;
