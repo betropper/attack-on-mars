@@ -110,6 +110,7 @@ var focusX,
  changingQuality,
  hoverSprite,
  actionIcons,
+ upgradeTokens,
  monsterResources = 0;
 var boss = {};
 var battleSpeedDecrease = 0;
@@ -568,7 +569,7 @@ class Setup {
     buttonsList.push(upgradeButton);
     upgradeButton.events.onInputUp.add(upgrade, {upgrading: turn});
     actionIcons = game.add.group()
-
+    upgradeTokens = game.add.group()
     fade("in");  
   }
   update() {
@@ -809,11 +810,12 @@ function setAttributeDisplay(obj) {
     ratkDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width, hoverSprite.y + batkDisplay.valueIcon.width,4,"ratk","ratkGoal");
     defDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 250*globalScale, hoverSprite.y,7,"def","defGoal");
     rpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width, hoverSprite.y + batkDisplay.valueIcon.width*2,6,"rp");
+    mpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 250*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,22,"mr");
     for (i = 0; i < 3; i++) {
-      var actionPoint = actionIcons.create(ratkDisplay.valueIcon.x + 250*globalScale + (i*(55*globalScale)), ratkDisplay.valueIcon.y + 30*globalScale,'icons',0);
-        actionPoint.scale.setTo(.6*globalScale);
+      var actionPoint = actionIcons.create(ratkDisplay.valueIcon.x + 250*globalScale + (i*(70*globalScale)), ratkDisplay.valueIcon.y + 15*globalScale,'icons',0);
+      actionPoint.scale.setTo(.6*globalScale);
     }
-
+    //hoverSprite.y += hoverSprite.height/2
    //}
  } else {
    hoverSprite.loadTexture(spriteName);
@@ -831,6 +833,7 @@ function updateInfoDisplays(obj) {
    batkDisplay.update(obj);
    defDisplay.update(obj); 
    rpDisplay.update(obj);
+   mpDisplay.update(obj);
 }
 
 function allowBattle() {
@@ -2025,16 +2028,44 @@ function repair(repairing, amount) {
     upgradeMenu = game.add.sprite(game.world.centerX, game.world.centerY + C.game.height/2 + (C.upgradeMenu.height*C.upgradeMenu.scale)/2 + 200*globalScale, 'upgradeMat');
     upgradeMenu.anchor.setTo(.5,.5);
     upgradeMenu.scale.x = C.upgradeMenu.scale;
-    upgradeMenu.scale.y = C.upgradeMenu.scale;i
+    upgradeMenu.scale.y = C.upgradeMenu.scale;
     var upgradeDescription = game.add.text(upgradeMenu.x, upgradeMenu.y - upgradeMenu.height/2 - 100*globalScale, "Click on an upgrade to see its details, scroll up to return to the game", C.game.textStyle);
     upgradeDescription.anchor.setTo(.5,.5);
   }
+  var options = ["Electric Fists","Targeting Computer","Siege Mode","Nullifier Shield","The Payload",
+    "Bigger Fists","Weakpoint Analysis","Weaponized Research","Nullifier Shield Unlock","The Payload",
+    "Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Gast",
+    "More Armor","Field Repair","Even More Armor","Obliteration Ray","Super Go Fast Unlock",
+    "5D Accelerators","Autododge","Emergency Jump Jets","Fusion Cannon","Mind-Machine Interface",
+    "Hyper Caffeine","Monster Bait","Chaos Systems","Fusion Cannon Unlock","Mind-Machine Interface Unlock"
+  ]
+  upgradeTokens.callAll('kill');
+  var x1 = 340 * globalScale, x2 = 2425 * globalScale,
+  y1 = 1545 * globalScale, y2 = 3650 * globalScale;
+  for (i = 0; i < upgrading.upgrades.length; i++) {
+    if (options.indexOf(upgrading.upgrades[i]) > -1) {
+      var upgradeLocation = options.indexOf(upgrading.upgrades[i]);
+      var upX = x1 + (415/2)*globalScale + (415*globalScale)*upgradeLocation;
+      var upY = y1 + ((350/2)*globalScale);
+      while (upX > x2) {
+        upX -= (415*globalScale)*5;
+        upY += (350*globalScale);
+      }
+      if (upgradeTokens.getFirstDead()) {
+        upgradeTokens.getFirstDead().revive(upX,upY);
+      } else {
+        var upgradeToken = upgradeTokens.create(upX, upY,'icons',18);
+        upgradeToken.scale.setTo(.7*globalScale);
+        upgradeToken.anchor.setTo(.5);
+      }
+    }
+  }
+  game.world.bringToTop(upgradeTokens);
   game.kineticScrolling.start();
   game.input.onTap.add(chooseUpgrade, {menu: upgradeMenu});
   game.camera.y = game.height;
   upgradeState = true;
 }
-
 
 function chooseUpgrade(event) {
   if (game.camera.y >= 430) {
@@ -2047,10 +2078,11 @@ function chooseUpgrade(event) {
       var options = ["Electric Fists","Targeting Computer","Siege Mode","Nullifier Shield","The Payload",
         "Bigger Fists","Weakpoint Analysis","Weaponized Research","Nullifier Shield Unlock","The Payload",
         "Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Gast",
-        "More Armor","Field Repair","Even More Armor","Obliteration Ray","Super Go Fast",
+        "More Armor","Field Repair","Even More Armor","Obliteration Ray","Super Go Fast Unlock",
         "5D Accelerators","Autododge","Emergency Jump Jets","Fusion Cannon","Mind-Machine Interface",
-        "Hyper Caffeine","Monster Bait","Chaos Systems","Fusion Cannon","Mind-Machine Interface"
+        "Hyper Caffeine","Monster Bait","Chaos Systems","Fusion Cannon Unlock","Mind-Machine Interface Unlock"
       ]
+      //var upgradeToken = upgradeTokens.create(event.x, event.y + game.camera.y,'icons',18);
       var x = event.worldX - x1,
           y = event.worldY - y1;
       var choice = options[Math.floor(x / (415*globalScale)) + 5*Math.floor(y /(350*globalScale))];
