@@ -1478,18 +1478,18 @@ function attack(attacker,defender) {
     printBattleResults(text); 
     if (attacker.upgrades.indexOf("Poison Aura") > -1) {
       var stacks = countInArray(attacker.upgrades,"Poison Aura");
-      MU["Poison Aura"].active(attacker,defender,stacks);      
+      MU["Poison Aura"].active(attacker,defender,stacks);
     }
-  if (damaged && damaged.hp <= 0) {
-    if (damaged === defender) {
+    if (defender.hp <= 0) {
       handleDeath(damaged,attacker);
-    } else if (damaged === attacker) {
+    }
+    if (attacker.hp <= 0) {
       handleDeath(damaged,defender);
     }
-  }
+
     if (!damaged || damaged.hp > 0) {
-    battleTurn = defender;
-  }
+      battleTurn = defender;
+    }
 
 }
 function handleDeath(damaged,survivor) {
