@@ -1107,7 +1107,7 @@ function setLastClicked(sprite) {
       //repairText.events.onInputDown.add(repair, {repairing: lastClicked});
       repairButton.reset(repairButton.x, repairButton.y);
       repairButton.events.onInputDown._bindings = [];
-      repairButton.events.onInputDown.add(repair, {repairing: lastClicked});
+      repairButton.events.onInputDown.add(repair, {repairing: lastClicked, amount: undefined});
     } else if (repairButton) {
       //repairText.kill();
       //buttonsList.splice(repairButton, 1);
@@ -1210,6 +1210,7 @@ function reloadGame() {
 function isOdd(num) { return num % 2;}
 
 function winGame(winner) {
+  game.input.enabled = false;
   for (i = 0; i < battleTexts.length; i++) {
     battleTexts[i].destroy();
   }
@@ -1774,7 +1775,7 @@ function battle(player, monster) {
   function waitOneAction() {
     actionPoints -= 1;
     if (lastClicked && lastClicked.canRepair) {
-      repair(lastClicked,1); 
+      repair(lastClicked,null,1); 
     }
   }
 
@@ -1980,11 +1981,13 @@ function reEnable() {
    actionPointsRecord = 3;
 }
 
-function repair(repairing, amount) {
+function repair(repairing, pointer, amount) {
   var repairing = this.repairing || repairing;
+  var amount = this.amount || amount
+  console.log(amount);
   if (repairing.hp < repairing.maxhp) {
     if (amount) {
-      repairing.hp += 1;
+      repairing.hp += amount;
     } else {
       repairing.hp = repairing.maxhp;
       repairButton.kill();
