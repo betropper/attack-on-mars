@@ -526,6 +526,7 @@ class Setup {
       closestSpaces = getClosestSpaces(playersList[i].key);
       playersList[i].sprite.closestSpaces = closestSpaces;
       playersList[i].sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
+      //turn = playersList[1];
     }
     for (var i = 0; i <= 5; i++) {
       if (i <= 3) {
@@ -536,38 +537,21 @@ class Setup {
         monstersList[i].sprite.number =  i;
       }
     }
-    turn = playersList[1];
-    turn.sprite.inputEnabled = true;
-    turn.sprite.input.enableDrag(true);
-    closestSpaces = getClosestSpaces(turn.key);
-    turn.sprite.closestSpaces = closestSpaces;
+
     // Add in text that is displayed.
     attributeDisplay = game.add.text(game.world.centerX + game.world.width/4, game.world.centerY - game.world.height/3 + 300*globalScale, "", C.game.textStyle);
     attributeDisplay.anchor.setTo(.5);
     upgradeDisplay = game.add.text(attributeDisplay.x, attributeDisplay.y + 450*globalScale, "", C.game.textStyle);
     upgradeDisplay.anchor.setTo(.5);
-    turn.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
+
     menuBar = game.add.sprite(0,game.height - game.camera.width/5,"menubar");
     menuBar.width = game.camera.width;
     menuBar.height = game.camera.width/5;
     //menuBar.fixedToCamera = true;
     game.world.bringToTop(menuBar);
     menuBar.kill();
-    waitButton = game.add.button(game.world.centerX + game.world.width/2 - 90*globalScale, 140*globalScale, 'purplecircle', waitOneAction);
-    waitButton.anchor.x = .5;
-    waitButton.anchor.y = .5;
-    //waitButton.scale.y = .6;
-    waitButton.battleButton = false;
-    buttonsList.push(waitButton);
-    game.world.bringToTop(waitButton);
-    upgradeButton = game.add.sprite(0, game.bg.width, turn.sprite.key);
-    upgradeButton.anchor.set(0.5);
-    upgradeButton.inputEnabled = true;
-    upgradeButton.width = 160*globalScale;
-    upgradeButton.height = 160*globalScale;
-    upgradeButton.battleButton = false;
-    buttonsList.push(upgradeButton);
-    upgradeButton.events.onInputUp.add(upgrade, {upgrading: turn});
+    
+
     actionIcons = game.add.group()
     upgradeTokens = game.add.group()
     fade("in");  
@@ -1072,6 +1056,30 @@ function queAttack() {
 }
 
 function setLastClicked(sprite) {
+  if (!turn) {
+    turn = playersList[sprite.number];
+    //turn.sprite.inputEnabled = true;
+    closestSpaces = getClosestSpaces(turn.key);
+    turn.sprite.closestSpaces = closestSpaces;
+    //turn.sprite.input.enableDrag(true);
+    //turn.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
+    upgradeButton = game.add.sprite(0, game.bg.width, turn.sprite.key);
+    upgradeButton.anchor.set(0.5);
+    upgradeButton.inputEnabled = true;
+    upgradeButton.width = 160*globalScale;
+    upgradeButton.height = 160*globalScale;
+    upgradeButton.battleButton = false;
+    buttonsList.push(upgradeButton);
+    upgradeButton.events.onInputUp.add(upgrade, {upgrading: turn});
+    waitButton = game.add.button(game.world.centerX + game.world.width/2 - 90*globalScale, 140*globalScale, 'icons', waitOneAction);
+    waitButton.frame = 2;
+    waitButton.anchor.x = .5;
+    waitButton.anchor.y = .5;
+    waitButton.scale.setTo(globalScale);
+    waitButton.battleButton = false;
+    buttonsList.push(waitButton);
+    game.world.bringToTop(waitButton);
+  }
   if (playerNames.indexOf(sprite.key) > -1) {
     lastClicked = playersList[sprite.number];
     var normalState = !battleState && !zoomIn && !zoomOut;
@@ -2091,7 +2099,9 @@ function chooseUpgrade(event) {
       game.camera.y = game.camera.y;
       game.input.onTap._bindings = [];
       confirmUpgrade(turn,choice);
-    } 
+    } else if (event.worldX > x1 && event.worldX < x2 && event.worldY > y2 + 400*globalScale && event.worldY < y2 + 830*globalScale) { 
+      console.log("TRYING TO UPGRADE MR");
+    }
   }
 }
 
@@ -2272,7 +2282,9 @@ function checkBattle(space) {
 
 
 function changeTurn() {
-    moveMonsters();
+    if (turn) {
+      moveMonsters();
+    }
     actionPoints = 3;
     //turn.sprite.inputEnabled = false
     do {
