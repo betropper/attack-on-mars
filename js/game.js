@@ -1512,6 +1512,7 @@ function handleDeath(damaged,survivor) {
   console.log("DED with " + damaged.hp);
   globalList = scrubList(globalList);
   if (damaged === battlePlayer) {
+    battleMonster.sprite.x = focusX;
     if (damaged.key.charAt(2) === "0") {
       var destroyedCityColumn = spawnSpecific("destroyedCity", newDestination);
       destroyedCities.push(destroyedCityColumn);
@@ -2103,7 +2104,7 @@ function chooseUpgrade(event) {
       game.camera.y = game.camera.y;
       game.input.onTap._bindings = [];
       confirmUpgrade(turn,choice);
-    } else if (monsterResearchTrack < 4 && event.worldX > x1 && event.worldX < x2 && event.worldY > y2 + 400*globalScale && event.worldY < y2 + 830*globalScale) { 
+    } else if (monsterResearchTrack < 3 && event.worldX > x1 && event.worldX < x2 && event.worldY > y2 + 400*globalScale && event.worldY < y2 + 830*globalScale) { 
       console.log("TRYING TO UPGRADE MR");
       var mrProviders = [];
       monsterResources = 0;
@@ -2122,10 +2123,14 @@ function chooseUpgrade(event) {
             mrCount += 1;
           }
         }
-        console.log(mrProviders);
-        var token = mrTokens.create((x1+(255*globalScale))+(530*globalScale*(monsterResearchTrack-1)), y2 + 615*globalScale,'icons',18);
+        var token = mrTokens.create((x1+(255*globalScale))+(530*globalScale*(monsterResearchTrack)), y2 + 615*globalScale,'icons',18);
         token.scale.setTo(globalScale);
         token.anchor.setTo(.5);
+        if (monsterResearchTrack >= 3) {
+          for (i = 0; i < playersList.length; i++) {
+            playersList[i].sprite.closestSpaces = getClosestSpaces(playersList[i].key);
+          }
+        }
       }
     }
   }
@@ -2443,7 +2448,9 @@ function getClosestSpaces(spaceKey) {
   // These next if statements find the nearby spaces per column, up
   // and down. It accounts for the top and bottom spaces as well.
   if (spaceKey.indexOf("3") === 2 || spaceKey.indexOf("33") === 1) { 
-    inward = "center";
+    if (monsterResearchTrack >= 3) {
+      inward = "center";
+    }
     outward = findPreviousLetter(spaceKey);
   } else if (spaceKey.indexOf("0") === 2 ) { 
     inward = findNextLetter(spaceKey);
