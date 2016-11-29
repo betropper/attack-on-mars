@@ -541,9 +541,9 @@ class Setup {
     }
 
     // Add in text that is displayed.
-    attributeDisplay = game.add.text(game.world.centerX + game.world.width/4, game.world.centerY - game.world.height/3 + 300*globalScale, "", C.game.textStyle);
-    attributeDisplay.anchor.setTo(.5);
-    upgradeDisplay = game.add.text(attributeDisplay.x, attributeDisplay.y + 450*globalScale, "", C.game.textStyle);
+    //attributeDisplay = game.add.text(game.world.centerX + game.world.width/4, game.world.centerY - game.world.height/3 + 300*globalScale, "", C.game.textStyle);
+    //attributeDisplay.anchor.setTo(.5);
+    upgradeDisplay = game.add.text(game.world.centerX + game.world.width/4, game.world.height/2, "", C.game.textStyle);
     upgradeDisplay.anchor.setTo(.5);
 
     menuBar = game.add.sprite(0,game.height - game.camera.width/5,"menubar");
@@ -758,20 +758,20 @@ class Setup {
     if (over) {
       setAttributeDisplay(over); 
       if (playerNames.indexOf(over.sprite.key) > -1) {
-        attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + " / " + over.maxhp + "\nDefence Die (green): " + over.def + "\nRed Attack Die: " + over.ratk + "\nBlue Attack Die: " + over.batk + "\nResearch Points: " + over.rp);
-        /*if (attributeDisplay.text && lastClicked !== undefined && repairText && attributeDisplay.text.indexOf(lastClicked.sprite.key) === -1) {
+        /*attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + " / " + over.maxhp + "\nDefence Die (green): " + over.def + "\nRed Attack Die: " + over.ratk + "\nBlue Attack Die: " + over.batk + "\nResearch Points: " + over.rp);
+        if (attributeDisplay.text && lastClicked !== undefined && repairText && attributeDisplay.text.indexOf(lastClicked.sprite.key) === -1) {
           repairText.text = "Repair " + lastClicked.sprite.key;
         }*/
        upgradeDisplay.setText("Upgrades for " + over.sprite.key +":\n" + over.upgrades.join(",\n"));
       } else if (over.sprite.key === "monster" || bossNames.indexOf(over.sprite.key) > -1) {
-        attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + " / " + over.maxhp + "\nDefence Die (green): " + over.def + "\nBlue Attack Die: " + over.batk + "\nResearch Point Reward: " + over.rp);
+        //attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + " / " + over.maxhp + "\nDefence Die (green): " + over.def + "\nBlue Attack Die: " + over.batk + "\nResearch Point Reward: " + over.rp);
         upgradeDisplay.setText("Upgrades for " + over.sprite.key +":\n" + over.upgrades.join(",\n"));
       }
     } else if (lastClicked) {
       if (playerNames.indexOf(lastClicked.sprite.key) > -1) {
-        attributeDisplay.setText("\nName: " + lastClicked.sprite.key + "\nHP: " + lastClicked.hp + " / " + lastClicked.maxhp + "\nDefence Die (green): " + lastClicked.def + "\nRed Attack Die: " + lastClicked.ratk + "\nBlue Attack Die: " + lastClicked.batk + "\nResearch Points: " + lastClicked.rp);
+        //attributeDisplay.setText("\nName: " + lastClicked.sprite.key + "\nHP: " + lastClicked.hp + " / " + lastClicked.maxhp + "\nDefence Die (green): " + lastClicked.def + "\nRed Attack Die: " + lastClicked.ratk + "\nBlue Attack Die: " + lastClicked.batk + "\nResearch Points: " + lastClicked.rp);
       } else {
-        attributeDisplay.setText("\nName: " + lastClicked.sprite.key + "\nHP: " + lastClicked.hp + " / " + lastClicked.maxhp + "\nDefence Die (green): " + lastClicked.def + "\nBlue Attack Die: " + lastClicked.batk + "\nResearch Point Reward: " + lastClicked.rp);
+        //attributeDisplay.setText("\nName: " + lastClicked.sprite.key + "\nHP: " + lastClicked.hp + " / " + lastClicked.maxhp + "\nDefence Die (green): " + lastClicked.def + "\nBlue Attack Die: " + lastClicked.batk + "\nResearch Point Reward: " + lastClicked.rp);
       }
       upgradeDisplay.setText("Upgrades for " + lastClicked.sprite.key + ":\n" + lastClicked.upgrades.join(",\n"));
     }
@@ -793,13 +793,14 @@ function setAttributeDisplay(obj) {
     } else {
       hoverSprite.scale.setTo(2*globalScale);
     }
-    batkDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width, hoverSprite.y,5,"batk","batkGoal");
-    ratkDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width, hoverSprite.y + batkDisplay.valueIcon.width,4,"ratk","ratkGoal");
-    defDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 250*globalScale, hoverSprite.y,7,"def","defGoal");
-    rpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width, hoverSprite.y + batkDisplay.valueIcon.width*2,6,"rp");
-    mpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 250*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,22,"mr");
+    batkDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 100*globalScale, hoverSprite.y,5,"batk","batkGoal");
+    ratkDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 100*globalScale, hoverSprite.y + batkDisplay.valueIcon.width,4,"ratk","ratkGoal");
+    defDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 450*globalScale, hoverSprite.y,7,"def","defGoal");
+    hpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 100*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,8,"hp", "maxhp");
+    rpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 450*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,6,"rp");
+    mpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 700*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,22,"mr");
     for (i = 0; i < 3; i++) {
-      var actionPoint = actionIcons.create(ratkDisplay.valueIcon.x + 250*globalScale + (i*(70*globalScale)), ratkDisplay.valueIcon.y + 15*globalScale,'icons',0);
+      var actionPoint = actionIcons.create(ratkDisplay.valueIcon.x + 350*globalScale + (i*(70*globalScale)), ratkDisplay.valueIcon.y + 15*globalScale,'icons',0);
       actionPoint.scale.setTo(.6*globalScale);
     }
     //hoverSprite.y += hoverSprite.height/2
@@ -821,6 +822,7 @@ function updateInfoDisplays(obj) {
    defDisplay.update(obj); 
    rpDisplay.update(obj);
    mpDisplay.update(obj);
+   hpDisplay.update(obj);
 }
 
 function allowBattle() {
@@ -871,8 +873,12 @@ function addHoverInfo(x,y,frame,value,secondaryValue) {
         this.value = obj[value].toString();
         this.valueDisplay.text = obj[value].toString();
         if (this.secondaryValue) {
-          this.valueDisplay.text = obj[value].toString() + " [" + obj[secondaryValue].toString() + "]";
-          console.log(this.valueDisplay.text);
+          if (this.secondaryValue === "maxhp") {
+            this.valueDisplay.text = obj[value].toString() + " / " + obj[secondaryValue].toString();
+          } else {
+            this.valueDisplay.text = obj[value].toString() + " [" + obj[secondaryValue].toString() + "]";
+            console.log(this.valueDisplay.text);
+          }
         }
       }
     } else {
