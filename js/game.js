@@ -111,7 +111,9 @@ var focusX,
  hoverSprite,
  actionIcons,
  upgradeTokens,
- monsterResources = 0;
+ mrTokens,
+ monsterResources = 0,
+ monsterResearchTrack = 0;
 var boss = {};
 var battleSpeedDecrease = 0;
 var boughtBool;
@@ -552,8 +554,9 @@ class Setup {
     menuBar.kill();
     
 
-    actionIcons = game.add.group()
-    upgradeTokens = game.add.group()
+    actionIcons = game.add.group();
+    upgradeTokens = game.add.group();
+    mrTokens = game.add.group();
     fade("in");  
   }
   update() {
@@ -2069,6 +2072,7 @@ function repair(repairing, amount) {
     }
   }
   game.world.bringToTop(upgradeTokens);
+  game.world.bringToTop(mrTokens);
   game.kineticScrolling.start();
   game.input.onTap.add(chooseUpgrade, {menu: upgradeMenu});
   game.camera.y = game.height;
@@ -2099,8 +2103,30 @@ function chooseUpgrade(event) {
       game.camera.y = game.camera.y;
       game.input.onTap._bindings = [];
       confirmUpgrade(turn,choice);
-    } else if (event.worldX > x1 && event.worldX < x2 && event.worldY > y2 + 400*globalScale && event.worldY < y2 + 830*globalScale) { 
+    } else if (monsterResearchTrack < 4 && event.worldX > x1 && event.worldX < x2 && event.worldY > y2 + 400*globalScale && event.worldY < y2 + 830*globalScale) { 
       console.log("TRYING TO UPGRADE MR");
+      var mrProviders = [];
+      monsterResources = 0;
+      for (i = 1; i < playersList.length; i++) {
+        if (playersList[i].mr > 0) {
+          monsterResources += playersList[i].mr;
+          mrProviders.push(playersList[i]);
+        }
+      }
+      if (monsterResources >= 8) {
+        monsterResearchTrack += 1;
+        var mrCount = 0;
+        for (i = 0; i < mrProviders.length; i++) {
+          while (mrProviders[i].mr > 0 && mrCount < 8) {
+            mrProviders[i].mr -= 1;
+            mrCount += 1;
+          }
+        }
+        console.log(mrProviders);
+        var token = mrTokens.create((x1+(255*globalScale))+(530*globalScale*(monsterResearchTrack-1)), y2 + 615*globalScale,'icons',18);
+        token.scale.setTo(globalScale);
+        token.anchor.setTo(.5);
+      }
     }
   }
 }
