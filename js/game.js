@@ -522,6 +522,7 @@ class Setup {
         {color: "purple", discount: 0},
         {color: "black", discount: 0}
       ]
+
       playersList[i].sprite.inputEnabled = true;
       playersList[i].sprite.input.enableDrag(true);
       playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
@@ -2135,9 +2136,11 @@ function chooseUpgrade(event) {
         var token = mrTokens.create((x1+(255*globalScale))+(530*globalScale*(monsterResearchTrack)), y2 + 615*globalScale,'icons',18);
         token.scale.setTo(globalScale);
         token.anchor.setTo(.5);
-        if (monsterResearchTrack >= 3) {
-          for (i = 0; i < playersList.length; i++) {
+        for (i = 1; i < playersList.length; i++) { 
+          if (monsterResearchTrack >= 3) {
             playersList[i].sprite.closestSpaces = getClosestSpaces(playersList[i].key);
+          } else {
+            Corp[playersList[i].corp].trackUpgrade(playersList[i],monsterResearchTrack);
           }
         }
       }
@@ -2607,6 +2610,8 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
   //deal with hitpoint values and other values
   if (playerNames.indexOf(object) > -1) {
     obj.rp = 3;
+    //Test for now. Everyone is Genericorp
+    obj.corp = "Genericorp";
     obj.mr =  0;
     obj.hp = 4;
     obj.maxhp = 4;
@@ -2746,7 +2751,6 @@ function spawnSpecific(object,space) {
       obj.upgrades = drawnMonster.upgrades;
       for (i = 0; i < obj.upgrades.length; i++) {
         if (MU[obj.upgrades[i]] && MU[obj.upgrades[i]].passive) {
-
           MU[obj.upgrades[i]].passive(obj);
         }
       }

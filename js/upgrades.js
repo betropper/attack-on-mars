@@ -1,4 +1,27 @@
 
+var Corp = {
+  "Genericorp": {
+    "desc": "A default corporation. Doesn't specialize in anything, jack of all trades.",
+    starting: function(player) {
+      if (player.rpPerTurn) {
+        player.rpPerTurn += 1 
+      } else {
+        player.rpPerTurn = 1;
+      }
+    },
+    trackUpgrade: function(player,number) {
+      if (number === 1) {
+        player.def += 1;
+      } else if (number === 2) {
+        player.ratk += 1;
+        player.batk += 1;
+      }
+    }
+  }
+
+}
+
+
 var U = {
   "Electric Fists": {
     "desc": "Increases max red (attack) die by one.",
