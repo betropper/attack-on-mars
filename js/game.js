@@ -147,6 +147,7 @@ var occupiedRows = ['center'];
 var playerNames = [First,Second,Third,Fourth];
 var playerCount = 2;
 var turn;
+var destroyedPlayersList = [];
 var actionPoints = 3;
 var actionPointsRecord = 3;
 var closestSpaces;
@@ -800,6 +801,7 @@ function setAttributeDisplay(obj) {
     hpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 100*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,8,"hp", "maxhp");
     rpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 450*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,6,"rp");
     mpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 700*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,22,"mr");
+
     for (i = 0; i < 3; i++) {
       var actionPoint = actionIcons.create(ratkDisplay.valueIcon.x + 350*globalScale + (i*(70*globalScale)), ratkDisplay.valueIcon.y + 15*globalScale,'icons',0);
       actionPoint.scale.setTo(.6*globalScale);
@@ -1065,6 +1067,8 @@ function queAttack() {
   }
 }
 
+var destroyedMechDisplays = [];
+
 function setLastClicked(sprite) {
   if (!turn) {
     turn = playersList[sprite.number];
@@ -1093,12 +1097,42 @@ function setLastClicked(sprite) {
   if (playerNames.indexOf(sprite.key) > -1) {
     lastClicked = playersList[sprite.number];
     var normalState = !battleState && !zoomIn && !zoomOut;
-    if  (lastClicked.key.indexOf("0") === 2 && !repairButton && lastClicked.hp < lastClicked.maxhp && normalState) { 
+    for (i = 1; i < playersList.length; i++) {
+      if (!playersList[i].rebuildButton && destroyedPlayersList.length > 0 && playersList[i].rbTokens && normalState) { 
+        if (destroyedMechDisplays.length === 0) {
+          var x = hoverSprite.x;
+        } else {
+          var x = destroyedMechDisplays[destroyedMechDisplays.length-1].valueIcon.x + 300*globalScale;
+        }
+        playersList[i].rebuildButton = playersList[i].addHoverInfo(x, hoverSprite.y + batkDisplay.valueIcon.width*4,21,"rbTokens");
+        playersList[i].rebuildButton.valueIcon.inputEnabled = true;
+        playersList[i].rebuildButton.valueIcon.width = 80;
+        playersList[i].rebuildButton.valueIcon.height = 80;
+        playersList[i].rebuildButton.valueDisplay.x = playersList[i].rebuildButton.valueIcon.x  + 40 + + 90*globalScale;
+        playersList[i].rebuildButton.valueDisplay.y = playersList[i].rebuildButton.valueIcon.y + 40;
+        playersList[i].rebuildButton.valueIcon.battleButton = false;
+        destroyedMechDisplays.push(playersList[i].rebuildButton);
+        playersList[i].rebuildButton.valueIcon.events.onInputDown.add(rebuild, {rebuilding: playersList[i]});
+        if (playersList[i].rebuildButton.parent.alive) {
+          playersList[i].rebuildButton.valueIcon.kill();
+          playersList[i].rebuildButton.valueDisplay.kill();
+        }
+      } else if (destroyedPlayersList.length > 0 && playersList[i].rbTokens && normalState) {
+        playersList[i].rebuildButton.valueIcon.reset(playersList[i].rebuildButton.valueIcon.x, playersList[i].rebuildButton.valueIcon.y);
+        playersList[i].rebuildButton.valueDisplay.reset(playersList[i].rebuildButton.valueDisplay.x, playersList[i].rebuildButton.valueDisplay.y);
+        playersList[i].rebuildButton.valueIcon.events.onInputDown._bindings = [];
+        playersList[i].rebuildButton.valueIcon.events.onInputDown.add(rebuild, {rebuilding: playersList[i]});
+      } else if (playersList[i].rebuildButton) {
+        playersList[i].rebuildButton.valueDisplay.kill();
+        playersList[i].rebuildButton.valueIcon.kill();
+      }
+    }
+    if (lastClicked.key.indexOf("0") === 2 && !repairButton && lastClicked.hp < lastClicked.maxhp && normalState) { 
       //repairText = game.add.text(1050, menuBar.y, "Repair " + sprite.key, C.game.textStyle);
       //repairText.anchor.set(0.5);
       //repairText.inputEnabled = true;
       //repairText.events.onInputDown.add(repair, {repairing: lastClicked});
-      repairButton = game.add.sprite(0, 0, 'wrench');
+      repairButton = game.add.sprite(0, 0, 'icons', 8);
       repairButton.anchor.set(0.5);
       repairButton.inputEnabled = true;
       repairButton.width = 80;
@@ -1187,11 +1221,19 @@ function setLastClicked(sprite) {
     }*/
    for (i = 0; i < buttonsList.length; i++) {
      if (buttonsList[i].alive) {
-      buttonsList[i].x = game.world.centerX + game.world.width/2 - 90*globalScale;
       if (lastButton) {
-        buttonsList[i].y = lastButton.y + 180*globalScale;
+        console.log(i + "extra button.");
+        if ((i)/3 === 1) {
+          console.log("TRIGGERED");
+          buttonsList[i].x = hoverSprite.x + hoverSprite.width;
+          buttonsList[i].y = lastButton.y + 200*globalScale;
+        } else {
+          buttonsList[i].x = lastButton.x + 430*globalScale;
+          buttonsList[i].y = lastButton.y;
+        }
       } else {
-        buttonsList[i].y = 140*globalScale;
+        buttonsList[i].x = hoverSprite.x + hoverSprite.width;
+        buttonsList[i].y = hoverSprite.y + 800*globalScale;
       }
       var lastButton = buttonsList[i];
      }
@@ -1522,12 +1564,14 @@ function handleDeath(damaged,survivor) {
   if (damaged === battlePlayer) {
     battleMonster.sprite.x = focusX;
     if (damaged.key.charAt(2) === "0") {
-      var destroyedCityColumn = spawnSpecific("destroyedCity", newDestination);
+      var destroyedCityColumn = spawnSpecific("destroyedCity", damaged.key);
       destroyedCities.push(destroyedCityColumn);
       occupiedRows.push(destroyedCityColumn.key.substring(0,2));
     }
     focusSpace.occupied = scrubList(focusSpace.occupied);
+    playersList[damaged.sprite.number].rbTokens = 6;
     playersList[damaged.sprite.number].sprite.kill();
+    destroyedPlayersList.push(playersList[damaged.sprite.number])
     var destroyedPlayers = 0;
     for (var i = 1; i < playersList.length; i++) {
       if (!playersList[i].sprite.alive) {
@@ -1612,6 +1656,9 @@ function finishBattle() {
   battlePlayer.sprite.events.onDragStop._bindings = [];
   battlePlayer.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
   checkBattle(focusSpace);
+  /*for (i = 0; i < monstersList.length; i++) {
+    checkBattle(monstersList[i].space);
+  }*/
   if (pendingBattles.length > 0) {
     console.log("There are more battles.");
     killBattleInfo();
@@ -1908,10 +1955,6 @@ function explode(sprite) {
     dieTween.onComplete.add(this.sprite.kill, this);
 }
 
-function chase() {
-
-}
-
 function move(object,destination,escaping) {
   console.log(object);
   game.input.enabled = false;
@@ -1986,6 +2029,18 @@ function reEnable() {
    game.input.enabled = true;
    actionIcons.callAll('revive');
    actionPointsRecord = 3;
+}
+
+function rebuild(rebuilding, pointer) {
+  var rebuilding = this.rebuilding || rebuilding;
+  rebuilding.rbTokens -= 1;
+  rebuilding.rebuildButton.update(rebuilding);
+  if (rebuilding.rbTokens === 0) {
+    rebuilding.rbTokens = undefined;
+    rebuilding.sprite.revive();
+    addToOccupied(rebuilding, Space[rebuilding.key]);
+  }
+  actionPoints -= 1;
 }
 
 function repair(repairing, pointer, amount) {
@@ -2115,7 +2170,6 @@ function chooseUpgrade(event) {
       game.input.onTap._bindings = [];
       confirmUpgrade(turn,choice);
     } else if (monsterResearchTrack < 3 && event.worldX > x1 && event.worldX < x2 && event.worldY > y2 + 400*globalScale && event.worldY < y2 + 830*globalScale) { 
-      console.log("TRYING TO UPGRADE MR");
       var mrProviders = [];
       monsterResources = 0;
       for (i = 1; i < playersList.length; i++) {
@@ -2303,9 +2357,9 @@ function checkBattle(space) {
         var pendingObject = {pendingPlayer: pendingPlayer, pendingMonster: pendingMonsters[i], space:space}
         if (pendingBattles.length > 0) {
           if (pendingBattles.indexOf(pendingObject) === -1) {
-            pendingBattles.push();
+            pendingBattles.push(pendingObject);
           }
-        } else if (pendingBattles.indexOf(pendingObject) === -1) {
+        } else {
           pendingBattles.push(pendingObject);
           battlePlayer = pendingPlayer;
           battleMonster = pendingMonster;
@@ -2354,12 +2408,10 @@ function changeTurn() {
         turn.rp += turn.rpPerTurn;
       }
       upgradeButton.reset(upgradeButton.x, upgradeButton.y);
-      upgradeButton.loadTexture(turn.sprite.key);
       game.world.bringToTop(upgradeButton);
       upgradeButton.events.onInputUp._bindings = [];
+      upgradeButton.loadTexture(turn.sprite.key);
       upgradeButton.events.onInputUp.add(upgrade, {upgrading: turn});
-    //if (turn.sprite.inputEnabled === false) {
-    //}
 }
 
 

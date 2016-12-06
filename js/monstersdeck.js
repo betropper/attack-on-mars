@@ -186,6 +186,7 @@ var MU = {
       feignTween.onComplete.add(MU["Feign Death"].revive, {monster:monster});
       battleTurn = battlePlayer;
       battlePlayer.inputEnabled = false;
+      game.input.enabled = false;
     },
     revive: function(monster) {
       monster = this.monster || monster;
@@ -195,6 +196,7 @@ var MU = {
       monster.feigned = true;
       battlePlayer.inputEnabled = true;
       battleTurn = battleMonster;
+      game.input.enabled = true;
     }
   },
   "Poison Aura": {
