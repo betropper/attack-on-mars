@@ -9,6 +9,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
+   "versionNumber": ".3",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -283,6 +284,7 @@ class MainMenu {
     right.height = 90 * globalScale;
     right.events.onInputDown.add(changePlayerCount, {action: 1, display: countNumber});
     */
+    var versionText = game.add.text(100*globalScale, 80*globalScale, "Version: "+C.game.versionNumber, C.game.smallStyle);
     var playerCountText = game.add.bitmapText(game.world.centerX, countNumber.y - 140*globalScale, 'attackfont', "Player Count (Locked)", 90*globalScale);
     playerCountText.anchor.set(.5);
     //game.input.onUp.add(checkButtons, {left: left, right: right});
