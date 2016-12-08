@@ -575,7 +575,7 @@ class Setup {
     //
     //Disables scrolling when upgrading is done
     //game.camera.focusOnXY(playersList[1].sprite.x, playersList[1].sprite.y);
-    if (heldSprite && !battleState) {
+    if (heldSprite && !battleStarting && !zoomIn && !battleState) {
       heldSprite.x = game.input.mousePointer.x;
       heldSprite.y = game.input.mousePointer.y;
     }
@@ -625,6 +625,7 @@ class Setup {
        }
 
         for (i = 1; i < playersList.length; i++) {
+          playersList[i].sprite.scale.setTo(C.mech.scale);
           if (playersList[i] !== battlePlayer) {
             playersList[i].sprite.inputEnabled = false;
           }
@@ -769,7 +770,7 @@ class Setup {
           repairText.text = "Repair " + lastClicked.sprite.key;
         }*/
        upgradeDisplay.setText("Upgrades for " + over.sprite.key +":\n" + over.upgrades.join(",\n"));
-       if (over.sprite.scale.x < (C.mech.scale + .3) && !battleState ) {
+       if (over.sprite.scale.x < (C.mech.scale + .3) && !battleState && !battleStarting && !zoomIn) {
          game.world.bringToTop(over.sprite);
          over.sprite.scale.x += .01;
          over.sprite.scale.y += .01;
@@ -777,7 +778,7 @@ class Setup {
       } else if (over.sprite.key === "monster" || bossNames.indexOf(over.sprite.key) > -1) {
         //attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + " / " + over.maxhp + "\nDefence Die (green): " + over.def + "\nBlue Attack Die: " + over.batk + "\nResearch Point Reward: " + over.rp);
         upgradeDisplay.setText("Upgrades for " + over.sprite.key +":\n" + over.upgrades.join(",\n"));
-       if (over.sprite.scale.x < (C.mech.scale + .3) && !battleState && !over.name) {
+       if (over.sprite.scale.x < (C.mech.scale + .3) && !battleState && !battleStarting && !zoomIn && !over.name) {
          game.world.bringToTop(over.sprite);
          over.sprite.scale.x += .01;
          over.sprite.scale.y += .01;
@@ -2113,14 +2114,12 @@ function placeObject(obj,quadrant,column,row) {
   }
   console.log(spaceKey);
   console.log(row);
-  var restrictions = (!quadrant || spaceKey.charAt(0) !== quadrant) || (!column || spaceKey.charAt(1) !== column) || (!row || spaceKey.charAt(2) !== row);
-  if (space.wall || space.occupied || restrictions) {
-    return;
-  } else {
+  var check = (!quadrant || spaceKey.charAt(0) === quadrant) && (!column || spaceKey.charAt(1) === column) && (!row || spaceKey.charAt(2) === row);
+  if (!space.wall && !space.occupied && check) {
+    heldSprite = null;
     obj.sprite.x = closestX;
     obj.sprite.y = closestY;
-    addToOccupied(obj, space);
-    heldSprite = null;
+    addToOccupied(obj, Space[spaceKey]);
     obj.sprite.events.onInputDown._bindings = [];
     if (playersList.indexOf(obj) > -1) { 
       obj.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
