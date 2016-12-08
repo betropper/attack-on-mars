@@ -251,6 +251,7 @@ var U = {
       "color": "green",
       "cost": 6,
       passive: function(player) {
+        
       }
     },
 
