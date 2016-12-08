@@ -758,16 +758,27 @@ class Setup {
       } 
     }
     if (over) {
-      setAttributeDisplay(over); 
+      setAttributeDisplay(over);
+
       if (playerNames.indexOf(over.sprite.key) > -1) {
         /*attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + " / " + over.maxhp + "\nDefence Die (green): " + over.def + "\nRed Attack Die: " + over.ratk + "\nBlue Attack Die: " + over.batk + "\nResearch Points: " + over.rp);
         if (attributeDisplay.text && lastClicked !== undefined && repairText && attributeDisplay.text.indexOf(lastClicked.sprite.key) === -1) {
           repairText.text = "Repair " + lastClicked.sprite.key;
         }*/
        upgradeDisplay.setText("Upgrades for " + over.sprite.key +":\n" + over.upgrades.join(",\n"));
+       if (over.sprite.scale.x < (C.mech.scale + .3) && !battleState ) {
+         game.world.bringToTop(over.sprite);
+         over.sprite.scale.x += .01;
+         over.sprite.scale.y += .01;
+       }
       } else if (over.sprite.key === "monster" || bossNames.indexOf(over.sprite.key) > -1) {
         //attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + " / " + over.maxhp + "\nDefence Die (green): " + over.def + "\nBlue Attack Die: " + over.batk + "\nResearch Point Reward: " + over.rp);
         upgradeDisplay.setText("Upgrades for " + over.sprite.key +":\n" + over.upgrades.join(",\n"));
+       if (over.sprite.scale.x < (C.mech.scale + .3) && !battleState && !over.name) {
+         game.world.bringToTop(over.sprite);
+         over.sprite.scale.x += .01;
+         over.sprite.scale.y += .01;
+       }
       }
     } else if (lastClicked) {
       if (playerNames.indexOf(lastClicked.sprite.key) > -1) {
@@ -1097,6 +1108,7 @@ function setLastClicked(sprite) {
   if (playerNames.indexOf(sprite.key) > -1) {
     lastClicked = playersList[sprite.number];
     var normalState = !battleState && !zoomIn && !zoomOut;
+
     for (i = 1; i < playersList.length; i++) {
       if (!playersList[i].rebuildButton && destroyedPlayersList.length > 0 && playersList[i].rbTokens && normalState) { 
         if (destroyedMechDisplays.length === 0) {
@@ -1105,6 +1117,8 @@ function setLastClicked(sprite) {
           var x = destroyedMechDisplays[destroyedMechDisplays.length-1].valueIcon.x + 300*globalScale;
         }
         playersList[i].rebuildButton = playersList[i].addHoverInfo(x, hoverSprite.y + batkDisplay.valueIcon.width*4,21,"rbTokens");
+        playersList[i].rebuildButton.mechSprite = game.add.sprite(playersList[i].rebuildButton.valueIcon.x - 60*globalScale, playersList[i].rebuildButton.valueIcon.y, playersList[i].sprite.key)
+        playersList[i].rebuildButton.mechSprite.scale.setTo(globalScale);
         playersList[i].rebuildButton.valueIcon.inputEnabled = true;
         playersList[i].rebuildButton.valueIcon.width = 80;
         playersList[i].rebuildButton.valueIcon.height = 80;
@@ -2038,6 +2052,7 @@ function rebuild(rebuilding, pointer) {
   if (rebuilding.rbTokens === 0) {
     rebuilding.rbTokens = undefined;
     rebuilding.sprite.revive();
+    rebuilding.hp = rebuilding.maxhp;
     addToOccupied(rebuilding, Space[rebuilding.key]);
   }
   actionPoints -= 1;
@@ -2571,6 +2586,10 @@ function getRandomSpace() {
   }
 }
 
+function reduceScale() {
+  var scaleTween = game.add.tween(this.sprite.scale).to( { x: C.mech.scale, y: C.mech.scale }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
+}
+
 
 function spawnRandom(object,quadrant,row,occupiedCheck) {
   var condition = true;
@@ -2639,6 +2658,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
   } else {
     random.scale.x = C.mech.scale;
     random.scale.y = C.mech.scale;
+    random.events.onInputOut.add(reduceScale,{sprite:random});
   }
   random.smoothed = true;
   random.alpha = 0;
