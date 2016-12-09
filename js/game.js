@@ -2094,6 +2094,8 @@ function placeObject(obj,quadrant,column,row) {
   var obj = this.obj || obj;
   var quadrant = this.quadrant || quadrant;
   var column = this.column || column;
+  //TEMP FIX 
+  var column = false;
   var row = this.row || row;
   var closestDistance = 9999;
   var closestX = 9999;
@@ -2106,7 +2108,7 @@ function placeObject(obj,quadrant,column,row) {
     var spaceObjX = spaceObj.x*C.bg.scale*C.bg.resizeX + game.bg.position.x;
     var spaceObjY = spaceObj.y*C.bg.scale*C.bg.resizeY + game.bg.position.y;
     var distanceTo = distance(spaceObjX,spaceObjY,obj.sprite.x,obj.sprite.y)
-    if (distanceTo < closestDistance) {
+    if (!spaceObj.wall && !spaceObj.occupied && distanceTo < closestDistance) {
       closestDistance = distanceTo;
       space = spaceObj;
       closestX = spaceObjX;
@@ -2115,16 +2117,19 @@ function placeObject(obj,quadrant,column,row) {
     }
   }
   console.log(spaceKey);
-  console.log(row);
+  console.log(quadrant+column+row);
+  
   var check = (!quadrant || spaceKey.charAt(0) === quadrant) && (!column || spaceKey.charAt(1) === column) && (!row || spaceKey.charAt(2) === row);
   if (!space.wall && !space.occupied && check) {
     heldSprite = null;
     obj.sprite.x = closestX;
     obj.sprite.y = closestY;
     addToOccupied(obj, Space[spaceKey]);
-    obj.sprite.events.onInputDown._bindings = [];
+    obj.key = spaceKey;
+    obj.sprite.closestSpaces = getClosestSpaces(obj.key);
+    obj.sprite.events.onInputUp._bindings = [];
     if (playersList.indexOf(obj) > -1) { 
-      obj.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
+      obj.sprite.events.onDragStop.add(attachClosestSpace, obj.sprite);
       obj.sprite.events.onInputDown.add(setLastClicked, this);
     }
   }
@@ -2141,7 +2146,7 @@ function rebuild(rebuilding, pointer) {
     heldSprite = rebuilding.sprite;
     rebuilding.sprite.events.onInputDown._bindings = [];
     rebuilding.sprite.events.onDragStop._bindings = [];
-    rebuilding.sprite.events.onInputDown.add(placeObject,{obj:rebuilding, quadrant:String.fromCharCode(96 + rebuilding.sprite.number),column:null,row:"0"})
+    rebuilding.sprite.events.onInputUp.add(placeObject,{obj:rebuilding, quadrant:String.fromCharCode(96 + rebuilding.sprite.number),column:false,row:"0"})
   }
   actionPoints -= 1;
 }
