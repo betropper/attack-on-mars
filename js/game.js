@@ -458,6 +458,7 @@ function reEnableHover(sprite) {
   sprite.events.onDragStop.add(attachClosestSpace, sprite);
   sprite.events.onInputDown.add(setLastClicked, this);
   sprite.events.onInputOver.add(sprite.glow, {sprite:sprite});
+  sprite.events.onInputOver.add(hoverScale, {sprite:sprite});
   sprite.events.onInputOut.add(reduceScale,{sprite:sprite});
   sprite.events.onInputOut.add(sprite.glow, {sprite:sprite,fadeOut:true});
 }
@@ -627,6 +628,7 @@ class Setup {
     }*/
 
      if (zoomIn === true) {
+       game.world.inputEnabled = false;
       // Temporary for testing. Change this later.
       if (!zoomInTweens) {
         zoomInTweens = true;
@@ -757,6 +759,7 @@ class Setup {
           game.world.bringToTop(battleTexts[i]);
         }
         barsMoving = false;
+        game.input.enabled = true;
     } else if (battleState === true) {
       battle(battlePlayer,battleMonster);
       // Change this, placeholder ending.
@@ -784,19 +787,19 @@ class Setup {
           repairText.text = "Repair " + lastClicked.sprite.key;
         }*/
        upgradeDisplay.setText("Upgrades for " + over.sprite.key +":\n" + over.upgrades.join(",\n"));
-       if (over.sprite.scale.x < (C.mech.scale + .3) && !battleState && !battleStarting && !zoomIn) {
+       /*if (over.sprite.scale.x < (C.mech.scale + .3) && !battleState && !battleStarting && !zoomIn) {
          game.world.bringToTop(over.sprite);
          over.sprite.scale.x += .01;
          over.sprite.scale.y += .01;
-       }
+       }*/
       } else if (over.sprite.key === "monster" || bossNames.indexOf(over.sprite.key) > -1) {
         //attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + " / " + over.maxhp + "\nDefence Die (green): " + over.def + "\nBlue Attack Die: " + over.batk + "\nResearch Point Reward: " + over.rp);
         upgradeDisplay.setText("Upgrades for " + over.sprite.key +":\n" + over.upgrades.join(",\n"));
-       if (over.sprite.scale.x < (C.mech.scale + .3) && !battleState && !battleStarting && !zoomIn && !over.name) {
+       /*if (over.sprite.scale.x < (C.mech.scale + .3) && !battleState && !battleStarting && !zoomIn && !over.name) {
          game.world.bringToTop(over.sprite);
          over.sprite.scale.x += .01;
          over.sprite.scale.y += .01;
-       }
+       }*/
       }
     } else if (lastClicked) {
       if (playerNames.indexOf(lastClicked.sprite.key) > -1) {
@@ -1076,7 +1079,6 @@ function zoomFalse() {
   if (zoomIn === true) {
     zoomIn = false;
     zoomInTweens = false;
-
 }
   if (zoomOut === true) { 
     zoomOut = false;
@@ -1754,6 +1756,7 @@ function finishBattle() {
     xPivot = (battlePlayer.sprite.x *C.game.zoomScale) - game.camera.width/2;
     findIncrementsTo(focusSpace);
     zoomIn = true;
+    game.input.enabled = true;
     battleState = false;
     battleStarting = true;
   } else {
@@ -2505,6 +2508,7 @@ function checkBattle(space) {
           xPivot = (battlePlayer.sprite.x *C.game.zoomScale) - game.camera.width/2;
           findIncrementsTo(focusSpace);
           zoomIn = true;
+          game.input.enabled = true;
           battleStarting = true;
       }
     }
@@ -2710,6 +2714,9 @@ function reduceScale() {
   var scaleTween = game.add.tween(this.sprite.scale).to( { x: C.mech.scale, y: C.mech.scale }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
 }
 
+function hoverScale() {
+  var scaleTween = game.add.tween(this.sprite.scale).to( { x: C.mech.scale + .3, y: C.mech.scale + .3 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
+}
 
 function spawnRandom(object,quadrant,row,occupiedCheck) {
   var condition = true;
