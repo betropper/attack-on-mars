@@ -9,7 +9,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": ".3.2",
+   "versionNumber": ".3.2.2",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -462,6 +462,12 @@ function reEnableHover(sprite) {
   sprite.events.onInputOut.add(reduceScale,{sprite:sprite});
   sprite.events.onInputOut.add(sprite.glow, {sprite:sprite,fadeOut:true});
 }
+function disableHover(sprite) {
+  sprite.events.onInputDown._bindings = [];
+  sprite.events.onInputOver._bindings = [];
+  sprite.events.onInputOut._bindings = [];
+  sprite.events.onDragStop._bindings = [];
+}
 
 function reEnableInput() {
   this.inputEnabled = true;
@@ -628,7 +634,7 @@ class Setup {
     }*/
 
      if (zoomIn === true) {
-       game.world.inputEnabled = false;
+       game.input.enabled = false;
       // Temporary for testing. Change this later.
       if (!zoomInTweens) {
         zoomInTweens = true;
@@ -1076,12 +1082,18 @@ function zoomWorld() {
  }
 }
 function zoomFalse() {
-  if (zoomIn === true) {
+  if (zoomIn === true) { 
     zoomIn = false;
     zoomInTweens = false;
+    for (var i = 0; i < globalList.length; i++) {
+      globalList[i].sprite.inputEnabled = false;
+    }
 }
   if (zoomOut === true) { 
     zoomOut = false;
+    for (var i = 0; i < globalList.length; i++) {
+      globalList[i].sprite.inputEnabled = true;
+    }
     for (i = 0; i < buttonsList.length; i++) {
       game.world.bringToTop(buttonsList[i]);
     }
@@ -1879,7 +1891,7 @@ function battle(player, monster) {
           for (i = 0; i < battleTexts.length; i++) {
             battleTexts[i].reset(battleTexts[i].x, battleTexts[i].y);
           }
-          battlePlayer.sprite.inputEnabled = true;
+          //battlePlayer.sprite.inputEnabled = true;
           battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
         }
       }
@@ -1904,7 +1916,7 @@ function battle(player, monster) {
           for (i = 0; i < battleTexts.length; i++) {
             battleTexts[i].reset(battleTexts[i].x, battleTexts[i].y);
           }
-          battlePlayer.sprite.inputEnabled = true;
+          //battlePlayer.sprite.inputEnabled = true;
           battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
           battlePlayer.attacking = false;
         }
@@ -2171,6 +2183,7 @@ function rebuild(rebuilding, pointer) {
     heldSprite = rebuilding.sprite;
     rebuilding.sprite.events.onInputDown._bindings = [];
     rebuilding.sprite.events.onInputOver._bindings = [];
+    rebuilding.sprite.events.onInputOut._bindings = [];
     rebuilding.sprite.events.onDragStop._bindings = [];
     rebuilding.sprite.events.onInputUp.add(placeObject,{obj:rebuilding, quadrant:String.fromCharCode(96 + rebuilding.sprite.number),column:false,row:"0"})
   }
@@ -2814,6 +2827,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     random.scale.y = C.mech.scale;
     random.glow = glow;
     random.events.onInputOut.add(reduceScale,{sprite:random});
+    random.events.onInputOver.add(hoverScale, {sprite:random});
     random.events.onInputOut.add(random.glow, {sprite:random,fadeOut:true});
     random.events.onInputOver.add(random.glow, {sprite:random});
   }
