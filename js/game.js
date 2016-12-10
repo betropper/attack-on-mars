@@ -9,7 +9,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": ".3",
+   "versionNumber": ".3.1",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -282,7 +282,7 @@ class MainMenu {
     right.inputEnabled = true;
     right.width = 90 * globalScale;
     right.height = 90 * globalScale;
-    right.events.onInputDown.add(changePlayerCount, {action: 1, display: countNumber});
+    [right.events.onInputDown.add(changePlayerCount,]() {action: 1, display: countNumber});
     */
     var versionText = game.add.text(100*globalScale, 80*globalScale, "Version: "+C.game.versionNumber, C.game.smallStyle);
     var playerCountText = game.add.bitmapText(game.world.centerX, countNumber.y - 140*globalScale, 'attackfont', "Player Count (Locked)", 90*globalScale);
@@ -450,6 +450,18 @@ function shiftSettings() {
     }
 }
 
+function reEnableHover(sprite) {
+  sprite.events.onInputDown._bindings = [];
+  sprite.events.onInputOver._bindings = [];
+  sprite.events.onInputOut._bindings = [];
+  sprite.events.onDragStop._bindings = [];
+  sprite.events.onDragStop.add(attachClosestSpace, sprite);
+  sprite.events.onInputDown.add(setLastClicked, this);
+  sprite.events.onInputOver.add(sprite.glow, {sprite:sprite});
+  sprite.events.onInputOut.add(reduceScale,{sprite:sprite});
+  sprite.events.onInputOut.add(sprite.glow, {sprite:sprite,fadeOut:true});
+}
+
 function reEnableInput() {
   this.inputEnabled = true;
 }
@@ -533,6 +545,7 @@ class Setup {
       closestSpaces = getClosestSpaces(playersList[i].key);
       playersList[i].sprite.closestSpaces = closestSpaces;
       playersList[i].sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
+      reEnableHover(playersList[i].sprite);
       //turn = playersList[1];
     }
     for (var i = 0; i <= 5; i++) {
@@ -759,13 +772,12 @@ class Setup {
       }
     }
     for (var i = 0; i < globalList.length; i++) {
-      if (globalList[i].sprite.input && globalList[i].sprite.input.pointerOver()) {
+      if (destroyedCities.indexOf(globalList[i]) === -1 && globalList[i].sprite.input && globalList[i].sprite.input.pointerOver()) {
         var over = globalList[i]; 
       } 
     }
     if (over) {
       setAttributeDisplay(over);
-
       if (playerNames.indexOf(over.sprite.key) > -1) {
         /*attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + " / " + over.maxhp + "\nDefence Die (green): " + over.def + "\nRed Attack Die: " + over.ratk + "\nBlue Attack Die: " + over.batk + "\nResearch Points: " + over.rp);
         if (attributeDisplay.text && lastClicked !== undefined && repairText && attributeDisplay.text.indexOf(lastClicked.sprite.key) === -1) {
@@ -1025,12 +1037,21 @@ function enableBossInput(boss) {
 
 }
 
+function glow() {
+  console.log(this);
+  if (this.fadeOut === true) {
+    tweenTint(this.sprite, 0xFFD27F, 0xffffff, 500);
+  } else {
+    tweenTint(this.sprite, 0xffffff, 0xFFD27F, 500);
+  }
+}
 
-function tweenTint(obj, startColor, endColor, time, yoyo) {
+function tweenTint(obj, startColor, endColor, time, yoyo, repeat) {
+  var repeat = repeat || 0;
   // create an object to tween with our step value at 0   
   var colorBlend = {step: 0};
   // create the tween on this object and tween its step property to 100
-  var colorTween = game.add.tween(colorBlend).to({step: 100}, time);
+  var colorTween = game.add.tween(colorBlend).to({step: 100}, time, Phaser.Easing.Linear.None, false, 0, repeat);
   // run the interpolateColor function every time the tween updates, feeding it the updated value of our tween each time, and set the result as our tint
   colorTween.onUpdateCallback(function() { 
     obj.tint = Phaser.Color.interpolateColor(startColor, endColor, 100, colorBlend.step);
@@ -1039,7 +1060,9 @@ function tweenTint(obj, startColor, endColor, time, yoyo) {
   obj.tint = startColor;
   // start the tween
   colorTween.start();
-  if (yoyo) {
+  if (yoyo && repeat) {
+    colorTween.yoyo(true,repeat);
+  } else if (yoyo) {
     colorTween.yoyo(true);
   }
 }
@@ -1301,10 +1324,12 @@ function winGame(winner) {
   }
   for (i = 1; i < playersList.length; i++) {
     playersList[i].sprite.inputEnabled = true;
-    playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
+    reEnableHover(playersList[i].sprite);
   }
+  /*
   battlePlayer.sprite.events.onDragStop._bindings = [];
   battlePlayer.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
+  */
   winner = this.winner;
   var plusorneg = 1;
   var increment = 1;
@@ -1337,8 +1362,9 @@ class GameOver {
     create() {
         game.world.scale.set(1);
         console.log("YOU LOSE.");
+        game.input.enabled = true;
         var gg = game.add.text(game.world.centerX, game.world.centerY, "GAME\nOVER",C.game.textStyle);
-        var restart = game.add.text(game.world.centerX, game.world.centerY + 100, "Restart?",C.game.textStyle);
+        var restart = game.add.text(game.world.centerX, game.world.centerY + 200*globalScale, "Restart?",C.game.textStyle);
         gg.anchor.setTo(.5);
         restart.anchor.setTo(.5);
         restart.inputEnabled = true;
@@ -1705,10 +1731,8 @@ function finishBattle() {
 
   for (i = 1; i < playersList.length; i++) {
     playersList[i].sprite.inputEnabled = true;
-    playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
+    reEnableHover(playersList[i].sprite);
   }
-  battlePlayer.sprite.events.onDragStop._bindings = [];
-  battlePlayer.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
   //checkBattle(focusSpace);
   for (i = 0; i < pendingBattles.length; i++) {
     if (pendingBattles[i].pendingPlayer.hp <= 0 || pendingBattles[i].pendingMonster.hp <= 0) {
@@ -2127,10 +2151,8 @@ function placeObject(obj,quadrant,column,row) {
     addToOccupied(obj, Space[spaceKey]);
     obj.key = spaceKey;
     obj.sprite.closestSpaces = getClosestSpaces(obj.key);
-    obj.sprite.events.onInputUp._bindings = [];
+    reEnableHover(obj.sprite);
     if (playersList.indexOf(obj) > -1) { 
-      obj.sprite.events.onDragStop.add(attachClosestSpace, obj.sprite);
-      obj.sprite.events.onInputDown.add(setLastClicked, this);
     }
   }
 }
@@ -2145,6 +2167,7 @@ function rebuild(rebuilding, pointer) {
     rebuilding.hp = rebuilding.maxhp;
     heldSprite = rebuilding.sprite;
     rebuilding.sprite.events.onInputDown._bindings = [];
+    rebuilding.sprite.events.onInputOver._bindings = [];
     rebuilding.sprite.events.onDragStop._bindings = [];
     rebuilding.sprite.events.onInputUp.add(placeObject,{obj:rebuilding, quadrant:String.fromCharCode(96 + rebuilding.sprite.number),column:false,row:"0"})
   }
@@ -2691,10 +2714,25 @@ function reduceScale() {
 function spawnRandom(object,quadrant,row,occupiedCheck) {
   var condition = true;
   var failSafe = 1;
-  while (condition === true && failSafe < 700) {
+  occupiedRows = ['center'];
+  for (i = 0; i < destroyedCities.length; i++) {
+    var cityChars = destroyedCities[i].key.substring(0,2)
+    if (occupiedRows.indexOf(cityChars) === -1) {
+      occupiedRows.push(cityChars);
+    }
+  }
+
+  for (i = 0; i < monstersList.length; i++) {
+    var monsterChars = monstersList[i].key.substring(0,2)
+    if (occupiedRows.indexOf(monsterChars) === -1) {
+      occupiedRows.push(monsterChars);
+    }
+  }
+
+  while (condition === true) {
     failSafe += 1;
     var space = getRandomSpace();
-    if (quadrant === "random" && occupiedCheck === true) {
+    if   (quadrant === "random" && occupiedCheck === true) {
         if (row === "random") {
           condition = space.key.indexOf("0") || space.selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1;
         } else {
@@ -2714,6 +2752,18 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
         condition = space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0;
     } else {
         condition = false;
+        if (failSafe >= 700) {
+          var tempSpace = {
+            selectedSpace: space.selectedSpace,
+            key: space.key
+          };
+          do {
+            var rand = monstersList[Math.floor(Math.random() * monstersList.length)];
+            tempSpace.selectedSpace = rand.space;
+            tempSpace.key = rand.key.substring(0,2) + "0";
+          } while (tempSpace.selectedSpace.occupied && tempSpace.key.charAt(2) != "3")
+          space = tempSpace;
+        }
     }
     console.log(condition);
   } 
@@ -2755,21 +2805,25 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
   } else {
     random.scale.x = C.mech.scale;
     random.scale.y = C.mech.scale;
+    random.glow = glow;
     random.events.onInputOut.add(reduceScale,{sprite:random});
+    random.events.onInputOut.add(random.glow, {sprite:random,fadeOut:true});
+    random.events.onInputOver.add(random.glow, {sprite:random});
   }
   random.smoothed = true;
   random.alpha = 0;
   game.add.tween(random).to( { alpha: 1 }, 1000, Phaser.Easing.Linear.None, true);
   random.prototype = Object.create(Phaser.Sprite.prototype);
-  //random.scale.setTo(C.game.scaleRatio,C.game.scaleRatio)
   var obj =  {
     space: space.selectedSpace,
     key: space.key,
     sprite: random
   };
+  if (object != "destroyedCity") {
+    obj.addBattleInfo = addBattleInfo;
+    obj.addHoverInfo = addHoverInfo;
+  }
   globalList.push(obj);
-  obj.addBattleInfo = addBattleInfo;
-  obj.addHoverInfo = addHoverInfo
   if (space.selectedSpace.occupied === false) {
     space.selectedSpace.occupied = [obj];
   } else {
@@ -2795,7 +2849,6 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
   } else if (object === "monster") {
     threatLevel += 1;
     game.world.bringToTop(random);
-    occupiedRows.push(space.key.substring(0,2));
     obj.sprite.inputEnabled = true;
     obj.batkGoal = 5;
     obj.ratkGoal = 5;
