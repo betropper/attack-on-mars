@@ -451,6 +451,7 @@ function shiftSettings() {
 }
 
 function reEnableHover(sprite) {
+  //Change as need be, some of these are probably redundant
   sprite.events.onInputDown._bindings = [];
   sprite.events.onInputOver._bindings = [];
   sprite.events.onInputOut._bindings = [];
