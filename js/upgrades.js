@@ -250,8 +250,43 @@ var U = {
       "desc": "When escaping combat, this mech can flee two spaces in any direction.\nYou may also spend an action point to return to any home quadrant city.",
       "color": "green",
       "cost": 6,
-      passive: function(player) {
-        
+      passive: function(player) { },
+      active: function(player) {
+        zoomOut = true;
+        availableSpaces = [];
+        player.sprite.closestSpaces = getClosestSpaces(player.key);
+        availableSpaces.push(player.sprite.closestSpaces.keys);
+        //Finds the closest spaces from two spaces away in case of
+        //monster bait upgrade
+        var twoAwayList = [];
+        for (m = 0; m < player.sprite.closestSpaces.keys.length; m++) {
+            //monstersList[i].sprite.closestSpaces.selectedSpaces[m].closestSpaces = getClosestSpaces(monstersList[i].sprite.closestSpaces.keys[m]) 
+            var checkKeys = getClosestSpaces(player.sprite.closestSpaces.keys[m]).keys;
+            for (l = 0; l < checkKeys.length; l++) {
+              checkKeys[l] = {key: checkKeys[l], parent: player.sprite.closestSpaces.keys[m]}
+              twoAwayList.push(checkKeys[l]);
+            }
+          }
+        console.log(twoAwayList);
+        twoAwayList.forEach(function(i) {
+          if (availableSpaces.indexOf(i.key) === -1) {
+            availableSpaces.push(i.key);
+          }
+        });
+        heldSprite = player.sprite;
+        disableHover(player.sprite);
+        player.space.occupied = removeFromList(player, player.space);
+        player.sprite.inputEnabled = true
+        player.sprite.events.onInputUp.add(placeObject,{obj:player, quadrant:false,column:false,row:false,array:availableSpaces});
+        /*for (m = 0; m < twoAwayList.length; m++) {
+          if (Space[twoAwayList[m].key].occupied) {
+            for (l = 0; l < Space[twoAwayList[m].key].occupied.length; l++) {
+              if (playersList.indexOf(Space[twoAwayList[m].key].occupied[l]) > -1 && Space[twoAwayList[m].key].occupied[l].upgrades.indexOf("Monster Bait") > -1) {
+                var newDestination = twoAwayList[m].parent;
+              }
+            }
+          }
+        }*/
       }
     },
 

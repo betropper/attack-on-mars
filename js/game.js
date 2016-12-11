@@ -454,9 +454,13 @@ function reEnableHover(sprite) {
   sprite.events.onInputDown._bindings = [];
   sprite.events.onInputOver._bindings = [];
   sprite.events.onInputOut._bindings = [];
+  sprite.events.onInputUp._bindings = [];
   sprite.events.onDragStop._bindings = [];
   sprite.events.onDragStop.add(attachClosestSpace, sprite);
+  sprite.events.onDragStop.add(reduceScale, {sprite:sprite});
+  sprite.events.onDragStop.add(sprite.glow, {sprite:sprite,fadeOut:true});
   sprite.events.onInputDown.add(setLastClicked, this);
+  sprite.events.onInputDown.add(hoverScale, {sprite:sprite});
   sprite.events.onInputOver.add(sprite.glow, {sprite:sprite});
   sprite.events.onInputOver.add(hoverScale, {sprite:sprite});
   sprite.events.onInputOut.add(reduceScale,{sprite:sprite});
@@ -1502,6 +1506,10 @@ function countInArray(array, what) {
 
 function attemptEscape() {
   var method = this.modifier;
+  if (method === "Emergency Jump Jets") {
+    var twoAwayList = U["Emergency Jump Jets"].active(battlePlayer);
+    return
+  }
   killBattleInfo();
   console.log(method);
   if (method === null) {
@@ -1515,7 +1523,6 @@ function attemptEscape() {
   }
   move(battleMonster,destination,"chasing");
   var cameraTween = game.add.tween(game.camera).to( { x: changeValueScale(Space[destination].x,"x")*3 - game.camera.width/2 , y: changeValueScale(Space[destination].y,"y")*3 - game.camera.height/2 + game.camera.height/8 }, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
-  cameraTween.onComplete.add(attackOfOppertunity, {attacker: battleMonster, defender: battlePlayer, destination: destination});
 }
 
 function attackOfOppertunity() {
@@ -1533,7 +1540,6 @@ function attackOfOppertunity() {
     successes -= defender.guarenteedDef;
   }
   var defences = rollDie(defender.def, defender.defGoal || 5);
-
   if (successes > defences) {
     defender.hp -= successes - defences;
     var damaged = defender;
@@ -1549,13 +1555,19 @@ function attackOfOppertunity() {
     printBattleResults(text, {x: defender.sprite.x, y: defender.sprite.y }); 
     if (attacker.upgrades.indexOf("Poison Aura") > -1) {
       var stacks = countInArray(attacker.upgrades,"Poison Aura");
-      MU["Poison Aura"].active(attacker,defender,stacks);      
+      MU["Poison Aura"].active(attacker,defender,stacks);
+      var deathCase = "poisoned";
     }
   if (damaged && damaged.hp <= 0) {
-    handleDeath(damaged,attacker);   
+    handleDeath(damaged,attacker,deathCase);   
   } else {
     move(battlePlayer,destination);
     focusSpace.occupied = removeFromList(playersList[battlePlayer.sprite.number], focusSpace);
+    pendingBattles.forEach(function(i) {
+      if (i.pendingPlayer.sprite.key === battlePlayer.sprite.key) {
+        pendingBattles.splice(i,1);
+      }
+    });
     finishBattle();
   }
   battleTexts = [];
@@ -2069,6 +2081,7 @@ function move(object,destination,escaping) {
       return;
     } else if (escaping === "chasing") {
       var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
+      moveTween.onComplete.add(attackOfOppertunity, {attacker: battleMonster, defender: battlePlayer, destination: destination});
       moveTween.onComplete.add(reEnable,this);
       return;
     }
@@ -2157,17 +2170,24 @@ function placeObject(obj,quadrant,column,row) {
   }
   console.log(spaceKey);
   console.log(quadrant+column+row);
-  
-  var check = (!quadrant || spaceKey.charAt(0) === quadrant) && (!column || spaceKey.charAt(1) === column) && (!row || spaceKey.charAt(2) === row);
+  if (!this.array) {
+    var check = (!quadrant || spaceKey.charAt(0) === quadrant) && (!column || spaceKey.charAt(1) === column) && (!row || spaceKey.charAt(2) === row);
+  } else {
+    var check = (this.array.indexOf(spaceKey) > -1);
+  }
   if (!space.wall && !space.occupied && check) {
     heldSprite = null;
     obj.sprite.x = closestX;
     obj.sprite.y = closestY;
-    addToOccupied(obj, Space[spaceKey]);
     obj.key = spaceKey;
+    if (this.array) {
+      move(battleMonster,obj.key,"chasing");
+    }
+    addToOccupied(obj, Space[spaceKey]);
     obj.sprite.closestSpaces = getClosestSpaces(obj.key);
     reEnableHover(obj.sprite);
     if (playersList.indexOf(obj) > -1) { 
+      return spaceKey;
     }
   }
 }
