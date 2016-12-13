@@ -1507,13 +1507,12 @@ function countInArray(array, what) {
 
 function attemptEscape() {
   var method = this.modifier;
+  killBattleInfo();
+  console.log(method);
   if (method === "Emergency Jump Jets") {
     var twoAwayList = U["Emergency Jump Jets"].active(battlePlayer);
     return
-  }
-  killBattleInfo();
-  console.log(method);
-  if (method === null) {
+  } else if (method === null) {
     var row = parseInt(battlePlayer.key.charAt(2)) - 2;
     if (row < 0) {
       row = 0;
@@ -2068,6 +2067,9 @@ function explode(sprite) {
 
 function move(object,destination,escaping) {
   console.log(object);
+  var object = this.object || object;
+  var destination = this.destination || destination;
+  var escaping = this.escaping || escaping ;
   game.input.enabled = false;
   if (playersList.indexOf(object) > -1) {
     setLastClicked(object.sprite);
@@ -2077,8 +2079,25 @@ function move(object,destination,escaping) {
   var destinationY = Space[destination].y*C.bg.scale*C.bg.resizeY + game.bg.position.y;  
   if (escaping) {
     if (escaping === "running") {
-      var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
-      moveTween.onComplete.add(reEnable,this);
+      if (this.method && this.method === "Emergency Jump Jets") {
+        var destination = getClosestByDistance(object).spaceKey;
+        var destinationX = Space[destination].x*C.bg.scale*C.bg.resizeX + game.bg.position.x;
+        var destinationY = Space[destination].y*C.bg.scale*C.bg.resizeY + game.bg.position.y;  
+        battlePlayer.sprite.events.onInputUp._bindings[0].context.destination = destination;
+        console.log(this.list);
+        if (this.list.indexOf(destination) > -1) {
+          var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
+          moveTween.onComplete.add(reEnable,this);
+          move(battleMonster,destination,"chasing");
+          heldSprite = null;
+        } else {
+          battlePlayer.sprite.events.onInputUp._bindings[0].context.destination = getClosestByDistance(object).spaceKey;
+          game.input.enabled = false;
+        }
+      } else {
+        var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
+        moveTween.onComplete.add(reEnable,this);
+      }
       return;
     } else if (escaping === "chasing") {
       var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
@@ -2141,6 +2160,35 @@ function reEnable() {
    game.input.enabled = true;
    actionIcons.callAll('revive');
    actionPointsRecord = 3;
+}
+
+function getClosestByDistance(obj) {
+  var obj = obj || this.obj;
+  var closestDistance = 9999;
+  var closestX = 9999;
+  var closestY = 9999;
+  var space = null;
+  for (var i = 0; i < obj_keys.length; i++) {
+    //console.log(closestDistance);
+    var spaceObj = Space[obj_keys[i]];
+    //console.log(spaceObj);
+    var spaceObjX = spaceObj.x*C.bg.scale*C.bg.resizeX + game.bg.position.x;
+    var spaceObjY = spaceObj.y*C.bg.scale*C.bg.resizeY + game.bg.position.y;
+    var distanceTo = distance(spaceObjX,spaceObjY,obj.sprite.x,obj.sprite.y)
+    if (!spaceObj.wall && !spaceObj.occupied && distanceTo < closestDistance) {
+      closestDistance = distanceTo;
+      space = spaceObj;
+      closestX = spaceObjX;
+      closestY = spaceObjY;
+      spaceKey = obj_keys[i];
+    }
+  }
+  console.log(spaceKey);
+  return {
+    space: space,
+    spaceKey: spaceKey,
+    closestDistance: closestDistance
+  }
 }
 
 function placeObject(obj,quadrant,column,row) {

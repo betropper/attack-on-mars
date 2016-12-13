@@ -253,9 +253,8 @@ var U = {
       passive: function(player) { },
       active: function(player) {
         zoomOut = true;
-        availableSpaces = [];
         player.sprite.closestSpaces = getClosestSpaces(player.key);
-        availableSpaces.push(player.sprite.closestSpaces.keys);
+        var availableSpaces = player.sprite.closestSpaces.keys;
         //Finds the closest spaces from two spaces away in case of
         //monster bait upgrade
         var twoAwayList = [];
@@ -267,7 +266,6 @@ var U = {
               twoAwayList.push(checkKeys[l]);
             }
           }
-        console.log(twoAwayList);
         twoAwayList.forEach(function(i) {
           if (availableSpaces.indexOf(i.key) === -1) {
             availableSpaces.push(i.key);
@@ -275,9 +273,12 @@ var U = {
         });
         heldSprite = player.sprite;
         disableHover(player.sprite);
-        player.space.occupied = removeFromList(player, player.space);
+        //player.space.occupied = removeFromList(player,player.space);
         player.sprite.inputEnabled = true
-        player.sprite.events.onInputUp.add(placeObject,{obj:player, quadrant:false,column:false,row:false,array:availableSpaces});
+        spaceKey = getClosestByDistance(player).spaceKey;
+        console.log(spaceKey);
+        player.sprite.events.onInputUp._bindings = [];
+        player.sprite.events.onInputUp.add(move,{object:player,destination:spaceKey,escaping:"running",method:"Emergency Jump Jets",list:availableSpaces});
         /*for (m = 0; m < twoAwayList.length; m++) {
           if (Space[twoAwayList[m].key].occupied) {
             for (l = 0; l < Space[twoAwayList[m].key].occupied.length; l++) {
@@ -287,6 +288,7 @@ var U = {
             }
           }
         }*/
+       return 
       }
     },
 
