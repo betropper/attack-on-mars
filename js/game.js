@@ -9,7 +9,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": ".3.2.2",
+   "versionNumber": ".3.3.0",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -2092,7 +2092,7 @@ function move(object,destination,escaping) {
           heldSprite = null;
         } else {
           battlePlayer.sprite.events.onInputUp._bindings[0].context.destination = getClosestByDistance(object).spaceKey;
-          game.input.enabled = false;
+          game.input.enabled = true;
         }
       } else {
         var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
