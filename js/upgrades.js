@@ -253,6 +253,9 @@ var U = {
       passive: function(player) { },
       active: function(player) {
         zoomOut = true;
+        for (i = 0; i < battleTexts.length; i++) {
+          battleTexts[i].kill();
+        }
         player.sprite.closestSpaces = getClosestSpaces(player.key);
         var availableSpaces = player.sprite.closestSpaces.keys;
         //Finds the closest spaces from two spaces away in case of
