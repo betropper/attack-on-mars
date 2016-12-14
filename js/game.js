@@ -1139,7 +1139,7 @@ function setLastClicked(sprite) {
     upgradeButton.width = 160*globalScale;
     upgradeButton.height = 160*globalScale;
     upgradeButton.battleButton = false;
-    buttonsList.push(upgradeButton);
+    buttonsList[0] = upgradeButton;
     upgradeButton.events.onInputUp.add(upgrade, {upgrading: turn});
     waitButton = game.add.button(game.world.centerX + game.world.width/2 - 90*globalScale, 140*globalScale, 'icons', waitOneAction);
     waitButton.frame = 2;
@@ -1147,7 +1147,7 @@ function setLastClicked(sprite) {
     waitButton.anchor.y = .5;
     waitButton.scale.setTo(globalScale);
     waitButton.battleButton = false;
-    buttonsList.push(waitButton);
+    buttonsList[1] = waitButton;
     game.world.bringToTop(waitButton);
   }
   if (playerNames.indexOf(sprite.key) > -1) {
@@ -1199,7 +1199,7 @@ function setLastClicked(sprite) {
       repairButton.width = 80;
       repairButton.height = 80;
       repairButton.battleButton = false;
-      buttonsList.push(repairButton);
+      buttonsList[2] = repairButton;
       //buttonsTextList.push(repairText);
       repairButton.events.onInputDown.add(repair, {repairing: lastClicked});
     } else if (lastClicked.key.indexOf("0") === 2 && lastClicked.hp < lastClicked.maxhp && normalState) {
@@ -1229,7 +1229,7 @@ function setLastClicked(sprite) {
       wallButton.battleButton = false;
       wallButton.height = 80;
       wallButton.width = 80;
-      buttonsList.push(wallButton);
+      buttonsList[3] = wallButton;
       wallButton.input.enableDrag();
       wallButton.events.onDragStop.add(U["Drop Wall"].active, {spaceStart: null, player: lastClicked, sprite: wallButton});
     } else if (normalState && lastClicked.upgrades.indexOf("Drop Wall") > -1 && !lastClicked.wallDeployed) {
@@ -1253,7 +1253,7 @@ function setLastClicked(sprite) {
       mineButton.battleButton = false;
       mineButton.height = 80;
       mineButton.width = 80;
-      buttonsList.push(mineButton);
+      buttonsList[4] = mineButton;
       mineButton.events.onInputDown.add(U.Mines.active, {player: lastClicked});
     } else if (normalState && lastClicked.upgrades.indexOf("Mines") > -1) {
       mineButton.reset(mineButton.x, mineButton.y);
@@ -1293,22 +1293,26 @@ function setLastClicked(sprite) {
       } 
     }*/
    for (i = 0; i < buttonsList.length; i++) {
-     if (buttonsList[i].alive) {
-      if (lastButton) {
-        console.log(i + "extra button.");
-        if ((i)/3 === 1) {
-          console.log("TRIGGERED");
-          buttonsList[i].x = hoverSprite.x + hoverSprite.width;
-          buttonsList[i].y = lastButton.y + 200*globalScale;
-        } else {
-          buttonsList[i].x = lastButton.x + 430*globalScale;
-          buttonsList[i].y = lastButton.y;
-        }
-    } else {
-        buttonsList[i].x = hoverSprite.x + hoverSprite.width;
-        buttonsList[i].y = hoverSprite.y + 600*globalScale;
-      }
-      var lastButton = buttonsList[i];
+     if (buttonsList[i] && buttonsList[i].alive) {
+      //if (lastButton) {
+        console.log(i + " extra button.");
+          //console.log("TRIGGERED");
+         //buttonsList[i].x = hoverSprite.x + hoverSprite.width;
+          //buttonsList[i].y = hoverSprite.y + 600*globalScale *(200*globalScale*(i/3));
+        //} else {
+          //if (i != 0 && (i/3) % 1 === 0) {
+          var num = i%3
+          /*} else {
+            var num = i
+          }*/
+          buttonsList[i].x = hoverSprite.x + hoverSprite.width + (430*globalScale*num);
+          buttonsList[i].y = hoverSprite.y + 600*globalScale + (Math.floor(i/3)*200*globalScale);
+        //}
+    //} else {
+        //buttonsList[i].x = hoverSprite.x + hoverSprite.width;
+        //buttonsList[i].y = hoverSprite.y + 600*globalScale;
+      //}
+      //var lastButton = buttonsList[i];
      }
    }
   } else if (sprite.key === "monster") {
