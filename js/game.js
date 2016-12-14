@@ -465,6 +465,7 @@ function reEnableHover(sprite) {
   sprite.events.onInputDown.add(hoverScale, {sprite:sprite});
   sprite.events.onInputOver.add(sprite.glow, {sprite:sprite});
   sprite.events.onInputOver.add(hoverScale, {sprite:sprite});
+  sprite.events.onInputOver.add(setLastClicked, {lastClicked:sprite});
   sprite.events.onInputOut.add(reduceScale,{sprite:sprite});
   sprite.events.onInputOut.add(sprite.glow, {sprite:sprite,fadeOut:true});
 }
@@ -574,8 +575,8 @@ class Setup {
     // Add in text that is displayed.
     //attributeDisplay = game.add.text(game.world.centerX + game.world.width/4, game.world.centerY - game.world.height/3 + 300*globalScale, "", C.game.textStyle);
     //attributeDisplay.anchor.setTo(.5);
-    upgradeDisplay = game.add.text(game.world.centerX + game.world.width/4, game.world.height - 270*globalScale, "", C.game.textStyle);
-    upgradeDisplay.anchor.setTo(.5);
+    upgradeDisplay = game.add.text(game.world.centerX + game.world.width/4, game.world.height - 340*globalScale, "", C.game.textStyle);
+    upgradeDisplay.anchor.setTo(.5,0);
 
     menuBar = game.add.sprite(0,game.height - game.camera.width/5,"menubar");
     menuBar.width = game.camera.width;
@@ -583,8 +584,6 @@ class Setup {
     //menuBar.fixedToCamera = true;
     game.world.bringToTop(menuBar);
     menuBar.kill();
-    
-
     actionIcons = game.add.group();
     upgradeTokens = game.add.group();
     mrTokens = game.add.group();
@@ -1142,7 +1141,7 @@ function makeButton(position,frame) {
 }
 
 function setLastClicked(sprite) {
-  if (!turn) {
+  if (!turn && !this.lastClicked) {
     turn = playersList[sprite.number];
     //turn.sprite.inputEnabled = true;
     closestSpaces = getClosestSpaces(turn.key);
@@ -1167,16 +1166,19 @@ function setLastClicked(sprite) {
     game.world.bringToTop(waitButton);
     repairButton = makeButton(2,8);
     repairButton.events.onInputDown.add(repair, {repairing: lastClicked});
-    wallButton = makeButton(3,19);
+    generateButton = makeButton(3,6);
+    generateButton.events.onInputDown.add(generateRP, {generating: lastClicked}); 
+    wallButton = makeButton(4,19);
     wallButton.input.enableDrag();
     wallButton.events.onDragStop.add(U["Drop Wall"].active, {spaceStart: null, player: lastClicked, sprite: wallButton});
-    mineButton = makeButton(4,11);
+    mineButton = makeButton(5,11);
     mineButton.events.onInputDown.add(U.Mines.active, {player: lastClicked});
+  } else if (!turn && this.lastClicked) {
+    return;
   }
   if (playerNames.indexOf(sprite.key) > -1) {
-    lastClicked = playersList[sprite.number];
+    lastClicked = playersList[this.lastClicked] || playersList[sprite.number];
     var normalState = !battleState && !zoomIn && !zoomOut;
-
     for (i = 1; i < playersList.length; i++) {
       if (!playersList[i].rebuildButton && destroyedPlayersList.length > 0 && playersList[i].rbTokens && normalState) { 
         if (destroyedMechDisplays.length === 0) {
@@ -1219,6 +1221,16 @@ function setLastClicked(sprite) {
     } else if (repairButton) {
       repairButton.tint = 0x3d3d3d;
       repairButton.inputEnabled = false;
+    }
+
+    if (lastClicked.key.indexOf("0") === 2 && normalState) {
+      generateButton.inputEnabled = true;
+      generateButton.tint = 0xffffff;
+      generateButton.events.onInputDown._bindings = [];
+      generateButton.events.onInputDown.add(generateRP, {generating: lastClicked, amount: undefined});
+    } else if (generateButton) {
+      generateButton.tint = 0x3d3d3d;
+      generateButton.inputEnabled = false;
     }
     
     if (normalState && lastClicked.upgrades.indexOf("Drop Wall") > -1 && !lastClicked.wallDeployed) {
@@ -2230,6 +2242,13 @@ function rebuild(rebuilding, pointer) {
   actionPoints -= 1;
 }
 
+function generateRP(generating) {
+  var generating = this.generating || generating;
+  generating.rp += 1;
+  actionPoints -= 1;
+  rpDisplay.update(generating);
+}
+
 function repair(repairing, pointer, amount) {
   var repairing = this.repairing || repairing;
   var amount = this.amount || amount
@@ -2645,6 +2664,7 @@ function attachClosestSpace(sprite,pointer) {
     } else { 
       move(turn, closestKey);
     }
+    setLastClicked(sprite);
 }
 
 function removeFromList(object,arrayName) {
