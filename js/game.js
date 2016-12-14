@@ -845,7 +845,7 @@ function setAttributeDisplay(obj) {
     hpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 100*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,8,"hp", "maxhp");
     rpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 450*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,6,"rp");
     mpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 700*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,22,"mr");
-    destroyedCities.hoverInfo = destroyedCities.addHoverInfo(0, 0, 1,"length");
+    destroyedCities.hoverInfo = destroyedCities.addHoverInfo(0, 0, 3,"length");
     for (i = 0; i < 3; i++) {
       var actionPoint = actionIcons.create(ratkDisplay.valueIcon.x + 350*globalScale + (i*(70*globalScale)), ratkDisplay.valueIcon.y + 15*globalScale,'icons',0);
       actionPoint.scale.setTo(.6*globalScale);
