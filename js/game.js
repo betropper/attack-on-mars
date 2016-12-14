@@ -573,7 +573,7 @@ class Setup {
     // Add in text that is displayed.
     //attributeDisplay = game.add.text(game.world.centerX + game.world.width/4, game.world.centerY - game.world.height/3 + 300*globalScale, "", C.game.textStyle);
     //attributeDisplay.anchor.setTo(.5);
-    upgradeDisplay = game.add.text(game.world.centerX + game.world.width/4, game.world.height/2, "", C.game.textStyle);
+    upgradeDisplay = game.add.text(game.world.centerX + game.world.width/4, game.world.height - 270*globalScale, "", C.game.textStyle);
     upgradeDisplay.anchor.setTo(.5);
 
     menuBar = game.add.sprite(0,game.height - game.camera.width/5,"menubar");
@@ -1052,7 +1052,6 @@ function enableBossInput(boss) {
 }
 
 function glow() {
-  console.log(this);
   if (this.fadeOut === true) {
     tweenTint(this.sprite, 0xFFD27F, 0xffffff, 500);
   } else {
@@ -1111,9 +1110,7 @@ function zoomFalse() {
 
 function changeDieMenu(attacker,modifier) {
   attacker = this.attacker || attacker;
-  method = this.modifier || method;
-  
-
+  method = this.modifier || method; 
 }
 
 function queAttack() {
@@ -1210,13 +1207,17 @@ function setLastClicked(sprite) {
       //repairText.setText("Repair " + sprite.key);
       //repairText.events.onInputDown._bindings = [];
       //repairText.events.onInputDown.add(repair, {repairing: lastClicked});
+      
       repairButton.reset(repairButton.x, repairButton.y);
+      repairButton.inputEnabled = true;
+      repairButton.tint = 0xffffff;
       repairButton.events.onInputDown._bindings = [];
       repairButton.events.onInputDown.add(repair, {repairing: lastClicked, amount: undefined});
     } else if (repairButton) {
       //repairText.kill();
       //buttonsList.splice(repairButton, 1);
-      repairButton.kill();
+      repairButton.tint = 0x3d3d3d;
+      repairButton.inputEnabled = false;
     }
     
 
@@ -1233,12 +1234,16 @@ function setLastClicked(sprite) {
       wallButton.events.onDragStop.add(U["Drop Wall"].active, {spaceStart: null, player: lastClicked, sprite: wallButton});
     } else if (normalState && lastClicked.upgrades.indexOf("Drop Wall") > -1 && !lastClicked.wallDeployed) {
       wallButton.reset(wallButton.x, wallButton.y);
+      wallButton.tint = 0xffffff;
+      wallButton.inputEnabled = true;
       wallButton.events.onDragStop._bindings = [];
       wallButton.events.onDragStop.add(U["Drop Wall"].active, {spaceStart: null, player: lastClicked, sprite: wallButton});
       //buttonsList.push(wallButton);
     } else if (wallButton) {
       //buttonsList.splice(wallButton, 1);
-      wallButton.kill();
+      //wallButton.kill();
+      wallButton.tint = 0x3d3d3d;
+      wallButton.inputEnabled = false;
     }
 
     if (!mineButton && normalState && lastClicked.upgrades.indexOf("Mines") > -1) { 
@@ -1252,12 +1257,16 @@ function setLastClicked(sprite) {
       mineButton.events.onInputDown.add(U.Mines.active, {player: lastClicked});
     } else if (normalState && lastClicked.upgrades.indexOf("Mines") > -1) {
       mineButton.reset(mineButton.x, mineButton.y);
+      mineButton.tint = 0xffffff;
+      mineButton.inputEnabled = true;
       mineButton.events.onInputDown._bindings = [];
       mineButton.events.onInputDown.add(U.Mines.active, {player: lastClicked});
       //buttonsList.push(mineButton);
     } else if (mineButton) {
       //buttonsList.splice(mineButton, 1);
-      mineButton.kill();
+      //mineButton.kill();
+      mineButton.tint = 0x3d3d3d;
+      mineButton.inputEnabled = false;
     }
 
     /*
@@ -1295,24 +1304,24 @@ function setLastClicked(sprite) {
           buttonsList[i].x = lastButton.x + 430*globalScale;
           buttonsList[i].y = lastButton.y;
         }
-      } else {
+    } else {
         buttonsList[i].x = hoverSprite.x + hoverSprite.width;
-        buttonsList[i].y = hoverSprite.y + 800*globalScale;
+        buttonsList[i].y = hoverSprite.y + 600*globalScale;
       }
       var lastButton = buttonsList[i];
      }
    }
   } else if (sprite.key === "monster") {
-    if (repairText) {
+    //if (repairText) {
       //buttonsList.splice(repairButton, 1);
-      repairButton.kill();
+      //repairButton.kill();
     }
     /*if (upgradeText) {
       upgradeText.kill();
       //buttonsList.splice(upgradeButton, 1);
       upgradeButton.kill();
     }*/
-  }
+  //}
   
 }
 
@@ -2268,7 +2277,9 @@ function repair(repairing, pointer, amount) {
       repairing.hp += amount;
     } else {
       repairing.hp = repairing.maxhp;
-      repairButton.kill();
+      //repairButton.kill();
+      repairButton.inputEnabled = false;
+      repairButton.tint = 0x3d3d3d
       actionPoints -= 1;
     }
   }
