@@ -157,6 +157,7 @@ var monstersList = [];
 var globalList = [];
 var attributeDisplay;
 var destroyedCities = [];
+destroyedCities.addHoverInfo = addHoverInfo;
 var obj_keys = Object.keys(Space);
 var viewRect;
 var zoomIn;
@@ -1125,6 +1126,20 @@ function queAttack() {
 
 var destroyedMechDisplays = [];
 
+function makeButton(position,frame) {
+  var num = position%3
+  x = hoverSprite.x + hoverSprite.width + (430*globalScale*num);
+  y = hoverSprite.y + 600*globalScale + (Math.floor(i/3)*200*globalScale);
+  var button = game.add.sprite(x, y, 'icons', frame);
+  button.anchor.set(0.5);
+  button.inputEnabled = true;
+  button.width = 80;
+  button.height = 80;
+  button.battleButton = false;
+  buttonsList[position] = button;
+  return button;
+}
+
 function setLastClicked(sprite) {
   if (!turn) {
     turn = playersList[sprite.number];
@@ -1140,7 +1155,7 @@ function setLastClicked(sprite) {
     upgradeButton.height = 160*globalScale;
     upgradeButton.battleButton = false;
     buttonsList[0] = upgradeButton;
-    upgradeButton.events.onInputUp.add(upgrade, {upgrading: turn});
+    upgradeButton.events.onInputUp.add(upgrade, {upgrading: turn}); 
     waitButton = game.add.button(game.world.centerX + game.world.width/2 - 90*globalScale, 140*globalScale, 'icons', waitOneAction);
     waitButton.frame = 2;
     waitButton.anchor.x = .5;
@@ -1149,6 +1164,13 @@ function setLastClicked(sprite) {
     waitButton.battleButton = false;
     buttonsList[1] = waitButton;
     game.world.bringToTop(waitButton);
+    repairButton = makeButton(2,8);
+    repairButton.events.onInputDown.add(repair, {repairing: lastClicked});
+    wallButton = makeButton(3,19);
+    wallButton.input.enableDrag();
+    wallButton.events.onDragStop.add(U["Drop Wall"].active, {spaceStart: null, player: lastClicked, sprite: wallButton});
+    mineButton = makeButton(4,11);
+    mineButton.events.onInputDown.add(U.Mines.active, {player: lastClicked});
   }
   if (playerNames.indexOf(sprite.key) > -1) {
     lastClicked = playersList[sprite.number];
@@ -1188,83 +1210,32 @@ function setLastClicked(sprite) {
         playersList[i].rebuildButton.mechSprite.kill();
       }
     }
-    if (lastClicked.key.indexOf("0") === 2 && !repairButton && lastClicked.hp < lastClicked.maxhp && normalState) { 
-      //repairText = game.add.text(1050, menuBar.y, "Repair " + sprite.key, C.game.textStyle);
-      //repairText.anchor.set(0.5);
-      //repairText.inputEnabled = true;
-      //repairText.events.onInputDown.add(repair, {repairing: lastClicked});
-      repairButton = game.add.sprite(0, 0, 'icons', 8);
-      repairButton.anchor.set(0.5);
-      repairButton.inputEnabled = true;
-      repairButton.width = 80;
-      repairButton.height = 80;
-      repairButton.battleButton = false;
-      buttonsList[2] = repairButton;
-      //buttonsTextList.push(repairText);
-      repairButton.events.onInputDown.add(repair, {repairing: lastClicked});
-    } else if (lastClicked.key.indexOf("0") === 2 && lastClicked.hp < lastClicked.maxhp && normalState) {
-      //repairText.reset(1050, menuBar.y);
-      //repairText.setText("Repair " + sprite.key);
-      //repairText.events.onInputDown._bindings = [];
-      //repairText.events.onInputDown.add(repair, {repairing: lastClicked});
-      
-      repairButton.reset(repairButton.x, repairButton.y);
+    if (lastClicked.key.indexOf("0") === 2 && lastClicked.hp < lastClicked.maxhp && normalState) {
       repairButton.inputEnabled = true;
       repairButton.tint = 0xffffff;
       repairButton.events.onInputDown._bindings = [];
       repairButton.events.onInputDown.add(repair, {repairing: lastClicked, amount: undefined});
     } else if (repairButton) {
-      //repairText.kill();
-      //buttonsList.splice(repairButton, 1);
       repairButton.tint = 0x3d3d3d;
       repairButton.inputEnabled = false;
     }
     
-
-
-    if (!wallButton && normalState && lastClicked.upgrades.indexOf("Drop Wall") > -1 && !lastClicked.wallDeployed) { 
-      wallButton = game.add.sprite(300, menuBar.y + 77, 'dropwall');
-      wallButton.anchor.set(0.5);
-      wallButton.inputEnabled = true;
-      wallButton.battleButton = false;
-      wallButton.height = 80;
-      wallButton.width = 80;
-      buttonsList[3] = wallButton;
-      wallButton.input.enableDrag();
-      wallButton.events.onDragStop.add(U["Drop Wall"].active, {spaceStart: null, player: lastClicked, sprite: wallButton});
-    } else if (normalState && lastClicked.upgrades.indexOf("Drop Wall") > -1 && !lastClicked.wallDeployed) {
-      wallButton.reset(wallButton.x, wallButton.y);
+    if (normalState && lastClicked.upgrades.indexOf("Drop Wall") > -1 && !lastClicked.wallDeployed) {
       wallButton.tint = 0xffffff;
       wallButton.inputEnabled = true;
       wallButton.events.onDragStop._bindings = [];
       wallButton.events.onDragStop.add(U["Drop Wall"].active, {spaceStart: null, player: lastClicked, sprite: wallButton});
-      //buttonsList.push(wallButton);
     } else if (wallButton) {
-      //buttonsList.splice(wallButton, 1);
-      //wallButton.kill();
       wallButton.tint = 0x3d3d3d;
       wallButton.inputEnabled = false;
     }
 
-    if (!mineButton && normalState && lastClicked.upgrades.indexOf("Mines") > -1) { 
-      mineButton = game.add.sprite(200, menuBar.y + 77, 'mine');
-      mineButton.anchor.set(0.5);
-      mineButton.inputEnabled = true;
-      mineButton.battleButton = false;
-      mineButton.height = 80;
-      mineButton.width = 80;
-      buttonsList[4] = mineButton;
-      mineButton.events.onInputDown.add(U.Mines.active, {player: lastClicked});
-    } else if (normalState && lastClicked.upgrades.indexOf("Mines") > -1) {
-      mineButton.reset(mineButton.x, mineButton.y);
+    if (normalState && lastClicked.upgrades.indexOf("Mines") > -1) {
       mineButton.tint = 0xffffff;
       mineButton.inputEnabled = true;
       mineButton.events.onInputDown._bindings = [];
       mineButton.events.onInputDown.add(U.Mines.active, {player: lastClicked});
-      //buttonsList.push(mineButton);
     } else if (mineButton) {
-      //buttonsList.splice(mineButton, 1);
-      //mineButton.kill();
       mineButton.tint = 0x3d3d3d;
       mineButton.inputEnabled = false;
     }
@@ -1294,25 +1265,10 @@ function setLastClicked(sprite) {
     }*/
    for (i = 0; i < buttonsList.length; i++) {
      if (buttonsList[i] && buttonsList[i].alive) {
-      //if (lastButton) {
         console.log(i + " extra button.");
-          //console.log("TRIGGERED");
-         //buttonsList[i].x = hoverSprite.x + hoverSprite.width;
-          //buttonsList[i].y = hoverSprite.y + 600*globalScale *(200*globalScale*(i/3));
-        //} else {
-          //if (i != 0 && (i/3) % 1 === 0) {
-          var num = i%3
-          /*} else {
-            var num = i
-          }*/
-          buttonsList[i].x = hoverSprite.x + hoverSprite.width + (430*globalScale*num);
-          buttonsList[i].y = hoverSprite.y + 600*globalScale + (Math.floor(i/3)*200*globalScale);
-        //}
-    //} else {
-        //buttonsList[i].x = hoverSprite.x + hoverSprite.width;
-        //buttonsList[i].y = hoverSprite.y + 600*globalScale;
-      //}
-      //var lastButton = buttonsList[i];
+        var num = i%3
+        buttonsList[i].x = hoverSprite.x + hoverSprite.width + (430*globalScale*num);
+        buttonsList[i].y = hoverSprite.y + 600*globalScale + (Math.floor(i/3)*200*globalScale);
      }
    }
   } else if (sprite.key === "monster") {
