@@ -845,7 +845,7 @@ function setAttributeDisplay(obj) {
     hpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 100*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,8,"hp", "maxhp");
     rpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 450*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,6,"rp");
     mpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 700*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,22,"mr");
-
+    destroyedCities.hoverInfo = destroyedCities.addHoverInfo(0, 0, 1,"length");
     for (i = 0; i < 3; i++) {
       var actionPoint = actionIcons.create(ratkDisplay.valueIcon.x + 350*globalScale + (i*(70*globalScale)), ratkDisplay.valueIcon.y + 15*globalScale,'icons',0);
       actionPoint.scale.setTo(.6*globalScale);
@@ -870,6 +870,7 @@ function updateInfoDisplays(obj) {
    rpDisplay.update(obj);
    mpDisplay.update(obj);
    hpDisplay.update(obj);
+   destroyedCities.hoverInfo.update(destroyedCities);
 }
 
 function allowBattle() {
@@ -2017,6 +2018,7 @@ function battle(player, monster) {
       console.log(newMonster);
       checkBattle(monstersList[newMonster].space);
     }
+   destroyedCities.hoverInfo.update(destroyedCities);
 }
 
 function destroyWall() {
@@ -2792,7 +2794,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
   while (condition === true) {
     failSafe += 1;
     var space = getRandomSpace();
-    if   (quadrant === "random" && occupiedCheck === true) {
+    if (quadrant === "random" && occupiedCheck === true) {
         if (row === "random") {
           condition = space.key.indexOf("0") || space.selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1;
         } else {
