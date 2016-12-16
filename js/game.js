@@ -1112,6 +1112,29 @@ function zoomFalse() {
 function changeDieMenu(attacker,modifier) {
   attacker = this.attacker || attacker;
   method = this.modifier || method; 
+  if (method === "Weaponized Research") {
+    var currentRPDisplay = battlePlayer.addHoverInfo(focusX - 80*globalScale, focusY + 40*globalScale,6,"rp");
+    printBattleResults("Click on a die color to add one to it for this round at the cost of one RP.");
+    printBattleResults("Click on the button again to confirm your choices.");
+    battleTexts.forEach(function(battleText) {
+      if (battleText.text != "Weaponized Research") {
+        battleText.inputEnabled = false;
+      } else {
+        battleText.events.onInputDown._bindings = [];
+        battleText.events.onInputDown.add(returnToBattle, {infoDisplay: currentRPDisplay});
+      }
+    });
+  }
+}
+
+function returnToBattle() {
+  if (this.infoDisplay) {
+    infoDisplay.valueIcon.destroy();
+    infoDisplay.valueDisplay.destroy();
+  }
+    battleTexts.forEach(function(battleText) {
+      battleTexts.inputEnabled = true;
+    });
 }
 
 function queAttack() {
@@ -1135,6 +1158,7 @@ function makeButton(position,frame) {
   button.inputEnabled = true;
   button.width = 80;
   button.height = 80;
+  button.scale.setTo(globalScale);
   button.battleButton = false;
   buttonsList[position] = button;
   return button;
@@ -1160,7 +1184,6 @@ function setLastClicked(sprite) {
     waitButton.frame = 2;
     waitButton.anchor.x = .5;
     waitButton.anchor.y = .5;
-    waitButton.scale.setTo(globalScale);
     waitButton.battleButton = false;
     buttonsList[1] = waitButton;
     game.world.bringToTop(waitButton);
