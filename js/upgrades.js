@@ -308,15 +308,6 @@ var U = {
         console.log(spaceKey);
         player.sprite.events.onInputUp._bindings = [];
         player.sprite.events.onInputUp.add(move,{object:player,destination:spaceKey,escaping:"running",method:"Emergency Jump Jets",list:availableSpaces});
-        /*for (m = 0; m < twoAwayList.length; m++) {
-          if (Space[twoAwayList[m].key].occupied) {
-            for (l = 0; l < Space[twoAwayList[m].key].occupied.length; l++) {
-              if (playersList.indexOf(Space[twoAwayList[m].key].occupied[l]) > -1 && Space[twoAwayList[m].key].occupied[l].upgrades.indexOf("Monster Bait") > -1) {
-                var newDestination = twoAwayList[m].parent;
-              }
-            }
-          }
-        }*/
        return 
       }
     },

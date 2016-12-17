@@ -1203,6 +1203,7 @@ function setLastClicked(sprite) {
     waitButton.battleButton = false;
     buttonsList[1] = waitButton;
     game.world.bringToTop(waitButton);
+    waitButton.scale.setTo(globalScale);
     repairButton = makeButton(2,8);
     repairButton.events.onInputDown.add(repair, {repairing: lastClicked});
     generateButton = makeButton(3,6);
@@ -2797,7 +2798,6 @@ function getClosestSpaces(spaceKey) {
     outward = findNextLetter(spaceKey);
   }
   var directionObjects = [];
-
   var directions = [{direction: "clockwise", spaceKey: clockwise}, {direction: "counter_clockwise", spaceKey:counter_clockwise},{direction: "inward",spaceKey:inward},{direction: "outward",spaceKey:outward}];
   directions.forEach(function(direction) {
   if (direction && direction.spaceKey) {
@@ -2901,8 +2901,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
         }
     }
     console.log(condition);
-  } 
-  
+  }   
   console.log(object + " found a home");
   if (object !== "monster") {
   random = game.add.sprite(space.selectedSpace.x*C.bg.scale*C.bg.resizeX + game.bg.position.x,space.selectedSpace.y*C.bg.scale*C.bg.resizeY + game.bg.position.y,object); 
@@ -3148,12 +3147,6 @@ function spawnSpecific(object,space) {
     sprite: spawn
   }
 }
-
-
-
-//game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;game.scale.minWidth = 320;game.scale.minHeight = 480;game.scale.maxWidth = 768;game.scale.maxHeight = 1152;
-//var game = new Phaser.Game(window.innerWidth * window.devicePixelRatio, window.innerHeight * window.devicePixelRatio, Phaser.CANVAS, 'gameArea');
-
 console.log(Phaser.Device.desktop);
 var game = new Phaser.Game(C.game.width,C.game.height, Phaser.AUTO, '', {
     init: function () {
