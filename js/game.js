@@ -115,7 +115,7 @@ var focusX,
  mrTokens,
  heldSprite,
  monsterResources = 0,
- monsterResearchTrack = 0;
+ monsterResearchTrack = 0
 var boss = {};
 var battleSpeedDecrease = 0;
 var boughtBool;
@@ -763,7 +763,7 @@ class Setup {
           addBattleText("Siege Mode",queAttack,"Siege Mode");
         }
         if (battlePlayer.weaponizedResearchCharges && battlePlayer.weaponizedResearchCharges > 0) {
-          addBattleText("Weaponized Research",changeDieMenu,"Weaponized Research");
+          addBattleText("Wp Rsrch: " + battlePlayer.weaponizedResearchCharges,changeDieMenu,"Weaponized Research");
         }
         for (i = 0; i < battleTexts.length; i++) {
           game.add.tween(battleTexts[i]).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + menuBar.height/2}, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true)
@@ -1115,25 +1115,43 @@ function changeDieMenu(attacker,modifier) {
   if (method === "Weaponized Research") {
     var currentRPDisplay = battlePlayer.addHoverInfo(focusX - 80*globalScale, focusY + 40*globalScale,6,"rp");
     printBattleResults("Click on a die color to add one to it for this round at the cost of one RP.");
-    printBattleResults("Click on the button again to confirm your choices.");
+    printBattleResults("Click on the Weaponized Research button to return.");
     battleTexts.forEach(function(battleText) {
-      if (battleText.text != "Weaponized Research") {
+      if (battleText.text.indexOf("Wp Rsrch:") != 0) {
         battleText.inputEnabled = false;
       } else {
         battleText.events.onInputDown._bindings = [];
         battleText.events.onInputDown.add(returnToBattle, {infoDisplay: currentRPDisplay});
       }
     });
+    playerBattleTexts.forEach(function(battleText) {
+      if (battleText.valueName != "hp") {
+        battleText.valueIcon.inputEnabled = true;
+        battleText.valueIcon.events.onInputDown.add(U["Weaponized Research"].active, {display: currentRPDisplay, player: battlePlayer, value: battleText.valueName, obj: battleText}); 
+      }
+    });
   }
 }
 
-function returnToBattle() {
-  if (this.infoDisplay) {
+function returnToBattle(infoDisplay) {
+  var infoDisplay = this.infoDisplay || infoDisplay;
+  if (infoDisplay) {
     infoDisplay.valueIcon.destroy();
     infoDisplay.valueDisplay.destroy();
   }
+    playerBattleTexts.forEach(function(battleText) {
+      if (battleText.valueName != "hp") {
+        battleText.valueIcon.inputEnabled = false;
+        battleText.valueIcon.events.onInputDown._bindings = [];
+      }
+    });
     battleTexts.forEach(function(battleText) {
-      battleTexts.inputEnabled = true;
+      if (battleText.text.indexOf("Wp Rsrch:") != 0 && battleText.inputEnabled === false) {
+        battleText.inputEnabled = true;
+      } else {
+        battleText.events.onInputDown._bindings = [];
+        battleText.events.onInputDown.add(changeDieMenu, {attacker: battlePlayer, modifier: "Weaponized Research"});
+      }
     });
 }
 
@@ -1151,8 +1169,8 @@ var destroyedMechDisplays = [];
 
 function makeButton(position,frame) {
   var num = position%3
-  x = hoverSprite.x + hoverSprite.width + (430*globalScale*num);
-  y = hoverSprite.y + 600*globalScale + (Math.floor(i/3)*200*globalScale);
+  var x = hoverSprite.x + hoverSprite.width + (430*globalScale*num);
+  var y = hoverSprite.y + 600*globalScale + (Math.floor(i/3)*200*globalScale);
   var button = game.add.sprite(x, y, 'icons', frame);
   button.anchor.set(0.5);
   button.inputEnabled = true;
@@ -1245,7 +1263,6 @@ function setLastClicked(sprite) {
       repairButton.tint = 0x3d3d3d;
       repairButton.inputEnabled = false;
     }
-
     if (lastClicked.key.indexOf("0") === 2 && normalState) {
       generateButton.inputEnabled = true;
       generateButton.tint = 0xffffff;
@@ -1301,7 +1318,6 @@ function setLastClicked(sprite) {
     }*/
    for (i = 0; i < buttonsList.length; i++) {
      if (buttonsList[i] && buttonsList[i].alive) {
-        console.log(i + " extra button.");
         var num = i%3
         buttonsList[i].x = hoverSprite.x + hoverSprite.width + (430*globalScale*num);
         buttonsList[i].y = hoverSprite.y + 600*globalScale + (Math.floor(i/3)*200*globalScale);
@@ -1746,14 +1762,19 @@ function finishBattle() {
     battleTexts[i].destroy();
   }
   battleTexts = [];
-  for (i = 0; i < playerBattleTexts.length; i++) {
-    playerBattleTexts[i].valueDisplay.destroy();
-    playerBattleTexts[i].valueIcon.destroy();
-  }
-  for (i = 0; i < monsterBattleTexts.length; i++) {
+for (i = 0; i < playerBattleTexts.length; i++) {
+  playerBattleTexts[i].valueDisplay.destroy();
+  playerBattleTexts[i].valueIcon.destroy();
+}
+for (i = 0; i < monsterBattleTexts.length; i++) {
     monsterBattleTexts[i].valueDisplay.destroy();
     monsterBattleTexts[i].valueIcon.destroy();
   }
+  extraBattleTexts.forEach(function(battleText) {
+    if (battleText.parent === battlePlayer) {
+      
+    }
+  });
   playerBattleTexts = [];
   monsterBattleTexts = [];
   if (focusSpace.occupied && focusSpace.occupied !== false) {
@@ -2633,6 +2654,14 @@ function changeTurn() {
           }
           if (playersList[i].upgrades.indexOf("Nullifier Shield Unlock") > -1 ) {
             U["Nullifier Shield Unlock"].active(playersList[i],1);
+          }
+          if (playersList[i].upgrades.indexOf("Weaponized Research") > -1) {
+            playersList[i].weaponizedResearchCharges = 3;
+          }
+          if (playersList[i].changedDie) {
+            playersList[i].changedDie.forEach(function(changed) {
+              playersList[i][changed.value] -= changed.count;
+            });
           }
         }
         turn = playersList[1];

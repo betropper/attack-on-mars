@@ -221,7 +221,33 @@ var U = {
       "desc": "Up to three times per round, spend one research point to gain a die color of your choice.",
       "color": "blue",
       "cost": 6,
-      passive: function(player) { player.weaponizedResearchCharges = 3; }
+      passive: function(player) { player.weaponizedResearchCharges = 3; },
+      active: function(player) {
+        if (player.rp > 0) {
+          var player = this.player || player;
+          var value = this.value;
+          player.rp -= 1;
+          this.display.update(player);
+          player[value]++
+          if (player.changedDie) {
+            player.changedDie.push({value:value, count:1});
+          } else {
+            player.changedDie = [{value:value, count:1}];
+          }
+          player.weaponizedResearchCharges -= 1;
+          for (i = 0; i < battleTexts.length; i++) {
+            if (battleTexts[i].text.indexOf("Wp Rsrch:") === 0) {
+              if (player.weaponizedResearchCharges <= 0) {
+                battleTexts[i].destroy();
+                returnToBattle(this.display);
+              } else {
+                battleTexts[i].text = ("Wp Rsrch: " + player.weaponizedResearchCharges);
+              }
+            }
+          }
+
+        } else { return }
+      }
     }, 
   
     "Fortified Cities": {
