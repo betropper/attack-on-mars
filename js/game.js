@@ -1227,7 +1227,7 @@ function setLastClicked(sprite) {
         } else {
           var x = destroyedMechDisplays[destroyedMechDisplays.length-1].valueIcon.x + 300*globalScale;
         }
-        playersList[i].rebuildButton = playersList[i].addHoverInfo(x, hoverSprite.y + batkDisplay.valueIcon.width*4,21,"rbTokens");
+        playersList[i].rebuildButton = playersList[i].addHoverInfo(x, hoverSprite.y + batkDisplay.valueIcon.width*3,21,"rbTokens");
         playersList[i].rebuildButton.mechSprite = game.add.sprite(playersList[i].rebuildButton.valueIcon.x + 9*globalScale, playersList[i].rebuildButton.valueIcon.y + 50*globalScale, playersList[i].sprite.key)
         playersList[i].rebuildButton.mechSprite.scale.setTo(globalScale);
         playersList[i].rebuildButton.valueIcon.inputEnabled = true;
@@ -1589,7 +1589,7 @@ function attackOfOppertunity() {
         pendingBattles.splice(i,1);
       }
     });
-    finishBattle();
+    finishBattle("Running");
   }
   battleTexts = [];
   var attackerTween = game.add.tween(attacker.sprite).to( { x: changeValueScale(Space[attacker.key].x,"x"), y: changeValueScale(Space[attacker.key].y,"y")}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
@@ -1755,8 +1755,10 @@ function resetDie(player,monster) {
 
 }
 
-function finishBattle() {
-  pendingBattles.splice(0,1);
+function finishBattle(exception) {
+  if (exception && exception != "Running") {
+    pendingBattles.splice(0,1);
+  }
   resetDie(battlePlayer,battleMonster);
   for (i = 0; i < battleTexts.length; i++) {
     battleTexts[i].destroy();
@@ -2282,6 +2284,7 @@ function rebuild(rebuilding, pointer) {
     rebuilding.sprite.events.onInputOut._bindings = [];
     rebuilding.sprite.events.onDragStop._bindings = [];
     rebuilding.sprite.events.onInputUp.add(placeObject,{obj:rebuilding, quadrant:String.fromCharCode(96 + rebuilding.sprite.number),column:false,row:"0"})
+    globalList.push(rebuilding);
   }
   actionPoints -= 1;
 }

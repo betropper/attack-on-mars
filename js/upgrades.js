@@ -223,10 +223,10 @@ var U = {
       "cost": 6,
       passive: function(player) { player.weaponizedResearchCharges = 3; },
       active: function(player) {
-        if (player.rp > 0) {
+        if (battlePlayer.rp > 0) {
           var player = this.player || player;
           var value = this.value;
-          player.rp -= 1;
+          player.rp--
           this.display.update(player);
           player[value]++
           if (player.changedDie) {
@@ -234,7 +234,7 @@ var U = {
           } else {
             player.changedDie = [{value:value, count:1}];
           }
-          player.weaponizedResearchCharges -= 1;
+          player.weaponizedResearchCharges--;
           for (i = 0; i < battleTexts.length; i++) {
             if (battleTexts[i].text.indexOf("Wp Rsrch:") === 0) {
               if (player.weaponizedResearchCharges <= 0) {
