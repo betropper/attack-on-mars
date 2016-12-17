@@ -422,6 +422,7 @@ function completeKill() {
 
 function shiftSettings() {
     console.log("Shifting");
+    game.input.enabled = false;
     if (changingQuality === true) {
       localStorage.setItem('quality', globalScale);
       localStorage.setItem('qualityKey', qualitySetting);
@@ -434,9 +435,7 @@ function shiftSettings() {
       } else if (mainMenuTweens[i].position === "left") {
         mainMenuTweens[i] = game.add.tween(this.menuList[i]).to({x: this.menuList[i].x + game.width}, 700, Phaser.Easing.Back.InOut, true);
         mainMenuTweens[i].position = "center";
-        mainMenuTweens[i].onComplete.add(reEnableInput,this);
       }
-      mainMenuTweens[i].inputEnabled = false;
     }
     for (i = 0; i < this.settingsList.length; i++) {
       if (!settingsMenuTweens[i] || (settingsMenuTweens[i].position && settingsMenuTweens[i].position === "right")) {
@@ -445,10 +444,9 @@ function shiftSettings() {
       } else if (settingsMenuTweens[i].position === "center") {
         settingsMenuTweens[i] = game.add.tween(this.settingsList[i]).to({x: this.settingsList[i].x + game.width}, 700, Phaser.Easing.Back.InOut, true);
         settingsMenuTweens[i].position = "right";
-        settingsMenuTweens[i].onComplete.add(reEnableInput,this);
       }
-      settingsMenuTweens[i].inputEnabled = false;
     }
+    game.time.events.add(700, reEnableInput, this);
 }
 
 function reEnableHover(sprite) {
@@ -477,7 +475,7 @@ function disableHover(sprite) {
 }
 
 function reEnableInput() {
-  this.inputEnabled = true;
+  game.input.enabled = true;
 }
 
 function changeState() {
