@@ -1642,7 +1642,6 @@ function attack(attacker,defender) {
     else if (attacker.hp <= 0) {
       handleDeath(damaged,defender,deathCase);
     }
-
     if (!damaged || damaged.hp > 0) {
       battleTurn = defender;
     }
