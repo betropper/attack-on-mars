@@ -9,7 +9,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": ".3.3.0",
+   "versionNumber": ".4.0.0",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -115,7 +115,8 @@ var focusX,
  mrTokens,
  heldSprite,
  monsterResources = 0,
- monsterResearchTrack = 0
+ monsterResearchTrack = 0,
+ upgradeTokensList = []
 var boss = {};
 var battleSpeedDecrease = 0;
 var boughtBool;
@@ -155,7 +156,7 @@ var actionPointsRecord = 3;
 var closestSpaces;
 var monstersList = [];
 var globalList = [];
-var attributeDisplay;
+var extrasDisplay;
 var destroyedCities = [];
 destroyedCities.addHoverInfo = addHoverInfo;
 var obj_keys = Object.keys(Space);
@@ -225,6 +226,7 @@ class Load {
     console.log("Loading.");
     //this.load.spritesheet('icons', "assets/Icons.png", C.icons.width, C.icons.height)
     game.load.atlasJSONArray('icons', 'assets/Icons.png', 'assets/icons.json');
+    game.load.atlasJSONArray('upgradeMatIcons', 'assets/UpgradeMatSpritesheet.png', 'assets/UpgradeMatSpritesheet.json');
     this.load.image("upgradeMat","assets/UpgradeMat.png",469,676);
     this.load.image("gameboard",C.bg.file,C.bg.width,C.bg.height);
     this.load.image("background",C.mbg.file,C.mbg.width,C.mbg.height);
@@ -550,7 +552,6 @@ class Setup {
         {color: "purple", discount: 0},
         {color: "black", discount: 0}
       ]
-
       playersList[i].sprite.inputEnabled = true;
       playersList[i].sprite.input.enableDrag(true);
       playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
@@ -558,7 +559,6 @@ class Setup {
       playersList[i].sprite.closestSpaces = closestSpaces;
       playersList[i].sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
       reEnableHover(playersList[i].sprite);
-      //turn = playersList[1];
     }
     for (var i = 0; i <= 5; i++) {
       if (i <= 3) {
@@ -571,15 +571,22 @@ class Setup {
     }
 
     // Add in text that is displayed.
-    //attributeDisplay = game.add.text(game.world.centerX + game.world.width/4, game.world.centerY - game.world.height/3 + 300*globalScale, "", C.game.textStyle);
-    //attributeDisplay.anchor.setTo(.5);
+    
+    extrasDisplay = game.add.text(game.width*1.5, 20*globalScale, "", C.game.textStyle);
+    extrasDisplay.anchor.setTo(.5);
+    var extrasReturnButton = game.add.button(extrasDisplay.x,extrasDisplay.y + game.width/2.5,'icons',function() {
+      game.camera.x = 0;
+    });
+    extrasReturnButton.frame = 13
+    extrasReturnButton.anchor.setTo(.5);
+    extrasReturnButton.scale.setTo(globalScale);
+    var extrasReturnText = game.add.text(extrasReturnButton.x,extrasReturnButton.y - extrasReturnButton.height/1.5,"Return to Movement Screen",C.game.textStyle);
+    extrasReturnText.anchor.setTo(.5);
     upgradeDisplay = game.add.text(game.world.centerX + game.world.width/4, game.world.height - 340*globalScale, "", C.game.textStyle);
     upgradeDisplay.anchor.setTo(.5,0);
-
     menuBar = game.add.sprite(0,game.height - game.camera.width/5,"menubar");
     menuBar.width = game.camera.width;
     menuBar.height = game.camera.width/5;
-    //menuBar.fixedToCamera = true;
     game.world.bringToTop(menuBar);
     menuBar.kill();
     actionIcons = game.add.group();
@@ -631,11 +638,6 @@ class Setup {
       var xMenu = focusX; 
       var yMenu = focusY;
     }
-    /*if (cursors.up.isDown) {
-      game.camera.y -= 4;
-      console.log(game.camera.y);
-    }*/
-
      if (zoomIn === true) {
        game.input.enabled = false;
       // Temporary for testing. Change this later.
@@ -790,35 +792,7 @@ class Setup {
     }
     if (over) {
       setAttributeDisplay(over);
-      if (playerNames.indexOf(over.sprite.key) > -1) {
-        /*attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + " / " + over.maxhp + "\nDefence Die (green): " + over.def + "\nRed Attack Die: " + over.ratk + "\nBlue Attack Die: " + over.batk + "\nResearch Points: " + over.rp);
-        if (attributeDisplay.text && lastClicked !== undefined && repairText && attributeDisplay.text.indexOf(lastClicked.sprite.key) === -1) {
-          repairText.text = "Repair " + lastClicked.sprite.key;
-        }*/
-       upgradeDisplay.setText("Upgrades for " + over.sprite.key +":\n" + over.upgrades.join(",\n"));
-       /*if (over.sprite.scale.x < (C.mech.scale + .3) && !battleState && !battleStarting && !zoomIn) {
-         game.world.bringToTop(over.sprite);
-         over.sprite.scale.x += .01;
-         over.sprite.scale.y += .01;
-       }*/
-      } else if (over.sprite.key === "monster" || bossNames.indexOf(over.sprite.key) > -1) {
-        //attributeDisplay.setText("\nName: " + over.sprite.key + "\nHP: " + over.hp + " / " + over.maxhp + "\nDefence Die (green): " + over.def + "\nBlue Attack Die: " + over.batk + "\nResearch Point Reward: " + over.rp);
-        upgradeDisplay.setText("Upgrades for " + over.sprite.key +":\n" + over.upgrades.join(",\n"));
-       /*if (over.sprite.scale.x < (C.mech.scale + .3) && !battleState && !battleStarting && !zoomIn && !over.name) {
-         game.world.bringToTop(over.sprite);
-         over.sprite.scale.x += .01;
-         over.sprite.scale.y += .01;
-       }*/
-      }
-    } else if (lastClicked) {
-      if (playerNames.indexOf(lastClicked.sprite.key) > -1) {
-        //attributeDisplay.setText("\nName: " + lastClicked.sprite.key + "\nHP: " + lastClicked.hp + " / " + lastClicked.maxhp + "\nDefence Die (green): " + lastClicked.def + "\nRed Attack Die: " + lastClicked.ratk + "\nBlue Attack Die: " + lastClicked.batk + "\nResearch Points: " + lastClicked.rp);
-      } else {
-        //attributeDisplay.setText("\nName: " + lastClicked.sprite.key + "\nHP: " + lastClicked.hp + " / " + lastClicked.maxhp + "\nDefence Die (green): " + lastClicked.def + "\nBlue Attack Die: " + lastClicked.batk + "\nResearch Point Reward: " + lastClicked.rp);
-      }
-      upgradeDisplay.setText("Upgrades for " + lastClicked.sprite.key + ":\n" + lastClicked.upgrades.join(",\n"));
     }
-
   }
 }
 
@@ -1181,7 +1155,7 @@ function makeButton(position,frame) {
 }
 
 function setLastClicked(sprite) {
-  if (!turn && !this.lastClicked) {
+  if (!turn && !this.lastClicked && sprite.key != "monster") {
     turn = playersList[sprite.number];
     //turn.sprite.inputEnabled = true;
     closestSpaces = getClosestSpaces(turn.key);
@@ -1213,12 +1187,29 @@ function setLastClicked(sprite) {
     wallButton.events.onDragStop.add(U["Drop Wall"].active, {spaceStart: null, player: lastClicked, sprite: wallButton});
     mineButton = makeButton(5,11);
     mineButton.events.onInputDown.add(U.Mines.active, {player: lastClicked});
+    extrasButton = makeButton(10, 10);
+    mineButton.events.onInputDown.add(displayExtras, {player: lastClicked});
   } else if (!turn && this.lastClicked) {
     return;
   }
   if (playerNames.indexOf(sprite.key) > -1) {
     lastClicked = playersList[this.lastClicked] || playersList[sprite.number];
     var normalState = !battleState && !zoomIn && !zoomOut;
+    if (turn.sprite === sprite) {
+      upgradeButton.inputEnabled = true;
+      upgradeButton.tint = 0xffffff;
+      upgradeButton.events.onInputUp._bindings = [];
+      upgradeButton.events.onInputUp.add(upgrade, {upgrading: turn}); 
+    } else {
+      upgradeButton.tint = 0x3d3d3d;
+      upgradeButton.inputEnabled = false;
+    }
+    waitButton.inputEnabled = true;
+    waitButton.tint = 0xffffff;
+    extrasButton.inputEnabled = true;
+    extrasButton.tint = 0xffffff;
+    extrasButton.events.onInputDown._bindings = [];
+    extrasButton.events.onInputDown.add(displayExtras, {player: lastClicked});
     for (i = 1; i < playersList.length; i++) {
       if (!playersList[i].rebuildButton && destroyedPlayersList.length > 0 && playersList[i].rbTokens && normalState) { 
         if (destroyedMechDisplays.length === 0) {
@@ -1323,9 +1314,11 @@ function setLastClicked(sprite) {
      }
    }
   } else if (sprite.key === "monster") {
-    //if (repairText) {
-      //buttonsList.splice(repairButton, 1);
-      //repairButton.kill();
+    buttonsList.forEach(function(button) {    
+      button.events.onInputDown._bindings = [];
+      button.tint = 0x3d3d3d;
+      button.inputEnabled = false;
+    });
     }
     /*if (upgradeText) {
       upgradeText.kill();
@@ -2312,6 +2305,34 @@ function repair(repairing, pointer, amount) {
     tweenTint(repairing.sprite, 0xffffff, 0x98FB98, 500, true);
 }
 
+function displayExtras() {
+  console.log("Displaying Extras for: " + this.player.sprite.key);
+  var cameraTween = game.add.tween(game.camera).to( { x: game.width }, C.game.moveSpeed, Phaser.Easing.Back.InOut, true);
+  extrasDisplay.setText("Upgrades and extras for " + this.player.sprite.key + ":");
+  var options = ["Electric Fists","Targeting Computer","Siege Mode","Nullifier Shield","The Payload",
+    "Bigger Fists","Weakpoint Analysis","Weaponized Research","Nullifier Shield Unlock","The Payload",
+    "Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Gast",
+    "More Armor","Field Repair","Even More Armor","Obliteration Ray","Super Go Fast Unlock",
+    "5D Accelerators","Autododge","Emergency Jump Jets","Fusion Cannon","Mind-Machine Interface",
+    "Hyper Caffeine","Monster Bait","Chaos Systems","Fusion Cannon Unlock","Mind-Machine Interface Unlock"
+  ]
+  var unlocks = ["Nullifier Shield", "Obliteration Ray", "Fusion Cannon", "The Payload", "Super Go Fast", "Mind-Machine Interface"];
+  upgradeTokensList.forEach(function(upgrade) {
+    upgrade.destroy();
+  });
+  upgradeTokensList = [];
+  for (i = 0; i < this.player.upgrades.length; i++) {
+    if (this.player.upgrades[i] && unlocks.indexOf(this.player.upgrades[i]) === -1 && this.player.upgrades[i] != "LOCKED") {
+      var num = i%3
+      var upgradeToken = game.add.sprite(0,0,'upgradeMatIcons', options.indexOf(this.player.upgrades[i]));
+      upgradeToken.scale.setTo(1.2*globalScale);
+      upgradeToken.x = extrasDisplay.x - upgradeToken.width/2 + (430*globalScale*num);
+      upgradeToken.y = extrasDisplay.y + 200*globalScale + (Math.floor(i/3)*400*globalScale);
+      upgradeTokensList[i] = upgradeToken
+    }
+  }
+}
+
   function upgrade(upgrading) {
     var upgrading = this.upgrading || upgrading 
     confirmState = false;
@@ -2337,6 +2358,9 @@ function repair(repairing, pointer, amount) {
             console.log("cost was " + (boughtUpgrade.cost-discountValue));
           }
           upgrading.upgrades.push(this.boughtUpgrade);
+          if (unlocks.indexOf(this.boughtUpgrade) > -1) {
+            upgrading.upgrades.push("LOCKED");
+          }
           for (u = 0; u < unlocks.length; u++) {
             if (upgrading.upgrades.indexOf(unlocks[u]) > -1 && upgrading.upgrades.indexOf(unlocks[u]+" Unlock") === -1 ) {
               for (i = 0; i < upgrading.colorDiscounts.length; i++) {
@@ -2344,7 +2368,7 @@ function repair(repairing, pointer, amount) {
                   if (U[unlocks[u]+" Unlock"].passive) {
                     U[unlocks[u]+" Unlock"].passive(upgrading);
                   }
-                  upgrading.upgrades.push(unlocks[u]+" Unlock");
+                  upgrading.upgrades[upgrading.upgrades.indexOf(unlocks[u]) + 1] = unlocks[u]+" Unlock";
                 }
               }
           }
@@ -2943,6 +2967,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     random.events.onInputOver.add(hoverScale, {sprite:random});
     random.events.onInputOut.add(random.glow, {sprite:random,fadeOut:true});
     random.events.onInputOver.add(random.glow, {sprite:random});
+    random.events.onInputOver.add(setLastClicked, {lastClicked:random});
   }
   random.smoothed = true;
   random.alpha = 0;
