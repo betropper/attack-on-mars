@@ -116,7 +116,15 @@ var focusX,
  heldSprite,
  monsterResources = 0,
  monsterResearchTrack = 0,
- upgradeTokensList = []
+ upgradeTokensList = [],
+ upgradeExample
+var options = ["Electric Fists","Targeting Computer","Siege Mode","Nullifier Shield","The Payload",
+"Bigger Fists","Weakpoint Analysis","Weaponized Research","Nullifier Shield Unlock","The Payload",
+"Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Gast",
+"More Armor","Field Repair","Even More Armor","Obliteration Ray","Super Go Fast Unlock",
+"5D Accelerators","Autododge","Emergency Jump Jets","Fusion Cannon","Mind-Machine Interface",
+"Hyper Caffeine","Monster Bait","Chaos Systems","Fusion Cannon Unlock","Mind-Machine Interface Unlock"
+]
 var boss = {};
 var battleSpeedDecrease = 0;
 var boughtBool;
@@ -2485,6 +2493,14 @@ function confirmUpgrade(player,upgradeName) {
       game.kineticScrolling.stop();
       confirmState = true;
       game.camera.y = upgradeMenu.y + upgradeMenu.height/2 + game.camera.height/2;
+      var index = options.indexOf(upgradeName);
+      if (!upgradeExample) {
+        var upgradeExample = game.add.sprite(game.world.centerX, game.height/2 + game.camera.y, 'upgradeMatIcons', index);
+        upgradeExample.scale.setTo(globalScale);
+        upgradeExample.anchor.setTo(.5);
+      } else {
+        upgradeExample.frame = index;
+      }
       if (confirmText && consideredUpgrade && consideredUpgrade.desc) {
         confirmText.setText("Are you sure you would like to purchase " + upgradeName + " on " + turn.sprite.key +"?\n\n" + consideredUpgrade.desc);
       } else if (consideredUpgrade && consideredUpgrade.desc){
