@@ -749,7 +749,11 @@ class Setup {
             printBattleResults(battleMonster.sprite.key + " drained " + battlePlayer.sprite.key + " " + battleMonster.upgrades[i].substring(8) + "!");
           } else if (battleMonster.upgrades[i].indexOf("-2 Mech") > -1) {
             MU["Dice -#"].active(battlePlayer,battleMonster.upgrades[i].substring(8),2);
-            printBattleResults(battleMonster.sprite.key + " drained " + battlePlayer.sprite.key + " " + battleMonster.upgrades[i].substring(8) + "!");
+            printBattleResults(battleMonster.sprite.key + " drained " + battlePlayer.sprite.key + "'s " + battleMonster.upgrades[i].substring(8) + "!");
+          }
+          if (battleMonster.upgrades[i].indexOf("+1 Mecha") > -1) {
+            MU["Dice Target +#"].active(battlePlayer,battleMonster.upgrades[i].substring(9),1);
+            printBattleResults(battleMonster.sprite.key + " raised " + battlePlayer.sprite.key + "'s " + battleMonster.upgrades[i].substring(8) + " Attack Target!");
           }
         }
         if (battleMonster.upgrades.indexOf("First Attack") === -1) {
@@ -1086,7 +1090,9 @@ function zoomFalse() {
       globalList[i].sprite.inputEnabled = true;
     }
     for (i = 0; i < buttonsList.length; i++) {
-      game.world.bringToTop(buttonsList[i]);
+      if (buttonsList[i]) {
+        game.world.bringToTop(buttonsList[i]);
+      }
     }
     for (i = 0; i < buttonsTextList.length; i++) {
       buttonsTextList[i].reset(buttonsTextList[i].x,buttonsTextList[i].y);
@@ -3099,7 +3105,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
       if (threatLevel >= 36) {
         threatLevel = 24;
         for (i = 0; i < MonstersDeck.extinctionMonsters.length; i++) {
-          MonsterDeck.extinctionMonsters.drawn = false;
+          MonstersDeck.extinctionMonsters.drawn = false;
         }
       }
       do {

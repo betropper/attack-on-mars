@@ -324,5 +324,36 @@ var MU = {
       mech[playerDie[pool]] += amount;
       mech.tempStolen.splice({pool: pool, amount: amount},1);
     }
+  },
+  "Dice Target +#": {
+    "desc": "The Mecha fighting this monster has to hit a higher target goal",
+    "cost": 2,
+    active: function(mech,pool,amount) {
+      console.log(mech + pool + amount);
+      var playerDie = {
+        "Blue Target": "batkGoal",
+        "Red Target": "ratkGoal",
+        "Def Target": "defGoal"
+      };
+      if (mech[playerDie[pool]] > 0) {
+        console.log(mech[playerDie[pool]]);
+        mech[playerDie[pool]] += amount;
+        console.log("GOAL CHANGED");
+        if (mech.tempStolen) {
+          mech.tempStolen.push({pool: pool, amount: -amount});
+        } else {
+          mech.tempStolen = [{pool: pool, amount: -amount}];
+        }
+      }
+    },
+    returnStolen: function(mech,pool,amount) {
+      var playerDie = {
+        "Blue Target": "batkGoal",
+        "Red Target": "ratkGoal",
+        "Def Target": "defGoal"
+      };
+      mech[playerDie[pool]] -= amount;
+      mech.tempStolen.splice({pool: pool, amount: amount},1);
+    }
   }
 }
