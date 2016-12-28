@@ -582,13 +582,13 @@ class Setup {
     
     extrasDisplay = game.add.text(game.width*1.5, 20*globalScale, "", C.game.textStyle);
     extrasDisplay.anchor.setTo(.5);
-    var extrasReturnButton = game.add.button(extrasDisplay.x,extrasDisplay.y + game.width/2.5 + 20*globalScale,'icons',function() {
+    var extrasReturnButton = game.add.button(extrasDisplay.x,extrasDisplay.y + game.width/2.5 + 50*globalScale,'icons',function() {
       game.camera.x = 0;
     });
     extrasReturnButton.frame = 13
     extrasReturnButton.anchor.setTo(.5);
     extrasReturnButton.scale.setTo(globalScale*.7);
-    var extrasReturnText = game.add.text(extrasReturnButton.x,extrasReturnButton.y - extrasReturnButton.height/1.5 + 15*globalScale,"Return to Movement Screen",C.game.textStyle);
+    var extrasReturnText = game.add.text(extrasReturnButton.x,extrasReturnButton.y - extrasReturnButton.height/1.5,"Return to Movement Screen",C.game.textStyle);
     extrasReturnText.anchor.setTo(.5);
     menuBar = game.add.sprite(0,game.height - game.camera.width/5,"menubar");
     menuBar.width = game.camera.width;
