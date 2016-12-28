@@ -582,16 +582,14 @@ class Setup {
     
     extrasDisplay = game.add.text(game.width*1.5, 20*globalScale, "", C.game.textStyle);
     extrasDisplay.anchor.setTo(.5);
-    var extrasReturnButton = game.add.button(extrasDisplay.x,extrasDisplay.y + game.width/2.5,'icons',function() {
+    var extrasReturnButton = game.add.button(extrasDisplay.x,extrasDisplay.y + game.width/2.5 + 20*globalScale,'icons',function() {
       game.camera.x = 0;
     });
     extrasReturnButton.frame = 13
     extrasReturnButton.anchor.setTo(.5);
-    extrasReturnButton.scale.setTo(globalScale);
-    var extrasReturnText = game.add.text(extrasReturnButton.x,extrasReturnButton.y - extrasReturnButton.height/1.5,"Return to Movement Screen",C.game.textStyle);
+    extrasReturnButton.scale.setTo(globalScale*.7);
+    var extrasReturnText = game.add.text(extrasReturnButton.x,extrasReturnButton.y - extrasReturnButton.height/1.5 + 15*globalScale,"Return to Movement Screen",C.game.textStyle);
     extrasReturnText.anchor.setTo(.5);
-    upgradeDisplay = game.add.text(game.world.centerX + game.world.width/4, game.world.height - 340*globalScale, "", C.game.textStyle);
-    upgradeDisplay.anchor.setTo(.5,0);
     menuBar = game.add.sprite(0,game.height - game.camera.width/5,"menubar");
     menuBar.width = game.camera.width;
     menuBar.height = game.camera.width/5;
@@ -2334,14 +2332,29 @@ function displayExtras() {
     upgrade.destroy();
   });
   upgradeTokensList = [];
-  for (i = 0; i < this.player.upgrades.length; i++) {
-    if (this.player.upgrades[i] && unlocks.indexOf(this.player.upgrades[i]) === -1 && this.player.upgrades[i] != "LOCKED") {
+  if (this.player.upgrades.length > 8) {
+    var target = 9;
+  } else {
+    var target = this.player.upgrades.length;
+  }
+  for (i = 0; i < target; i++) {
+    if (this.player.upgrades[i] && this.player.upgrades[i] != "LOCKED") {
       var num = i%3
       var upgradeToken = game.add.sprite(0,0,'upgradeMatIcons', options.indexOf(this.player.upgrades[i]));
       upgradeToken.scale.setTo(1.2*globalScale);
-      upgradeToken.x = extrasDisplay.x - upgradeToken.width/2 + (430*globalScale*num);
-      upgradeToken.y = extrasDisplay.y + 200*globalScale + (Math.floor(i/3)*400*globalScale);
-      upgradeTokensList[i] = upgradeToken
+      upgradeToken.anchor.setTo(.5);
+      upgradeToken.x = game.width + game.camera.width/2 - upgradeToken.width + (upgradeToken.width*num);
+      upgradeToken.y = extrasDisplay.y + 200*globalScale + (Math.floor(i/3)*upgradeToken.height);
+      upgradeTokensList[i] = upgradeToken;
+    } else if (this.player.upgrades[i] && this.player.upgrades[i] === "LOCKED") {
+      var num = i%3
+      var upgradeToken = game.add.sprite(0,0,'upgradeMatIcons', options.indexOf(this.player.upgrades[i-3]) + 5);
+      upgradeToken.scale.setTo(1.2*globalScale);
+      upgradeToken.anchor.setTo(.5);
+      upgradeToken.x = game.width + game.camera.width/2 - upgradeToken.width + (upgradeToken.width*num);
+      upgradeToken.y = extrasDisplay.y + 200*globalScale + (Math.floor(i/3)*upgradeToken.height);
+      upgradeToken.tint = 0x3d3d3d
+      upgradeTokensList[i] = upgradeToken;
     }
   }
 }
@@ -2370,9 +2383,17 @@ function displayExtras() {
             upgrading.rp -= (boughtUpgrade.cost - discountValue);
             console.log("cost was " + (boughtUpgrade.cost-discountValue));
           }
-          upgrading.upgrades.push(this.boughtUpgrade);
+          for (i = 0; i < upgrading.upgrades.length; i++) {
+            if (!upgrading.upgrades[i]) {
+              upgrading.upgrades[i] = this.boughtUpgrade;
+              break
+            }
+          }
+          if (upgrading.upgrades.indexOf(this.boughtUpgrade) === -1) {
+            upgrading.upgrades.push(this.boughtUpgrade);
+          }
           if (unlocks.indexOf(this.boughtUpgrade) > -1) {
-            upgrading.upgrades.push("LOCKED");
+            upgrading.upgrades[upgrading.upgrades.indexOf(this.boughtUpgrade) + 3] = "LOCKED";
           }
           for (u = 0; u < unlocks.length; u++) {
             if (upgrading.upgrades.indexOf(unlocks[u]) > -1 && upgrading.upgrades.indexOf(unlocks[u]+" Unlock") === -1 ) {
@@ -2381,7 +2402,7 @@ function displayExtras() {
                   if (U[unlocks[u]+" Unlock"].passive) {
                     U[unlocks[u]+" Unlock"].passive(upgrading);
                   }
-                  upgrading.upgrades[upgrading.upgrades.indexOf(unlocks[u]) + 1] = unlocks[u]+" Unlock";
+                  upgrading.upgrades[upgrading.upgrades.indexOf(unlocks[u]) + 3] = unlocks[u]+" Unlock";
                 }
               }
           }
