@@ -2332,27 +2332,27 @@ function displayExtras() {
     upgrade.destroy();
   });
   upgradeTokensList = [];
-  if (this.player.upgrades.length > 8) {
-    var target = 9;
+  if (this.player.upgrades.length >= 12) {
+    var target = 12;
   } else {
     var target = this.player.upgrades.length;
   }
   for (i = 0; i < target; i++) {
     if (this.player.upgrades[i] && this.player.upgrades[i] != "LOCKED") {
-      var num = i%3
+      var num = i%4
       var upgradeToken = game.add.sprite(0,0,'upgradeMatIcons', options.indexOf(this.player.upgrades[i]));
       upgradeToken.scale.setTo(1.2*globalScale);
       upgradeToken.anchor.setTo(.5);
-      upgradeToken.x = game.width + game.camera.width/2 - upgradeToken.width + (upgradeToken.width*num);
-      upgradeToken.y = extrasDisplay.y + 200*globalScale + (Math.floor(i/3)*upgradeToken.height);
+      upgradeToken.x = game.width + game.camera.width/2 - upgradeToken.width*1.5 + (upgradeToken.width*num);
+      upgradeToken.y = extrasDisplay.y + 200*globalScale + (Math.floor(i/4)*upgradeToken.height);
       upgradeTokensList[i] = upgradeToken;
     } else if (this.player.upgrades[i] && this.player.upgrades[i] === "LOCKED") {
-      var num = i%3
+      var num = i%4
       var upgradeToken = game.add.sprite(0,0,'upgradeMatIcons', options.indexOf(this.player.upgrades[i-3]) + 5);
       upgradeToken.scale.setTo(1.2*globalScale);
       upgradeToken.anchor.setTo(.5);
-      upgradeToken.x = game.width + game.camera.width/2 - upgradeToken.width + (upgradeToken.width*num);
-      upgradeToken.y = extrasDisplay.y + 200*globalScale + (Math.floor(i/3)*upgradeToken.height);
+      upgradeToken.x = game.width + game.camera.width/2 - upgradeToken.width*1.5 + (upgradeToken.width*num);
+      upgradeToken.y = extrasDisplay.y + 200*globalScale + (Math.floor(i/4)*upgradeToken.height);
       upgradeToken.tint = 0x3d3d3d
       upgradeTokensList[i] = upgradeToken;
     }
@@ -2393,7 +2393,7 @@ function displayExtras() {
             upgrading.upgrades.push(this.boughtUpgrade);
           }
           if (unlocks.indexOf(this.boughtUpgrade) > -1) {
-            upgrading.upgrades[upgrading.upgrades.indexOf(this.boughtUpgrade) + 3] = "LOCKED";
+            upgrading.upgrades[upgrading.upgrades.indexOf(this.boughtUpgrade) + 4] = "LOCKED";
           }
           for (u = 0; u < unlocks.length; u++) {
             if (upgrading.upgrades.indexOf(unlocks[u]) > -1 && upgrading.upgrades.indexOf(unlocks[u]+" Unlock") === -1 ) {
@@ -2402,7 +2402,7 @@ function displayExtras() {
                   if (U[unlocks[u]+" Unlock"].passive) {
                     U[unlocks[u]+" Unlock"].passive(upgrading);
                   }
-                  upgrading.upgrades[upgrading.upgrades.indexOf(unlocks[u]) + 3] = unlocks[u]+" Unlock";
+                  upgrading.upgrades[upgrading.upgrades.indexOf(unlocks[u]) + 4] = unlocks[u]+" Unlock";
                 }
               }
           }
@@ -2448,7 +2448,7 @@ function displayExtras() {
       }
     }
   }
-  if (upgrading.upgrades.length >= 9) {
+  if (upgrading.upgrades.length >= 12) {
     game.camera.y = 0;
     upgradeButton.tint = 0x3d3d3d;
     upgradeButton.inputEnabled = false;
