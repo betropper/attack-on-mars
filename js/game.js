@@ -2348,7 +2348,7 @@ function displayExtras() {
       upgradeTokensList[i] = upgradeToken;
     } else if (this.player.upgrades[i] && this.player.upgrades[i] === "LOCKED") {
       var num = i%4
-      var upgradeToken = game.add.sprite(0,0,'upgradeMatIcons', options.indexOf(this.player.upgrades[i-3]) + 5);
+      var upgradeToken = game.add.sprite(0,0,'upgradeMatIcons', options.indexOf(this.player.upgrades[i-4]) + 5);
       upgradeToken.scale.setTo(1.2*globalScale);
       upgradeToken.anchor.setTo(.5);
       upgradeToken.x = game.width + game.camera.width/2 - upgradeToken.width*1.5 + (upgradeToken.width*num);
