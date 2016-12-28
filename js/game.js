@@ -824,7 +824,7 @@ function setAttributeDisplay(obj) {
     hpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 100*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,8,"hp", "maxhp");
     rpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 450*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,6,"rp");
     mpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 700*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,22,"mr");
-    destroyedCities.hoverInfo = destroyedCities.addHoverInfo(0, 0, 3,"length");
+    destroyedCities.hoverInfo = destroyedCities.addHoverInfo(0, 0, 1,"length","liveCities");
     for (i = 0; i < 3; i++) {
       var actionPoint = actionIcons.create(ratkDisplay.valueIcon.x + 350*globalScale + (i*(70*globalScale)), ratkDisplay.valueIcon.y + 15*globalScale,'icons',0);
       actionPoint.scale.setTo(.6*globalScale);
@@ -872,7 +872,7 @@ function addBattleText(text, action, modifier) {
 }
 //'value' is the name of the changed value as a string.
 
-function addHoverInfo(x,y,frame,value,secondaryValue) {
+function addHoverInfo(x,y,frame,value,secondaryValue,subtractedValue) {
   var valueIcon = game.add.sprite(x, y, 'icons',frame);
   valueIcon.scale.setTo(.5*globalScale);
   if (this[value]) {
@@ -887,12 +887,15 @@ function addHoverInfo(x,y,frame,value,secondaryValue) {
     value: value,
     secondaryValue,
     valueName: value.toString(),
-  }  
-  if (secondaryValue && infoDescObj.parent[value]) {
+  }
+  if (secondaryValue === "liveCities") {
+    var liveValue = (playerCount*4) - infoDescObj.parent[value] 
+    infoDescObj.valueDisplay.text = liveValue.toString();
+  } else if (secondaryValue && infoDescObj.parent[value]) {
     infoDescObj.valueDisplay.text = infoDescObj.parent[value].toString() + " [" + infoDescObj.parent[secondaryValue].toString() + "]";
   } else if (!infoDescObj.parent[infoDescObj.valueName]) {
     infoDescObj.valueDisplay.text = "";
-   }
+  }
   infoDescObj.update = function(obj) {
     this.parent = obj;
     if (obj[this.valueName]) {
@@ -902,6 +905,8 @@ function addHoverInfo(x,y,frame,value,secondaryValue) {
         if (this.secondaryValue) {
           if (this.secondaryValue === "maxhp") {
             this.valueDisplay.text = obj[value].toString() + " / " + obj[secondaryValue].toString();
+          } else if (this.secondaryValue === "liveCities") {
+            this.valueDisplay.text = (playerCount*4) - obj[value].toString()
           } else {
             this.valueDisplay.text = obj[value].toString() + " [" + obj[secondaryValue].toString() + "]";
             console.log(this.valueDisplay.text);
