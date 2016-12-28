@@ -157,8 +157,73 @@ var MonstersDeck = {
    "def": 4,
    "hp": 5,
    "upgrades": ["-1 Mech Blue Attack"]
+   },
+   {
+   "batk": 8,
+   "def": 5,
+   "hp": 4,
+   "upgrades": ["-1 Mech Red Attack"]
+   },
+   {
+   "batk": 7,
+   "def": 4,
+   "hp": 3,
+   "upgrades": ["-2 Mech Def", "Feign Death"]
+   },
+   {
+   "batk": 6,
+   "def": 4,
+   "hp": 4,
+   "upgrades": ["-2 Mech Red Attack", "-2 Mech Blue Attack"]
+   },
+   {
+   "batk": 6,
+   "def": 5,
+   "hp": 4,
+   "upgrades": ["+1 Mech Target Blue"]
+   },
+   {
+   "batk": 6,
+   "def": 4,
+   "hp": 5,
+   "upgrades": ["+1 Mech Target Red"]
+   },
+   {
+   "batk": 6,
+   "def": 4,
+   "hp": 6,
+   "upgrades": ["Poison Aura", "Poison Aura"]
+   },
+   {
+   "batk": 7,
+   "def": 3,
+   "hp": 4,
+   "upgrades": ["Reroll Red"]
+   },
+   {
+   "batk": 6,
+   "def": 5,
+   "hp": 3,
+   "upgrades": ["Reroll Def"]
+   },
+   {
+   "batk": 7,
+   "def": 4,
+   "hp": 4,
+   "upgrades": ["Feign Death"]
+   },
+   {
+   "batk": 7,
+   "def": 5,
+   "hp": 4,
+   "upgrades": ["Feign Death"]
+   },
+   {
+   "batk": 7,
+   "def": 4,
+   "hp": 5,
+   "upgrades": ["Feign Death"]
    }
-
  ],
  "bossMonsters": [
    {

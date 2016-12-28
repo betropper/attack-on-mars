@@ -747,6 +747,9 @@ class Setup {
           if (battleMonster.upgrades[i].indexOf("-1 Mech") > -1) {
             MU["Dice -#"].active(battlePlayer,battleMonster.upgrades[i].substring(8),1);
             printBattleResults(battleMonster.sprite.key + " drained " + battlePlayer.sprite.key + " " + battleMonster.upgrades[i].substring(8) + "!");
+          } else if (battleMonster.upgrades[i].indexOf("-2 Mech") > -1) {
+            MU["Dice -#"].active(battlePlayer,battleMonster.upgrades[i].substring(8),2);
+            printBattleResults(battleMonster.sprite.key + " drained " + battlePlayer.sprite.key + " " + battleMonster.upgrades[i].substring(8) + "!");
           }
         }
         if (battleMonster.upgrades.indexOf("First Attack") === -1) {
