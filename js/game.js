@@ -1206,7 +1206,7 @@ function setLastClicked(sprite) {
   if (playerNames.indexOf(sprite.key) > -1) {
     lastClicked = playersList[this.lastClicked] || playersList[sprite.number];
     var normalState = !battleState && !zoomIn && !zoomOut;
-    if (turn.sprite === sprite) {
+    if (turn.sprite === sprite && turn.upgrades.length < 9) {
       upgradeButton.inputEnabled = true;
       upgradeButton.tint = 0xffffff;
       upgradeButton.events.onInputUp._bindings = [];
@@ -2448,12 +2448,18 @@ function displayExtras() {
       }
     }
   }
-  game.world.bringToTop(upgradeTokens);
-  game.world.bringToTop(mrTokens);
-  game.kineticScrolling.start();
-  game.input.onTap.add(chooseUpgrade, {menu: upgradeMenu});
-  game.camera.y = game.height;
-  upgradeState = true;
+  if (upgrading.upgrades.length >= 9) {
+    game.camera.y = 0;
+    upgradeButton.tint = 0x3d3d3d;
+    upgradeButton.inputEnabled = false;
+  } else {
+    game.world.bringToTop(upgradeTokens);
+    game.world.bringToTop(mrTokens);
+    game.kineticScrolling.start();
+    game.input.onTap.add(chooseUpgrade, {menu: upgradeMenu});
+    game.camera.y = game.height;
+    upgradeState = true;
+  }
 }
 
 function chooseUpgrade(event) {
