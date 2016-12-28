@@ -653,7 +653,6 @@ class Setup {
         //zoomTween.onComplete.add(zoomWorld, {zoomScale: C.game.zoomScale});
         var scaleTween = game.add.tween(game.world.scale).to( { x: C.game.zoomScale, y: C.game.zoomScale }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
         scaleTween.onComplete.add(zoomFalse, this);
-      }
         for (i = 0; i < buttonsTextList.length; i++) {
         buttonsTextList[i].kill();
        }
@@ -664,6 +663,11 @@ class Setup {
             playersList[i].sprite.inputEnabled = false;
           }
         }
+        for (i = 1; i < monstersList.length; i++) {
+          monstersList[i].sprite.scale.setTo(C.mech.scale);
+          monstersList[i].tint = 0xffffff;
+          }
+        }
         /*
         menuBar.width = C.game.width / game.world.scale.x;
         menuBar.height = (C.game.height/10) / game.world.scale.y;
@@ -671,6 +675,12 @@ class Setup {
         menuBar.height = Phaser.Math.clamp(menuBar.height, C.menuBar.height/C.game.zoomScale, C.menuBar.height);
         */
         game.world.bringToTop(menuBar);
+        if (monsterBar) {
+          game.world.bringToTop(monsterBar);
+        }
+        if (playerBar) {
+          game.world.bringToTop(playerBar);
+        }
     } else if (zoomOut === true) {
       if (menuBar.alive) {   
           var zoomTween = game.add.tween(game.camera).to( { x: 0, y: 0 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
@@ -1089,14 +1099,14 @@ function zoomFalse() {
     for (var i = 0; i < globalList.length; i++) {
       globalList[i].sprite.inputEnabled = true;
     }
-    for (i = 0; i < buttonsList.length; i++) {
+    /*for (i = 0; i < buttonsList.length; i++) {
       if (buttonsList[i]) {
         game.world.bringToTop(buttonsList[i]);
       }
-    }
-    for (i = 0; i < buttonsTextList.length; i++) {
+    }*/
+    /*for (i = 0; i < buttonsTextList.length; i++) {
       buttonsTextList[i].reset(buttonsTextList[i].x,buttonsTextList[i].y);
-    }
+    }*/
     game.world.scale.set(1);
   }
 }
