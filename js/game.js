@@ -60,7 +60,13 @@ var C = {
    "height": 72,
    "scale": 1.3 * globalScale,
    "battleSpacing": 100*globalScale,
-   "battleSpeed": 3*globalScale
+   "battleSpeed": 3*globalScale,
+   "colorCards": {
+    "red": "assets/R.jpg",
+    "green": "assets/G.jpg",
+    "yellow": "assets/Y.jpg",
+    "blue": "assets/B.jpg",
+   }
  },
  "destroyed": {
    "scale": 1.8 * globalScale
