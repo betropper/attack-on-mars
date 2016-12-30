@@ -242,6 +242,10 @@ class Load {
     game.load.atlasJSONArray('icons', 'assets/Icons.png', 'assets/icons.json');
     game.load.atlasJSONArray('upgradeMatIcons', 'assets/UpgradeMatSpritesheet.png', 'assets/UpgradeMatSpritesheet.json');
     this.load.image("upgradeMat","assets/UpgradeMat.png",469,676);
+    this.load.image("redCard",C.mech.colorCards.red,520,791);
+    this.load.image("blueCard",C.mech.colorCards.blue,520,791);
+    this.load.image("greenCard",C.mech.colorCards.green,520,791);
+    this.load.image("yellowCard",C.mech.colorCards.yellow,520,791);
     this.load.image("gameboard",C.bg.file,C.bg.width,C.bg.height);
     this.load.image("background",C.mbg.file,C.mbg.width,C.mbg.height);
     this.load.image("blue", "assets/PlayerIcon1.png",C.mech.width,C.mech.height);
@@ -299,7 +303,7 @@ class MainMenu {
     right.inputEnabled = true;
     right.width = 90 * globalScale;
     right.height = 90 * globalScale;
-    [right.events.onInputDown.add(changePlayerCount,]() {action: 1, display: countNumber});
+    right.events.onInputDown.add(changePlayerCount,]() {action: 1, display: countNumber});
     */
     var versionText = game.add.text(100*globalScale, 80*globalScale, "Version: "+C.game.versionNumber, C.game.smallStyle);
     var playerCountText = game.add.bitmapText(game.world.centerX, countNumber.y - 140*globalScale, 'attackfont', "Player Count (Locked)", 90*globalScale);
