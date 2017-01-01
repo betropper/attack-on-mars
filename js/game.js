@@ -216,7 +216,8 @@ class Boot {
     } else {
       game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
     }
-    game.load.bitmapFont('attackfont','assets/attackfont.png', 'assets/attackfont.fnt');
+    game.load.bitmapFont('font','assets/font.png', 'assets/font.fnt');
+    game.load.bitmapFont('battlefont','assets/font.png', 'assets/font.fnt');
   }
   create() {
     this.state.start("Load");
@@ -235,13 +236,14 @@ class Load {
       verticalWheel: true,
       deltaWheel: 40
   });
-    var loadingText = game.add.bitmapText(game.world.centerX, game.world.centerY, 'attackfont', "Loading", 120*globalScale);
+    var loadingText = game.add.bitmapText(game.world.centerX, game.world.centerY, 'font', "Loading", 120*globalScale);
     loadingText.anchor.setTo(.5);
     console.log("Loading.");
     //this.load.spritesheet('icons', "assets/Icons.png", C.icons.width, C.icons.height)
     game.load.atlasJSONArray('icons', 'assets/Icons.png', 'assets/icons.json');
     game.load.atlasJSONArray('upgradeMatIcons', 'assets/UpgradeMatSpritesheet.png', 'assets/UpgradeMatSpritesheet.json');
     this.load.image("upgradeMat","assets/UpgradeMat.png",469,676);
+    this.load.image("blackground","assets/blackbox.png",512,512);
     this.load.image("redCard",C.mech.colorCards.red,520,791);
     this.load.image("blueCard",C.mech.colorCards.blue,520,791);
     this.load.image("greenCard",C.mech.colorCards.green,520,791);
@@ -285,10 +287,10 @@ class MainMenu {
     game.mbg = game.add.sprite(game.world.centerX, game.world.centerY, "background");
     game.mbg.anchor.setTo(.5);
     game.mbg.scale.setTo(C.mbg.scale, C.mbg.scale);
-    var titleText = game.add.bitmapText(game.world.centerX, game.world.centerY - game.height/2.5, 'attackfont', "ATTACK ON MARS", 90*globalScale);
+    var titleText = game.add.bitmapText(game.world.centerX, game.world.centerY - game.height/2.5, 'font', "ATTACK ON MARS", 90*globalScale);
     titleText.anchor.set(0.5);
     playerCount = 4;
-    var countNumber = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/9, 'attackfont', playerCount, 90*globalScale) 
+    var countNumber = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/9, 'font', playerCount, 90*globalScale) 
     countNumber.anchor.set(0.5);
     /*var left = game.add.sprite(game.world.centerX - 140*globalScale, game.world.centerY + game.height/6, "leftright");
     left.frame = 0;
@@ -306,28 +308,28 @@ class MainMenu {
     right.events.onInputDown.add(changePlayerCount,]() {action: 1, display: countNumber});
     */
     var versionText = game.add.text(100*globalScale, 80*globalScale, "Version: "+C.game.versionNumber, C.game.smallStyle);
-    var playerCountText = game.add.bitmapText(game.world.centerX, countNumber.y - 140*globalScale, 'attackfont', "Player Count (Locked)", 90*globalScale);
+    var playerCountText = game.add.bitmapText(game.world.centerX, countNumber.y - 140*globalScale, 'font', "Player Count (Locked)", 90*globalScale);
     playerCountText.anchor.set(.5);
     //game.input.onUp.add(checkButtons, {left: left, right: right});
-    var playButton = game.add.bitmapText(game.world.centerX, countNumber.y + 140*globalScale, 'attackfont', "Play Game", 90*globalScale);
+    var playButton = game.add.bitmapText(game.world.centerX, countNumber.y + 140*globalScale, 'font', "Play Game", 90*globalScale);
     playButton.anchor.set(.5);
     playButton.inputEnabled = true;
     playButton.events.onInputUp.add(clickFade, {inorout:"out", state: "Setup"});
-    var settingsButton = game.add.bitmapText(game.world.centerX, playButton.y + 140*globalScale, 'attackfont', "Settings", 90*globalScale);
+    var settingsButton = game.add.bitmapText(game.world.centerX, playButton.y + 140*globalScale, 'font', "Settings", 90*globalScale);
     settingsButton.anchor.set(.5);
     settingsButton.inputEnabled = true;
-    var creditsButton = game.add.bitmapText(game.world.centerX, settingsButton.y + 140*globalScale, 'attackfont', "Credits", 90*globalScale);
+    var creditsButton = game.add.bitmapText(game.world.centerX, settingsButton.y + 140*globalScale, 'font', "Credits", 90*globalScale);
     creditsButton.anchor.set(.5);
     creditsButton.inputEnabled = true;
     var menuList = [/*left,*/ countNumber, /*right,*/ playerCountText, playButton, settingsButton, creditsButton];
-    returnButton = game.add.bitmapText(game.world.centerX + game.width, game.world.centerY - game.height/8, 'attackfont', "Return to Menu", 90*globalScale);
+    returnButton = game.add.bitmapText(game.world.centerX + game.width, game.world.centerY - game.height/8, 'font', "Return to Menu", 90*globalScale);
     returnButton.anchor.set(.5);
     //Off screen settings menu
     returnButton.inputEnabled = true;
-    var lowButton = game.add.bitmapText(returnButton.x, returnButton.y + 200*globalScale, 'attackfont', "Low", 90*globalScale);
-    var medButton = game.add.bitmapText(lowButton.x, lowButton.y + 140*globalScale, 'attackfont', "Medium", 90*globalScale);
-    var highButton = game.add.bitmapText(medButton.x, medButton.y + 140*globalScale,'attackfont', "High", 90*globalScale);
-    var qualityDisplay = game.add.bitmapText(highButton.x, highButton.y + 160*globalScale, 'attackfont', "You are currently on " + localStorage.getItem('qualityKey'), 90*globalScale);
+    var lowButton = game.add.bitmapText(returnButton.x, returnButton.y + 200*globalScale, 'font', "Low", 90*globalScale);
+    var medButton = game.add.bitmapText(lowButton.x, lowButton.y + 140*globalScale, 'font', "Medium", 90*globalScale);
+    var highButton = game.add.bitmapText(medButton.x, medButton.y + 140*globalScale,'font', "High", 90*globalScale);
+    var qualityDisplay = game.add.bitmapText(highButton.x, highButton.y + 160*globalScale, 'font', "You are currently on " + localStorage.getItem('qualityKey'), 90*globalScale);
     var settingsList = [returnButton,lowButton,medButton,highButton,qualityDisplay];
     console.log(settingsList);
     for (var i = 1; i < settingsList.length; i++) {
@@ -352,7 +354,7 @@ class MainMenu {
 class Credits {
   preload() {
       var credits = "Illustration:        Alice Bessoni\n\nGame Programming:       Benjamin Muhlestein\n\nGame Design:        Paul Ference\n\nGraphical Design:        Helen Tian";
-      var creditsDisplay = game.add.bitmapText(game.world.centerX, game.world.centerY - game.world.height, 'attackfont', credits, 90*globalScale);
+      var creditsDisplay = game.add.bitmapText(game.world.centerX, game.world.centerY - game.world.height, 'font', credits, 90*globalScale);
       var creditsTween = game.add.tween(creditsDisplay).to({y: game.world.centerY}, 4000, Phaser.Easing.Linear.None, true);
       creditsDisplay.anchor.setTo(.5);
       //creditsTween.onComplete.add(returnToMenu, this);
@@ -724,7 +726,7 @@ class Setup {
           var barTween = game.add.tween(menuBar).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8)}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           menuBar.attachedToCamera = false;
           if (!playerBar) {
-            playerBar = game.add.sprite(focusX + game.camera.width/2, battlePlayer.sprite.y, 'menubar');
+            playerBar = game.add.sprite(focusX + game.camera.width/2, battlePlayer.sprite.y, 'blackground');
             playerBar.height = (game.camera.width/C.game.zoomScale)/5;
             playerBar.width = game.camera.height/8;
           } else if (playerBar.alive === false) {
@@ -736,7 +738,7 @@ class Setup {
           playerBar.anchor.setTo(.5);
           game.world.bringToTop(playerBar);
           if (!monsterBar) {
-            monsterBar = game.add.sprite(focusX - game.camera.width/2, battlePlayer.sprite.y, 'menubar');
+            monsterBar = game.add.sprite(focusX - game.camera.width/2, battlePlayer.sprite.y, 'blackground');
             monsterBar.width = game.camera.height/8;
             monsterBar.height = (game.camera.width/C.game.zoomScale)/5;
           } else if (monsterBar.alive === false) {
@@ -782,7 +784,7 @@ class Setup {
           battleTurn = battleMonster;
           printBattleResults(battleMonster.sprite.key + " attacks first!");
         }
-        attackText = game.add.bitmapText(menuBar.x + 100*globalScale, menuBar.y + menuBar.height,'attackfont', "Attack!",40*globalScale);
+        attackText = game.add.bitmapText(focusX + menuBar.width/2 - 100*globalScale, menuBar.y,'font', "Attack!",40*globalScale);
         attackText.anchor.set(0.5);
         attackText.inputEnabled = true;
         attackText.events.onInputDown.add(queAttack, {attacker: battlePlayer});
@@ -889,7 +891,7 @@ function allowBattle() {
 }
 
 function addBattleText(text, action, modifier) {
-  var battleText = game.add.bitmapText(battleTexts[battleTexts.length - 1].x + battleTexts[battleTexts.length - 1].width/2 + 80*globalScale, menuBar.y + 40*globalScale, 'attackfont', text, 40*globalScale);
+  var battleText = game.add.bitmapText(focusX + menuBar.width/2 - 100*globalScale, battleTexts[battleTexts.length - 1].y + battleTexts[battleTexts.length - 1].height/2 + 80*globalScale, 'font', text, 40*globalScale);
   battleText.anchor.y = 0.5;
   battleText.inputEnabled = true;
   battleText.events.onInputDown.add(action, {attacker: battlePlayer, modifier: modifier});
@@ -965,7 +967,7 @@ function addBattleInfo(text, frame, value, secondaryValue) {
       var iconX = x + 150*globalScale;
       var iconY = playerBar.y - playerBar.height/3;
     }
-    var valueDisplay = game.add.bitmapText(x + 150*globalScale + 20*globalScale,iconY, 'attackfont', this[value], 20*globalScale);
+    var valueDisplay = game.add.bitmapText(x + 150*globalScale + 20*globalScale,iconY, 'font', this[value], 20*globalScale);
   } else if (bar === monsterBar) {
     if (list.length > 0) {
       var iconX = x - 150*globalScale;
@@ -974,7 +976,7 @@ function addBattleInfo(text, frame, value, secondaryValue) {
       var iconX = x - 150*globalScale;
       var iconY = monsterBar.y - monsterBar.height/3;
     }
-    var valueDisplay = game.add.bitmapText(x - 150*globalScale + 20*globalScale,iconY, 'attackfont', this[value], 20*globalScale);
+    var valueDisplay = game.add.bitmapText(x - 150*globalScale + 20*globalScale,iconY, 'font', this[value], 20*globalScale);
   }
   var valueIcon = game.add.sprite(iconX - 20*globalScale,iconY, 'icons',frame);
   valueIcon.scale.setTo(.18*globalScale);
@@ -1425,7 +1427,7 @@ function winGame(winner) {
 }
 
 function victoryScreen() {
-  var victoryText = game.add.bitmapText(focusX,focusY - game.camera.height/C.game.zoomScale, 'attackfont', "YOU WIN!", 70*globalScale);
+  var victoryText = game.add.bitmapText(focusX,focusY - game.camera.height/C.game.zoomScale, 'font', "YOU WIN!", 70*globalScale);
   victoryText.anchor.setTo(.5);
   game.add.tween(victoryText).to( { y: menuBar.y + menuBar.height/2 }, 1500, Phaser.Easing.Bounce.Out, true);   
 }
@@ -1536,9 +1538,9 @@ function printBattleResults(text,position) {
     }
   }
   if (!position) {
-    var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(focusY - 60*globalScale), 'attackfont', text, 30*globalScale);
+    var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(focusY - 60*globalScale), 'font', text, 30*globalScale);
   } else {
-    var battleResults = game.add.bitmapText(Math.round(position.x),Math.round(position.y - 60*globalScale), 'attackfont', text, 30*globalScale);
+    var battleResults = game.add.bitmapText(Math.round(position.x),Math.round(position.y - 60*globalScale), 'font', text, 30*globalScale);
   }
   battleResults.anchor.x = .5;
   battleResults.anchor.y = .5;
