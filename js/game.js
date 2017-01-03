@@ -216,8 +216,8 @@ class Boot {
     } else {
       game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
     }
+    game.load.bitmapFont('attackfont','assets/attackfont.png', 'assets/attackfont.fnt');
     game.load.bitmapFont('font','assets/font.png', 'assets/font.fnt');
-    game.load.bitmapFont('battlefont','assets/font.png', 'assets/font.fnt');
   }
   create() {
     this.state.start("Load");
@@ -287,10 +287,10 @@ class MainMenu {
     game.mbg = game.add.sprite(game.world.centerX, game.world.centerY, "background");
     game.mbg.anchor.setTo(.5);
     game.mbg.scale.setTo(C.mbg.scale, C.mbg.scale);
-    var titleText = game.add.bitmapText(game.world.centerX, game.world.centerY - game.height/2.5, 'font', "ATTACK ON MARS", 90*globalScale);
+    var titleText = game.add.bitmapText(game.world.centerX, game.world.centerY - game.height/2.5, 'attackfont', "ATTACK ON MARS", 90*globalScale);
     titleText.anchor.set(0.5);
     playerCount = 4;
-    var countNumber = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/9, 'font', playerCount, 90*globalScale) 
+    var countNumber = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/9, 'attackfont', playerCount, 90*globalScale) 
     countNumber.anchor.set(0.5);
     /*var left = game.add.sprite(game.world.centerX - 140*globalScale, game.world.centerY + game.height/6, "leftright");
     left.frame = 0;
@@ -308,28 +308,28 @@ class MainMenu {
     right.events.onInputDown.add(changePlayerCount,]() {action: 1, display: countNumber});
     */
     var versionText = game.add.text(100*globalScale, 80*globalScale, "Version: "+C.game.versionNumber, C.game.smallStyle);
-    var playerCountText = game.add.bitmapText(game.world.centerX, countNumber.y - 140*globalScale, 'font', "Player Count (Locked)", 90*globalScale);
+    var playerCountText = game.add.bitmapText(game.world.centerX, countNumber.y - 140*globalScale, 'attackfont', "Player Count (Locked)", 90*globalScale);
     playerCountText.anchor.set(.5);
     //game.input.onUp.add(checkButtons, {left: left, right: right});
-    var playButton = game.add.bitmapText(game.world.centerX, countNumber.y + 140*globalScale, 'font', "Play Game", 90*globalScale);
+    var playButton = game.add.bitmapText(game.world.centerX, countNumber.y + 140*globalScale, 'attackfont', "Play Game", 90*globalScale);
     playButton.anchor.set(.5);
     playButton.inputEnabled = true;
     playButton.events.onInputUp.add(clickFade, {inorout:"out", state: "Setup"});
-    var settingsButton = game.add.bitmapText(game.world.centerX, playButton.y + 140*globalScale, 'font', "Settings", 90*globalScale);
+    var settingsButton = game.add.bitmapText(game.world.centerX, playButton.y + 140*globalScale, 'attackfont', "Settings", 90*globalScale);
     settingsButton.anchor.set(.5);
     settingsButton.inputEnabled = true;
-    var creditsButton = game.add.bitmapText(game.world.centerX, settingsButton.y + 140*globalScale, 'font', "Credits", 90*globalScale);
+    var creditsButton = game.add.bitmapText(game.world.centerX, settingsButton.y + 140*globalScale, 'attackfont', "Credits", 90*globalScale);
     creditsButton.anchor.set(.5);
     creditsButton.inputEnabled = true;
     var menuList = [/*left,*/ countNumber, /*right,*/ playerCountText, playButton, settingsButton, creditsButton];
-    returnButton = game.add.bitmapText(game.world.centerX + game.width, game.world.centerY - game.height/8, 'font', "Return to Menu", 90*globalScale);
+    returnButton = game.add.bitmapText(game.world.centerX + game.width, game.world.centerY - game.height/8, 'attackfont', "Return to Menu", 90*globalScale);
     returnButton.anchor.set(.5);
     //Off screen settings menu
     returnButton.inputEnabled = true;
-    var lowButton = game.add.bitmapText(returnButton.x, returnButton.y + 200*globalScale, 'font', "Low", 90*globalScale);
-    var medButton = game.add.bitmapText(lowButton.x, lowButton.y + 140*globalScale, 'font', "Medium", 90*globalScale);
-    var highButton = game.add.bitmapText(medButton.x, medButton.y + 140*globalScale,'font', "High", 90*globalScale);
-    var qualityDisplay = game.add.bitmapText(highButton.x, highButton.y + 160*globalScale, 'font', "You are currently on " + localStorage.getItem('qualityKey'), 90*globalScale);
+    var lowButton = game.add.bitmapText(returnButton.x, returnButton.y + 200*globalScale, 'attackfont', "Low", 90*globalScale);
+    var medButton = game.add.bitmapText(lowButton.x, lowButton.y + 140*globalScale, 'attackfont', "Medium", 90*globalScale);
+    var highButton = game.add.bitmapText(medButton.x, medButton.y + 140*globalScale,'attackfont', "High", 90*globalScale);
+    var qualityDisplay = game.add.bitmapText(highButton.x, highButton.y + 160*globalScale, 'attackfont', "You are currently on " + localStorage.getItem('qualityKey'), 90*globalScale);
     var settingsList = [returnButton,lowButton,medButton,highButton,qualityDisplay];
     console.log(settingsList);
     for (var i = 1; i < settingsList.length; i++) {
@@ -354,7 +354,7 @@ class MainMenu {
 class Credits {
   preload() {
       var credits = "Illustration:        Alice Bessoni\n\nGame Programming:       Benjamin Muhlestein\n\nGame Design:        Paul Ference\n\nGraphical Design:        Helen Tian";
-      var creditsDisplay = game.add.bitmapText(game.world.centerX, game.world.centerY - game.world.height, 'font', credits, 90*globalScale);
+      var creditsDisplay = game.add.bitmapText(game.world.centerX, game.world.centerY - game.world.height, 'attackfont', credits, 90*globalScale);
       var creditsTween = game.add.tween(creditsDisplay).to({y: game.world.centerY}, 4000, Phaser.Easing.Linear.None, true);
       creditsDisplay.anchor.setTo(.5);
       //creditsTween.onComplete.add(returnToMenu, this);
@@ -784,7 +784,7 @@ class Setup {
           battleTurn = battleMonster;
           printBattleResults(battleMonster.sprite.key + " attacks first!");
         }
-        attackText = game.add.bitmapText(focusX + menuBar.width/2 - 100*globalScale, menuBar.y,'font', "Attack!",40*globalScale);
+        attackText = game.add.bitmapText(focusX + menuBar.width/2 - 100*globalScale, menuBar.y,'font', "Attack!",30*globalScale);
         attackText.anchor.set(0.5);
         attackText.inputEnabled = true;
         attackText.events.onInputDown.add(queAttack, {attacker: battlePlayer});
@@ -801,7 +801,8 @@ class Setup {
           addBattleText("Wp Rsrch: " + battlePlayer.weaponizedResearchCharges,changeDieMenu,"Weaponized Research");
         }
         for (i = 0; i < battleTexts.length; i++) {
-          game.add.tween(battleTexts[i]).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + menuBar.height/2}, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true)
+          var yincrement = i*30;
+          game.add.tween(battleTexts[i]).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + yincrement + 55*globalScale}, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true)
           game.world.bringToTop(battleTexts[i]);
         }
         barsMoving = false;
@@ -891,8 +892,8 @@ function allowBattle() {
 }
 
 function addBattleText(text, action, modifier) {
-  var battleText = game.add.bitmapText(focusX + menuBar.width/2 - 100*globalScale, battleTexts[battleTexts.length - 1].y + battleTexts[battleTexts.length - 1].height/2 + 80*globalScale, 'font', text, 40*globalScale);
-  battleText.anchor.y = 0.5;
+  var battleText = game.add.bitmapText(focusX + menuBar.width/2 - 100*globalScale, battleTexts[battleTexts.length - 1].y + battleTexts[battleTexts.length - 1].height/2 + 100*globalScale, 'font', text, 30*globalScale);
+  battleText.anchor.setTo(0.5);
   battleText.inputEnabled = true;
   battleText.events.onInputDown.add(action, {attacker: battlePlayer, modifier: modifier});
   battleTexts.push(battleText);
@@ -1197,6 +1198,7 @@ function makeButton(position,frame) {
 }
 
 function setLastClicked(sprite) {
+  setAttributeDisplay(playersList[sprite.number]);
   if (!turn && !this.lastClicked && sprite.key != "monster") {
     turn = playersList[sprite.number];
     //turn.sprite.inputEnabled = true;
@@ -1231,7 +1233,7 @@ function setLastClicked(sprite) {
     mineButton.events.onInputDown.add(U.Mines.active, {player: lastClicked});
     extrasButton = makeButton(10, 10);
     mineButton.events.onInputDown.add(displayExtras, {player: lastClicked});
-  } else if (!turn && this.lastClicked) {
+  } else if (!turn /*&& this.lastClicked*/) {
     return;
   }
   if (playerNames.indexOf(sprite.key) > -1) {
@@ -1437,9 +1439,15 @@ class GameOver {
         game.world.scale.set(1);
         console.log("YOU LOSE.");
         game.input.enabled = true;
-        var gg = game.add.text(game.world.centerX, game.world.centerY, "GAME\nOVER",C.game.textStyle);
+        var gg = game.add.text(game.world.centerX, game.world.centerY + 100*globalScale, "GAME\nOVER",C.game.textStyle);
+        if (destroyedCities.length >= (playerCount * 4) - 4) {
+          var ggreason = game.add.text(game.world.centerX, game.world.centerY, "You lost all your cities.", C.game.textStyle);
+        } else {
+          var ggreason = game.add.text(game.world.centerX, game.world.centerY, "You lost all your mechs.", C.game.textStyle);
+        }
         var restart = game.add.text(game.world.centerX, game.world.centerY + 200*globalScale, "Restart?",C.game.textStyle);
         gg.anchor.setTo(.5);
+        ggreason.anchor.setTo(.5);
         restart.anchor.setTo(.5);
         restart.inputEnabled = true;
         restart.events.onInputDown.add(completeKill, this);
@@ -1822,7 +1830,7 @@ for (i = 0; i < monsterBattleTexts.length; i++) {
   }
   //checkBattle(focusSpace);
   for (i = 0; i < pendingBattles.length; i++) {
-    if (pendingBattles[i].pendingPlayer.hp <= 0 || pendingBattles[i].pendingMonster.hp <= 0) {
+    if (!pendingBattles[0].pendingMonster.sprite.alive || !pendingBattles[0].pendingPlayer.sprite.alive || pendingBattles[i].pendingPlayer.hp <= 0 || pendingBattles[i].pendingMonster.hp <= 0) {
       pendingBattles.splice(pendingBattles[i], 1);
     }
   }
