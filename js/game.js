@@ -62,10 +62,14 @@ var C = {
    "battleSpacing": 100*globalScale,
    "battleSpeed": 3*globalScale,
    "colorCards": {
-    "red": "assets/R.jpg",
-    "green": "assets/G.jpg",
-    "yellow": "assets/Y.jpg",
-    "blue": "assets/B.jpg",
+    "redfile": "assets/R.jpg",
+    "greenfile": "assets/G.jpg",
+    "yellowfile": "assets/Y.jpg",
+    "bluefile": "assets/B.jpg",
+    "red": "redCard",
+    "green": "greenCard",
+    "yellow": "yellowCard",
+    "blue": "blueCard"
    }
  },
  "destroyed": {
@@ -244,10 +248,10 @@ class Load {
     game.load.atlasJSONArray('upgradeMatIcons', 'assets/UpgradeMatSpritesheet.png', 'assets/UpgradeMatSpritesheet.json');
     this.load.image("upgradeMat","assets/UpgradeMat.png",469,676);
     this.load.image("blackground","assets/blackbox.png",512,512);
-    this.load.image("redCard",C.mech.colorCards.red,520,791);
-    this.load.image("blueCard",C.mech.colorCards.blue,520,791);
-    this.load.image("greenCard",C.mech.colorCards.green,520,791);
-    this.load.image("yellowCard",C.mech.colorCards.yellow,520,791);
+    this.load.image("redCard",C.mech.colorCards.redfile,520,791);
+    this.load.image("blueCard",C.mech.colorCards.bluefile,520,791);
+    this.load.image("greenCard",C.mech.colorCards.greenfile,520,791);
+    this.load.image("yellowCard",C.mech.colorCards.yellowfile,520,791);
     this.load.image("gameboard",C.bg.file,C.bg.width,C.bg.height);
     this.load.image("background",C.mbg.file,C.mbg.width,C.mbg.height);
     this.load.image("blue", "assets/PlayerIcon1.png",C.mech.width,C.mech.height);
@@ -602,7 +606,7 @@ class Setup {
     extrasReturnButton.scale.setTo(globalScale*.7);
     var extrasReturnText = game.add.text(extrasReturnButton.x,extrasReturnButton.y - extrasReturnButton.height/1.5,"Return to Movement Screen",C.game.textStyle);
     extrasReturnText.anchor.setTo(.5);
-    menuBar = game.add.sprite(0,game.height - game.camera.width/5,"menubar");
+    menuBar = game.add.sprite(0,game.height - game.camera.width/5,"blackground");
     menuBar.width = game.camera.width;
     menuBar.height = game.camera.width/5;
     game.world.bringToTop(menuBar);
@@ -728,12 +732,20 @@ class Setup {
           if (!playerBar) {
             playerBar = game.add.sprite(focusX + game.camera.width/2, battlePlayer.sprite.y, 'blackground');
             playerBar.height = (game.camera.width/C.game.zoomScale)/5;
-            playerBar.width = game.camera.height/8;
+            playerBar.width = game.camera.height/10;
+            playerBar.playerCard = game.add.sprite(focusX + game.camera.width/2, battlePlayer.sprite.y, C.mech.colorCards[battlePlayer.sprite.key]);
+            playerBar.playerCard.anchor.setTo(.5);
+            playerBar.playerCard.scale.setTo(globalScale/2.5);
           } else if (playerBar.alive === false) {
             playerBar.reset(focusX + game.camera.width/2, battlePlayer.sprite.y);
+            playerBar.playerCard.reset(focusX + game.camera.width/2, battlePlayer.sprite.y);
+            playerBar.playerCard.loadTexture(C.mech.colorCards[battlePlayer.sprite.key]);
           }
           playerBattleTexts.x = game.camera.x/C.game.zoomScale + game.camera.width/C.game.zoomScale - (300*globalScale)/C.game.zoomScale;
-          var playerBarTween = game.add.tween(playerBar).to({ x: playerBattleTexts.x }, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
+          playerBattleTexts.yincrement = -70*globalScale;
+          playerBattleTexts.xincrement = -130*globalScale;
+          var playerBarTween = game.add.tween(playerBar).to({ x: playerBattleTexts.x + playerBattleTexts.xincrement, y: playerBar.y + playerBattleTexts.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
+          var playerBarTween2 = game.add.tween(playerBar.playerCard).to({ x: playerBattleTexts.x }, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           playerBarTween.onComplete.add(allowBattle,this);
           playerBar.anchor.setTo(.5);
           game.world.bringToTop(playerBar);
@@ -745,6 +757,8 @@ class Setup {
             monsterBar.reset(focusX - game.camera.width/2, battlePlayer.sprite.y);
           }
           monsterBattleTexts.x = game.camera.x/C.game.zoomScale + ((300*globalScale)/C.game.zoomScale);
+          monsterBattleTexts.yincrement = 0;
+          monsterBattleTexts.xincrement = 0;
           var monsterBarTween = game.add.tween(monsterBar).to({ x: monsterBattleTexts.x}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           monsterBar.anchor.setTo(.5);
           battleMonster.addBattleInfo("HP",8,"hp", "maxhp");
@@ -784,7 +798,7 @@ class Setup {
           battleTurn = battleMonster;
           printBattleResults(battleMonster.sprite.key + " attacks first!");
         }
-        attackText = game.add.bitmapText(focusX + menuBar.width/2 - 100*globalScale, menuBar.y,'font', "Attack!",30*globalScale);
+        attackText = game.add.bitmapText(focusX + menuBar.width/2 - 100*globalScale, menuBar.y,'font', "Attack!",20*globalScale);
         attackText.anchor.set(0.5);
         attackText.inputEnabled = true;
         attackText.events.onInputDown.add(queAttack, {attacker: battlePlayer});
@@ -801,8 +815,8 @@ class Setup {
           addBattleText("Wp Rsrch: " + battlePlayer.weaponizedResearchCharges,changeDieMenu,"Weaponized Research");
         }
         for (i = 0; i < battleTexts.length; i++) {
-          var yincrement = i*30;
-          game.add.tween(battleTexts[i]).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + yincrement + 55*globalScale}, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true)
+          var yincrement = i*15;
+          game.add.tween(battleTexts[i]).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + yincrement + 20*globalScale}, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true)
           game.world.bringToTop(battleTexts[i]);
         }
         barsMoving = false;
@@ -810,7 +824,6 @@ class Setup {
     } else if (battleState === true) {
       battle(battlePlayer,battleMonster);
       // Change this, placeholder ending.
-
     }
     // set a minimum and maximum scale value
     //worldScale = Phaser.Math.clamp(worldScale, 1, C.game.zoomScale);
@@ -880,19 +893,67 @@ function updateInfoDisplays(obj) {
    destroyedCities.hoverInfo.update(destroyedCities);
 }
 
+function pullInInfo() {
+    playerBattleTexts.forEach(function(text) {
+      if (!text.valueIcon.Tween) {
+        text.valueIcon.Tween = game.add.tween(text.valueIcon).to({ y: text.originalY + text.list.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true)
+        text.valueDisplay.Tween = game.add.tween(text.valueDisplay).to({ y: text.originalY + text.list.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true)
+      playerBar.Tween = game.add.tween(playerBar).to({ y: battlePlayer.sprite.y + playerBattleTexts.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true)
+      } else {
+        text.valueIcon.Tween.stop();
+        text.valueDisplay.Tween.stop();
+        playerBar.Tween.stop();
+        text.valueIcon.Tween = game.add.tween(text.valueIcon).to({ y: text.originalY + text.list.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true)
+        text.valueDisplay.Tween = game.add.tween(text.valueDisplay).to({ y: text.originalY + text.list.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true)
+      playerBar.Tween = game.add.tween(playerBar).to({ y: battlePlayer.sprite.y + playerBattleTexts.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true)
+        /*text.valueIcon.Tween.to({ y: text.originalY + text.list.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true);
+        text.valueDisplay.Tween.to({ y: text.originalY + text.list.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true);
+      playerBar.Tween.to({ y: battlePlayer.sprite.y + playerBattleTexts.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true)*/
+      }
+    });
+
+}
+
+function pullOutInfo() {
+    playerBattleTexts.forEach(function(text) {
+      if (!text.valueIcon.Tween) {
+      text.valueIcon.Tween = game.add.tween(text.valueIcon).to({ y: text.originalY + text.list.yincrement}, C.game.zoomSpeed/2, Phaser.Easing.Linear.None, true)
+      text.valueDisplay.Tween = game.add.tween(text.valueDisplay).to({ y: text.originalY + text.list.yincrement}, C.game.zoomSpeed/2, Phaser.Easing.Linear.None, true)
+      playerBar.Tween = game.add.tween(playerBar).to({ y: battlePlayer.sprite.y + playerBattleTexts.yincrement}, C.game.zoomSpeed/2, Phaser.Easing.Linear.None, true)
+      } else {
+        text.valueIcon.Tween.stop();
+        text.valueDisplay.Tween.stop();
+        playerBar.Tween.stop();
+      text.valueIcon.Tween = game.add.tween(text.valueIcon).to({ y: text.originalY + text.list.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true)
+      text.valueDisplay.Tween = game.add.tween(text.valueDisplay).to({ y: text.originalY + text.list.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true)
+      playerBar.Tween = game.add.tween(playerBar).to({ y: battlePlayer.sprite.y + playerBattleTexts.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true)
+        /*text.valueIcon.Tween.to({ y: text.originalY + text.list.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
+        text.valueDisplay.Tween.to({ y: text.originalY + text.list.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
+        playerBar.Tween.to({ y: battlePlayer.sprite.y + playerBattleTexts.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true)*/
+      }
+    });
+
+}
+
 function allowBattle() {
   battlePlayer.sprite.events.onDragStop._bindings = [];
-  battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
+  //battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
+  battlePlayer.sprite.events.onInputOut.add(pullInInfo, this.sprite);
+  battlePlayer.sprite.events.onInputOver.add(pullOutInfo, this.sprite);
+  //battlePlayer.sprite.input.enableDrag(false);
+  battlePlayer.sprite.input.draggable = false; 
   battleStarting = false;
   battleState = true;
+  battlePlayer.sprite.inputEnabled = true;
   for (i = 0; i < extraBattleTexts.length; i++) {
-    game.add.tween(extraBattleTexts[i].valueIcon).to({ x: extraBattleTexts[i].list.x - 20*globalScale }, C.game.zoomSpeed*1, Phaser.Easing.Back.InOut, true)
-    game.add.tween(extraBattleTexts[i].valueDisplay).to({ x: extraBattleTexts[i].list.x + 20*globalScale  }, C.game.zoomSpeed*1, Phaser.Easing.Back.InOut, true)
-  }
+    game.add.tween(extraBattleTexts[i].valueIcon).to({ x: extraBattleTexts[i].list.x - 20*globalScale + extraBattleTexts[i].list.xincrement, y: extraBattleTexts[i].originalY + extraBattleTexts[i].list.yincrement}, C.game.zoomSpeed*1, Phaser.Easing.Back.InOut, true)
+    game.add.tween(extraBattleTexts[i].valueDisplay).to({ x: extraBattleTexts[i].list.x + 20*globalScale + extraBattleTexts[i].list.xincrement, y: extraBattleTexts[i].originalY + extraBattleTexts[i].list.yincrement}, C.game.zoomSpeed*1, Phaser.Easing.Back.InOut, true)
+    
+    }
 }
 
 function addBattleText(text, action, modifier) {
-  var battleText = game.add.bitmapText(focusX + menuBar.width/2 - 100*globalScale, battleTexts[battleTexts.length - 1].y + battleTexts[battleTexts.length - 1].height/2 + 100*globalScale, 'font', text, 30*globalScale);
+  var battleText = game.add.bitmapText(focusX + menuBar.width/2 - 100*globalScale, battleTexts[battleTexts.length - 1].y + 60*globalScale, 'font', text, 20*globalScale);
   battleText.anchor.setTo(0.5);
   battleText.inputEnabled = true;
   battleText.events.onInputDown.add(action, {attacker: battlePlayer, modifier: modifier});
@@ -983,7 +1044,6 @@ function addBattleInfo(text, frame, value, secondaryValue) {
   valueIcon.scale.setTo(.18*globalScale);
   valueDisplay.anchor.setTo(.5);
   valueIcon.anchor.setTo(.5);
-  console.log(value);
   battleDescObj = {
     parent: this,
     valueIcon: valueIcon,
@@ -992,7 +1052,8 @@ function addBattleInfo(text, frame, value, secondaryValue) {
     secondaryValue,
     valueName: value.toString(),
     bar: bar,
-    list: list
+    list: list,
+    originalY: iconY
   }
   console.log(battleDescObj.parent);
   if (secondaryValue) {
@@ -1104,13 +1165,20 @@ function zoomFalse() {
     zoomIn = false;
     zoomInTweens = false;
     for (var i = 0; i < globalList.length; i++) {
-      globalList[i].sprite.inputEnabled = false;
+      if (globalList[i].sprite.key != battlePlayer.sprite.key) {
+        globalList[i].sprite.inputEnabled = false;
+      } else {
+        battlePlayer.sprite.input.draggable = false; 
+      }
     }
 }
   if (zoomOut === true) { 
     zoomOut = false;
     for (var i = 0; i < globalList.length; i++) {
       globalList[i].sprite.inputEnabled = true;
+      if (globalList[i].sprite.key === battlePlayer.sprite.key) {
+        globalList[i].sprite.input.enableDrag(true);
+      }
     }
     /*for (i = 0; i < buttonsList.length; i++) {
       if (buttonsList[i]) {
@@ -1542,19 +1610,18 @@ function checkAttack(sprite,pointer) {
 function printBattleResults(text,position) {
   if (resultsList.length > 0) {
     for (i = 0; i < resultsList.length; i++) {
-      resultsList[i].y -= globalScale*40;
+      resultsList[i].y += globalScale*30;
     }
   }
   if (!position) {
-    var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(focusY - 60*globalScale), 'font', text, 30*globalScale);
+    var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(focusY + 135*globalScale), 'font', text, 25*globalScale);
   } else {
-    var battleResults = game.add.bitmapText(Math.round(position.x),Math.round(position.y - 60*globalScale), 'font', text, 30*globalScale);
+    var battleResults = game.add.bitmapText(Math.round(position.x),Math.round(position.y + 60*globalScale), 'font', text, 25*globalScale);
   }
   battleResults.anchor.x = .5;
   battleResults.anchor.y = .5;
   game.world.bringToTop(battleResults);
   resultsList.push(battleResults);
-  //game.time.events.add(Phaser.Timer.SECOND * 3, killResults, this, battleResults);
   return battleResults;
 }
 
@@ -1865,6 +1932,7 @@ for (i = 0; i < monsterBattleTexts.length; i++) {
 function killBattleInfo() {
   menuBar.kill();
   playerBar.kill();
+  playerBar.playerCard.kill();
   monsterBar.kill();
   for (i = 0; i < playerBattleTexts.length; i++) {
     playerBattleTexts[i].valueIcon.destroy();
