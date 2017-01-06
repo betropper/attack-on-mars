@@ -9,7 +9,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": ".4.1.1",
+   "versionNumber": ".5.0.1",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -735,7 +735,7 @@ class Setup {
             playerBar.width = game.camera.height/10;
             playerBar.playerCard = game.add.sprite(focusX + game.camera.width/2, battlePlayer.sprite.y, C.mech.colorCards[battlePlayer.sprite.key]);
             playerBar.playerCard.anchor.setTo(.5);
-            playerBar.playerCard.scale.setTo(globalScale/2.5);
+            playerBar.playerCard.scale.setTo(globalScale*.35);
           } else if (playerBar.alive === false) {
             playerBar.reset(focusX + game.camera.width/2, battlePlayer.sprite.y);
             playerBar.playerCard.reset(focusX + game.camera.width/2, battlePlayer.sprite.y);
@@ -745,7 +745,7 @@ class Setup {
           playerBattleTexts.yincrement = -70*globalScale;
           playerBattleTexts.xincrement = -130*globalScale;
           var playerBarTween = game.add.tween(playerBar).to({ x: playerBattleTexts.x + playerBattleTexts.xincrement, y: playerBar.y + playerBattleTexts.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
-          var playerBarTween2 = game.add.tween(playerBar.playerCard).to({ x: playerBattleTexts.x }, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
+          var playerBarTween2 = game.add.tween(playerBar.playerCard).to({ x: game.camera.width/C.game.zoomScale + game.camera.x/C.game.zoomScale - playerBar.playerCard.width/2, y: game.camera.y/C.game.zoomScale + playerBar.playerCard.height/2 }, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           playerBarTween.onComplete.add(allowBattle,this);
           playerBar.anchor.setTo(.5);
           game.world.bringToTop(playerBar);
@@ -815,7 +815,7 @@ class Setup {
           addBattleText("Wp Rsrch: " + battlePlayer.weaponizedResearchCharges,changeDieMenu,"Weaponized Research");
         }
         for (i = 0; i < battleTexts.length; i++) {
-          var yincrement = i*15;
+          var yincrement = i*30*globalScale;
           game.add.tween(battleTexts[i]).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + yincrement + 20*globalScale}, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true)
           game.world.bringToTop(battleTexts[i]);
         }
@@ -924,9 +924,9 @@ function pullOutInfo() {
         text.valueIcon.Tween.stop();
         text.valueDisplay.Tween.stop();
         playerBar.Tween.stop();
-      text.valueIcon.Tween = game.add.tween(text.valueIcon).to({ y: text.originalY + text.list.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true)
-      text.valueDisplay.Tween = game.add.tween(text.valueDisplay).to({ y: text.originalY + text.list.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true)
-      playerBar.Tween = game.add.tween(playerBar).to({ y: battlePlayer.sprite.y + playerBattleTexts.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true)
+      text.valueIcon.Tween = game.add.tween(text.valueIcon).to({ y: text.originalY + text.list.yincrement}, C.game.zoomSpeed/2, Phaser.Easing.Linear.None, true)
+      text.valueDisplay.Tween = game.add.tween(text.valueDisplay).to({ y: text.originalY + text.list.yincrement}, C.game.zoomSpeed/2, Phaser.Easing.Linear.None, true)
+      playerBar.Tween = game.add.tween(playerBar).to({ y: battlePlayer.sprite.y + playerBattleTexts.yincrement}, C.game.zoomSpeed/2, Phaser.Easing.Linear.None, true)
         /*text.valueIcon.Tween.to({ y: text.originalY + text.list.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
         text.valueDisplay.Tween.to({ y: text.originalY + text.list.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
         playerBar.Tween.to({ y: battlePlayer.sprite.y + playerBattleTexts.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true)*/
@@ -946,9 +946,13 @@ function allowBattle() {
   battleState = true;
   battlePlayer.sprite.inputEnabled = true;
   for (i = 0; i < extraBattleTexts.length; i++) {
-    game.add.tween(extraBattleTexts[i].valueIcon).to({ x: extraBattleTexts[i].list.x - 20*globalScale + extraBattleTexts[i].list.xincrement, y: extraBattleTexts[i].originalY + extraBattleTexts[i].list.yincrement}, C.game.zoomSpeed*1, Phaser.Easing.Back.InOut, true)
-    game.add.tween(extraBattleTexts[i].valueDisplay).to({ x: extraBattleTexts[i].list.x + 20*globalScale + extraBattleTexts[i].list.xincrement, y: extraBattleTexts[i].originalY + extraBattleTexts[i].list.yincrement}, C.game.zoomSpeed*1, Phaser.Easing.Back.InOut, true)
-    
+    extraBattleTexts[i].valueIcon.x = extraBattleTexts[i].list.x - 20*globalScale + extraBattleTexts[i].list.xincrement;
+    extraBattleTexts[i].valueIcon.y = extraBattleTexts[i].originalY + extraBattleTexts[i].list.yincrement;
+    extraBattleTexts[i].valueDisplay.x = extraBattleTexts[i].list.x + 20*globalScale + extraBattleTexts[i].list.xincrement;
+    extraBattleTexts[i].valueDisplay.y = extraBattleTexts[i].originalY + extraBattleTexts[i].list.yincrement;
+    game.add.tween(extraBattleTexts[i].valueIcon).to({ x: extraBattleTexts[i].list.x - 20*globalScale + extraBattleTexts[i].list.xincrement, y: extraBattleTexts[i].originalY + extraBattleTexts[i].list.yincrement}, C.game.zoomSpeed*1, Phaser.Easing.Back.InOut, true);
+    var valueTween2 = game.add.tween(extraBattleTexts[i].valueDisplay).to({ x: extraBattleTexts[i].list.x + 20*globalScale + extraBattleTexts[i].list.xincrement, y: extraBattleTexts[i].originalY + extraBattleTexts[i].list.yincrement}, C.game.zoomSpeed*1, Phaser.Easing.Back.InOut, true);
+    valueTween2.onComplete.add(pullInInfo, this);
     }
 }
 
@@ -2040,7 +2044,7 @@ function battle(player, monster) {
           for (i = 0; i < battleTexts.length; i++) {
             battleTexts[i].reset(battleTexts[i].x, battleTexts[i].y);
           }
-          //battlePlayer.sprite.inputEnabled = true;
+          battlePlayer.sprite.inputEnabled = true;
           battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
         }
       }
@@ -2065,7 +2069,7 @@ function battle(player, monster) {
           for (i = 0; i < battleTexts.length; i++) {
             battleTexts[i].reset(battleTexts[i].x, battleTexts[i].y);
           }
-          //battlePlayer.sprite.inputEnabled = true;
+          battlePlayer.sprite.inputEnabled = true;
           battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
           battlePlayer.attacking = false;
         }
@@ -2139,12 +2143,47 @@ function battle(player, monster) {
             if (Space[newDestination].damage && Space[newDestination].damage === 1) {
               newDestination = monstersList[i].key;
             } else {
-              if (monstersList[i].sprite.key.charAt(1) !== "4") {
+              if (monstersList[i].key.charAt(1) !== "4") {
                 newDestination = monstersList[i].key.charAt(0) + (parseInt(monstersList[i].key.charAt(1))+1) + monstersList[i].key.charAt(2);
               } else {
-                newDestination = monstersList[i].sprite.closestSpaces.directions[2].spaceKey || monstersList[i].sprite.closestSpaces.directions[1].spaceKey;
+                if (monstersList[i].key.charAt(0) === "d") {
+                  newDestination = "a10";
+                } else {
+                  newDestination = String.fromCharCode(1 + monstersList[i].key.charCodeAt(0)) + "10";
+                }
+              }
+             for (m = 0; m < destroyedCities.length; m++) {
+              console.log("Checktick");
+              if (destroyedCities[m].key === newDestination || Space[newDestination].occupied) {
+                if (monstersList[i].key.charAt(1) !== "1") {
+                  newDestination = monstersList[i].key.charAt(0) + (parseInt(monstersList[i].key.charAt(1))-1) + monstersList[i].key.charAt(2);
+                } else {
+                  if (monstersList[i].key.charAt(0) === "a") {
+                    newDestination = "d40";
+                  } else {
+                    newDestination = String.fromCharCode(monstersList[i].key.charCodeAt(0) - 1) + "10";
+                  }
+                } 
+                break;
+             }
+            }
+             for (m = 0; m < destroyedCities.length; m++) {
+              console.log("Checktick");
+              if (destroyedCities[m].key === newDestination || Space[newDestination].occupied) {
+                if (monstersList[i].key.charAt(1) !== "4") {
+                  newDestination = monstersList[i].key.charAt(0) + (parseInt(monstersList[i].key.charAt(1))+1) + monstersList[i].key.charAt(2);
+                } else {
+                  if (monstersList[i].key.charAt(0) === "d") {
+                    newDestination = "a10";
+                  } else {
+                    newDestination = String.fromCharCode(1 + monstersList[i].key.charCodeAt(0)) + "10";
+                  }
+                } 
+              break;
               }
             }
+           }
+           console.log("Monster at " + monstersList[i].key + " considered moving to " + newDestination);
             if ((Space[newDestination] || Space[newDestination] === monstersList[i].space) && (Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined)) {
               if (fortifiedList.indexOf(newDestination.charAt(0)) === -1 || Space[newDestination].damage === 1) {
                 var destroyedCityColumn = spawnSpecific("destroyedCity", newDestination);
@@ -2154,9 +2193,8 @@ function battle(player, monster) {
               } else {
                 Space[newDestination].damage = 1;
               }
-          } 
-
-        }
+            } 
+          }
 
         if (Space[newDestination]) {
           if (Space[newDestination].occupied) {
