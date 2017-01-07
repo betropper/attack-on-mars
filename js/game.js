@@ -2006,6 +2006,26 @@ function updateRollText(rolling,type) {
   }
 }
 
+function updateOccupiedRows() {
+   occupiedRows = ['center'];
+   for (var key in Space) {
+    if (Space.hasOwnProperty(key)) {
+      var obj = Space[key];
+      if (obj.hasOwnProperty("occupied") && obj["occupied"] != false) {
+        for (mc = 0; mc < obj["occupied"].length; mc++) {
+          if (monstersList.indexOf(obj["occupied"][mc]) > -1 || (obj["occupied"][mc].sprite && obj["occupied"][mc].sprite.key === "destroyedCity")) {
+           var rowKey = obj["occupied"][mc].key.substring(0,2);
+           console.log(rowKey);
+           if (occupiedRows.indexOf(rowKey) === -1) {
+            occupiedRows.push(rowKey);
+           }
+          } 
+        }
+      }
+    }
+  }
+}
+
 function battle(player, monster) {
   //Simple Placeholder battle
   game.world.bringToTop(monster.sprite);
@@ -2095,7 +2115,8 @@ function battle(player, monster) {
       }
   }
   function moveMonsters() {
-   monstersList = scrubList(monstersList);   
+   updateOccupiedRows();
+   monstersList = scrubList(monstersList);
     for (var i = 0; i < monstersList.length ; i++) {
         if (monstersList[i].key.charAt(2) !== "0") {
           var newDestination = monstersList[i].key.substring(0,2) + (parseInt(monstersList[i].key.charAt(2)) - 1);
@@ -3075,13 +3096,19 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
       occupiedRows.push(monsterChars);
     }
   }
-
+  if (occupiedRows.length === playerCount*4 + 1) {
+    var fullyOccupied = true;
+  } 
   while (condition === true) {
     failSafe += 1;
     var space = getRandomSpace();
     if (quadrant === "random" && occupiedCheck === true) {
         if (row === "random") {
-          condition = space.key.indexOf("0") || space.selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1;
+          if (!fullyOccupied) {
+            condition = space.key.indexOf("0") || space.selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1;
+          } else {
+            condition = space.key.indexOf("0") || space.selectedSpace.occupied === true;
+          }
         } else {
           condition = space.key.indexOf("0") || space.selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1 || space.key.charAt(2) != "3";
         }
@@ -3089,8 +3116,12 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
         var chr = String.fromCharCode(96 + quadrant);
         condition = space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0 || space.selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1;
     } else if (quadrant && row && quadrant === "random") {
-        var chr = String.fromCharCode(96 + Math.floor(Math.random() * (playerCount)) + 1);
-        condition = space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0 || space.selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1;
+        //var chr = String.fromCharCode(96 + Math.floor(Math.random() * (playerCount)) + 1);
+        if (!fullyOccupied) {
+          condition = space.key.indexOf(row) !== 2 || space.selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1;
+        } else {
+          condition = space.key.indexOf(row) !== 2 || space.selectedSpace.occupied === true;
+        }
     } else if (quadrant === "random") {
         condition = space.key.indexOf("0");
     } 
