@@ -739,14 +739,14 @@ class Setup {
           var barTween = game.add.tween(menuBar).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8)}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           menuBar.attachedToCamera = false;
           if (!playerBar) {
-            playerBar = game.add.sprite(focusX + game.camera.width/2, battlePlayer.sprite.y, 'blackground');
+            playerBar = game.add.sprite(focusX + game.camera.width/2, game.camera.y/C.game.zoomScale + game.camera.height/2/C.game.zoomScale, 'blackground');
             playerBar.height = (game.camera.width/C.game.zoomScale)/5;
             playerBar.width = game.camera.height/10;
             playerBar.playerCard = game.add.sprite(focusX + game.camera.width/2, battlePlayer.sprite.y, C.mech.colorCards[battlePlayer.sprite.key]);
             playerBar.playerCard.anchor.setTo(.5);
             playerBar.playerCard.scale.setTo(globalScale*.35);
           } else if (playerBar.alive === false) {
-            playerBar.reset(focusX + game.camera.width/2, game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale);
+            playerBar.reset(focusX + game.camera.width/2, game.camera.y/C.game.zoomScale + game.camera.height/2/C.game.zoomScale);
             playerBar.playerCard.reset(focusX + game.camera.width/2, battlePlayer.sprite.y);
             playerBar.playerCard.loadTexture(C.mech.colorCards[battlePlayer.sprite.key]);
           }
@@ -759,7 +759,8 @@ class Setup {
           playerBar.anchor.setTo(.5);
           game.world.bringToTop(playerBar);
           if (!monsterBar) {
-            monsterBar = game.add.sprite(focusX - game.camera.width/2,  game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale, 'blackground');
+            monsterBar = game.add.sprite(focusX - game.camera.width/2, game.camera.y/C.game.zoomScale + game.camera.height/2/C.game.zoomScale, 'blackground');
+            console.log("MonsterBar.y: " + monsterBar.y);
             monsterBar.height = (game.camera.width/C.game.zoomScale)/7;
             monsterBar.width = game.camera.height/10;
             monsterBar.monsterCard = game.add.sprite(focusX - game.camera.width/2, battleMonster.sprite.y, C.monster.cards[battleMonster.sprite.spriteName]);
@@ -773,7 +774,7 @@ class Setup {
           monsterBattleTexts.x = game.camera.x/C.game.zoomScale + ((300*globalScale)/C.game.zoomScale);
           monsterBattleTexts.yincrement = -100*globalScale;
           monsterBattleTexts.xincrement = 0;
-          var monsterBarTween = game.add.tween(monsterBar).to({ x: monsterBattleTexts.x + monsterBattleTexts.xincrement, y: monsterBattleTexts.y + monsterBattleTexts.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
+          var monsterBarTween = game.add.tween(monsterBar).to({ x: monsterBattleTexts.x + monsterBattleTexts.xincrement, y: monsterBar.y + monsterBattleTexts.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           var monsterBarTween2 = game.add.tween(monsterBar.monsterCard).to({ x: game.camera.x/C.game.zoomScale + monsterBar.monsterCard.width/2, y: game.camera.y/C.game.zoomScale + monsterBar.monsterCard.height/2 }, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           monsterBar.anchor.setTo(.5);
           game.world.bringToTop(monsterBar);
@@ -914,17 +915,17 @@ function pullInInfo() {
       if (!text.valueIcon.Tween) {
         text.valueIcon.Tween = game.add.tween(text.valueIcon).to({ y: text.originalY + text.list.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true)
         text.valueDisplay.Tween = game.add.tween(text.valueDisplay).to({ y: text.originalY + text.list.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true)
-      playerBar.Tween = game.add.tween(playerBar).to({ y: battlePlayer.sprite.y + playerBattleTexts.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true)
+      playerBar.Tween = game.add.tween(playerBar).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/2/C.game.zoomScale + playerBattleTexts.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true)
       } else {
         text.valueIcon.Tween.stop();
         text.valueDisplay.Tween.stop();
         playerBar.Tween.stop();
         text.valueIcon.Tween = game.add.tween(text.valueIcon).to({ y: text.originalY + text.list.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true)
         text.valueDisplay.Tween = game.add.tween(text.valueDisplay).to({ y: text.originalY + text.list.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true)
-      playerBar.Tween = game.add.tween(playerBar).to({ y: battlePlayer.sprite.y + playerBattleTexts.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true)
+      playerBar.Tween = game.add.tween(playerBar).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/2/C.game.zoomScale + playerBattleTexts.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true)
         /*text.valueIcon.Tween.to({ y: text.originalY + text.list.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true);
         text.valueDisplay.Tween.to({ y: text.originalY + text.list.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true);
-      playerBar.Tween.to({ y: battlePlayer.sprite.y + playerBattleTexts.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true)*/
+      playerBar.Tween.to({ y: game.camera.y/C.game.zoomScale + game.camera.height/2/C.game.zoomScale + playerBattleTexts.yincrement - game.camera.height/C.game.zoomScale/2}, C.game.zoomSpeed/1.5, Phaser.Easing.Linear.None, true)*/
       }
     });
 
@@ -935,17 +936,17 @@ function pullOutInfo() {
       if (!text.valueIcon.Tween) {
       text.valueIcon.Tween = game.add.tween(text.valueIcon).to({ y: text.originalY + text.list.yincrement}, C.game.zoomSpeed/2, Phaser.Easing.Linear.None, true)
       text.valueDisplay.Tween = game.add.tween(text.valueDisplay).to({ y: text.originalY + text.list.yincrement}, C.game.zoomSpeed/2, Phaser.Easing.Linear.None, true)
-      playerBar.Tween = game.add.tween(playerBar).to({ y: battlePlayer.sprite.y + playerBattleTexts.yincrement}, C.game.zoomSpeed/2, Phaser.Easing.Linear.None, true)
+      playerBar.Tween = game.add.tween(playerBar).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/2/C.game.zoomScale + playerBattleTexts.yincrement}, C.game.zoomSpeed/2, Phaser.Easing.Linear.None, true)
       } else {
         text.valueIcon.Tween.stop();
         text.valueDisplay.Tween.stop();
         playerBar.Tween.stop();
       text.valueIcon.Tween = game.add.tween(text.valueIcon).to({ y: text.originalY + text.list.yincrement}, C.game.zoomSpeed/2, Phaser.Easing.Linear.None, true)
       text.valueDisplay.Tween = game.add.tween(text.valueDisplay).to({ y: text.originalY + text.list.yincrement}, C.game.zoomSpeed/2, Phaser.Easing.Linear.None, true)
-      playerBar.Tween = game.add.tween(playerBar).to({ y: battlePlayer.sprite.y + playerBattleTexts.yincrement}, C.game.zoomSpeed/2, Phaser.Easing.Linear.None, true)
+      playerBar.Tween = game.add.tween(playerBar).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/2/C.game.zoomScale + playerBattleTexts.yincrement}, C.game.zoomSpeed/2, Phaser.Easing.Linear.None, true)
         /*text.valueIcon.Tween.to({ y: text.originalY + text.list.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
         text.valueDisplay.Tween.to({ y: text.originalY + text.list.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
-        playerBar.Tween.to({ y: battlePlayer.sprite.y + playerBattleTexts.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true)*/
+        playerBar.Tween.to({ y: game.camera.y/C.game.zoomScale + game.camera.height/2/C.game.zoomScale + playerBattleTexts.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true)*/
       }
     });
 
@@ -2929,7 +2930,7 @@ function changeTurn() {
         turn.rp += turn.rpPerTurn;
       }
       upgradeButton.reset(upgradeButton.x, upgradeButton.y);
-      game.world.bringToTop(upgradeButton);
+      //game.world.bringToTop(upgradeButton);
       upgradeButton.events.onInputUp._bindings = [];
       upgradeButton.loadTexture(turn.sprite.key);
       upgradeButton.events.onInputUp.add(upgrade, {upgrading: turn});
@@ -3161,6 +3162,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
           tempSpace.selectedSpace = rand.space;
           tempSpace.key = rand.key.substring(0,2) + "0";
           console.log(tempSpace.selectedSpace.occupied + tempSpace.key);
+          console.log(tempSpace);
         } while (tempSpace.selectedSpace.occupied && tempSpace.key.charAt(2) != "3")
         space = tempSpace;
       }
