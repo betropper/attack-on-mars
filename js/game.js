@@ -9,7 +9,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": ".5.0.2",
+   "versionNumber": ".5.1.0",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -79,7 +79,12 @@ var C = {
  "monster": {
    "width": 72,
    "height": 72,
-   "scale": 1.3 * globalScale
+   "scale": 1.3 * globalScale,
+   "cards": {
+     "initialMonster": "initialCard",
+     "growingMonster": "growingCard",
+     "extinctionMonster": "extinctionCard"
+   }
  },
  "menuBar": {
   "width": 294,
@@ -265,6 +270,9 @@ class Load {
     this.load.image("initialMonster", "assets/InitialIcon.png", C.monster.width, C.monster.height);
     this.load.image("growingMonster", "assets/GrowingIcon.png", C.monster.width, C.monster.height);
     this.load.image("extinctionMonster", "assets/ExtinctionIcon.png", C.monster.width, C.monster.height);
+    this.load.image("initialCard", "assets/Initial.jpg", 520, 791);
+    this.load.image("growingCard", "assets/Growing.jpg", 520, 791);
+    this.load.image("extinctionCard", "assets/Extinction.jpg", 520, 791);
     this.load.image("menubar","assets/menubar.png",C.menuBar.width,C.menuBar.height);
     this.load.image("wrench","assets/wrench.png", C.wrench.width,C.wrench.height);
     this.load.image("arrow","assets/arrow.png", C.arrow.width,C.arrow.height);
@@ -481,6 +489,7 @@ function reEnableHover(sprite) {
   sprite.events.onInputOver._bindings = [];
   sprite.events.onInputOut._bindings = [];
   sprite.events.onInputUp._bindings = [];
+  sprite.input.draggable = true; 
   sprite.events.onDragStop._bindings = [];
   sprite.events.onDragStop.add(attachClosestSpace, sprite);
   sprite.events.onDragStop.add(reduceScale, {sprite:sprite});
@@ -670,7 +679,7 @@ class Setup {
         var scaleTween = game.add.tween(game.world.scale).to( { x: C.game.zoomScale, y: C.game.zoomScale }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
         scaleTween.onComplete.add(zoomFalse, this);
         for (i = 0; i < buttonsTextList.length; i++) {
-        buttonsTextList[i].kill();
+          buttonsTextList[i].kill();
        }
 
         for (i = 1; i < playersList.length; i++) {
@@ -702,7 +711,7 @@ class Setup {
           var zoomTween = game.add.tween(game.camera).to( { x: 0, y: 0 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
           var scaleTween = game.add.tween(game.world.scale).to( { x: 1, y: 1 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
           scaleTween.onComplete.add(zoomFalse, this);
-          killBattleInfo()
+          killBattleInfo();
       }
         /*menuBar.width = C.game.width / game.world.scale.x;
         menuBar.height = (C.game.height/10) / game.world.scale.y;
@@ -737,7 +746,7 @@ class Setup {
             playerBar.playerCard.anchor.setTo(.5);
             playerBar.playerCard.scale.setTo(globalScale*.35);
           } else if (playerBar.alive === false) {
-            playerBar.reset(focusX + game.camera.width/2, battlePlayer.sprite.y);
+            playerBar.reset(focusX + game.camera.width/2, game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale);
             playerBar.playerCard.reset(focusX + game.camera.width/2, battlePlayer.sprite.y);
             playerBar.playerCard.loadTexture(C.mech.colorCards[battlePlayer.sprite.key]);
           }
@@ -750,17 +759,24 @@ class Setup {
           playerBar.anchor.setTo(.5);
           game.world.bringToTop(playerBar);
           if (!monsterBar) {
-            monsterBar = game.add.sprite(focusX - game.camera.width/2, battlePlayer.sprite.y, 'blackground');
-            monsterBar.width = game.camera.height/8;
-            monsterBar.height = (game.camera.width/C.game.zoomScale)/5;
+            monsterBar = game.add.sprite(focusX - game.camera.width/2,  game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale, 'blackground');
+            monsterBar.height = (game.camera.width/C.game.zoomScale)/7;
+            monsterBar.width = game.camera.height/10;
+            monsterBar.monsterCard = game.add.sprite(focusX - game.camera.width/2, battleMonster.sprite.y, C.monster.cards[battleMonster.sprite.spriteName]);
+            monsterBar.monsterCard.anchor.setTo(.5);
+            monsterBar.monsterCard.scale.setTo(globalScale*.35);
           } else if (monsterBar.alive === false) {
             monsterBar.reset(focusX - game.camera.width/2, battlePlayer.sprite.y);
+            monsterBar.monsterCard.reset(focusX - game.camera.width/2, battleMonster.sprite.y);
+            monsterBar.monsterCard.loadTexture(C.monster.cards[battleMonster.sprite.spriteName]);
           }
           monsterBattleTexts.x = game.camera.x/C.game.zoomScale + ((300*globalScale)/C.game.zoomScale);
-          monsterBattleTexts.yincrement = 0;
+          monsterBattleTexts.yincrement = -100*globalScale;
           monsterBattleTexts.xincrement = 0;
-          var monsterBarTween = game.add.tween(monsterBar).to({ x: monsterBattleTexts.x}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
+          var monsterBarTween = game.add.tween(monsterBar).to({ x: monsterBattleTexts.x + monsterBattleTexts.xincrement, y: monsterBattleTexts.y + monsterBattleTexts.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
+          var monsterBarTween2 = game.add.tween(monsterBar.monsterCard).to({ x: game.camera.x/C.game.zoomScale + monsterBar.monsterCard.width/2, y: game.camera.y/C.game.zoomScale + monsterBar.monsterCard.height/2 }, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           monsterBar.anchor.setTo(.5);
+          game.world.bringToTop(monsterBar);
           battleMonster.addBattleInfo("HP",8,"hp", "maxhp");
           battlePlayer.addBattleInfo("HP",8,"hp", "maxhp");
           battleMonster.addBattleInfo("Blue Attack",5,"batk", "batkGoal" || 5);
@@ -798,7 +814,7 @@ class Setup {
           battleTurn = battleMonster;
           printBattleResults(battleMonster.sprite.key + " attacks first!");
         }
-        attackText = game.add.bitmapText(focusX + menuBar.width/2 - 100*globalScale, menuBar.y,'font', "Attack!",20*globalScale);
+        attackText = game.add.bitmapText(game.camera.width/C.game.zoomScale + game.camera.x/C.game.zoomScale - 100*globalScale, menuBar.y,'font', "Attack!",20*globalScale);
         attackText.anchor.set(0.5);
         attackText.inputEnabled = true;
         attackText.events.onInputDown.add(queAttack, {attacker: battlePlayer});
@@ -957,7 +973,7 @@ function allowBattle() {
 }
 
 function addBattleText(text, action, modifier) {
-  var battleText = game.add.bitmapText(focusX + menuBar.width/2 - 100*globalScale, battleTexts[battleTexts.length - 1].y + 60*globalScale, 'font', text, 20*globalScale);
+  var battleText = game.add.bitmapText(game.camera.width/C.game.zoomScale + game.camera.x/C.game.zoomScale - 100*globalScale, battleTexts[battleTexts.length - 1].y + 60*globalScale, 'font', text, 20*globalScale);
   battleText.anchor.setTo(0.5);
   battleText.inputEnabled = true;
   battleText.events.onInputDown.add(action, {attacker: battlePlayer, modifier: modifier});
@@ -1002,7 +1018,6 @@ function addHoverInfo(x,y,frame,value,secondaryValue,subtractedValue) {
             this.valueDisplay.text = (playerCount*4) - obj[value].toString()
           } else {
             this.valueDisplay.text = obj[value].toString() + " [" + obj[secondaryValue].toString() + "]";
-            console.log(this.valueDisplay.text);
           }
         }
       }
@@ -1270,8 +1285,8 @@ function makeButton(position,frame) {
 }
 
 function setLastClicked(sprite) {
-  setAttributeDisplay(playersList[sprite.number]);
   if (!turn && !this.lastClicked && sprite.key != "monster") {
+    //setAttributeDisplay(playersList[sprite.number]);
     turn = playersList[sprite.number];
     //turn.sprite.inputEnabled = true;
     closestSpaces = getClosestSpaces(turn.key);
@@ -1618,7 +1633,7 @@ function printBattleResults(text,position) {
     }
   }
   if (!position) {
-    var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(focusY + 135*globalScale), 'font', text, 25*globalScale);
+    var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(game.camera.y/C.game.zoomScale + 295*globalScale), 'font', text, 25*globalScale);
   } else {
     var battleResults = game.add.bitmapText(Math.round(position.x),Math.round(position.y + 60*globalScale), 'font', text, 25*globalScale);
   }
@@ -1934,6 +1949,7 @@ function killBattleInfo() {
   playerBar.kill();
   playerBar.playerCard.kill();
   monsterBar.kill();
+  monsterBar.monsterCard.kill();
   for (i = 0; i < playerBattleTexts.length; i++) {
     playerBattleTexts[i].valueIcon.destroy();
     playerBattleTexts[i].valueDisplay.destroy();
@@ -2117,6 +2133,7 @@ function battle(player, monster) {
   function moveMonsters() {
    updateOccupiedRows();
    monstersList = scrubList(monstersList);
+   var unmovedMonsters = [];
     for (var i = 0; i < monstersList.length ; i++) {
         if (monstersList[i].key.charAt(2) !== "0") {
           var newDestination = monstersList[i].key.substring(0,2) + (parseInt(monstersList[i].key.charAt(2)) - 1);
@@ -2165,6 +2182,7 @@ function battle(player, monster) {
           } else if (parseInt(monstersList[i].key.charAt(2)) === 0 )  {
             if (Space[newDestination].damage && Space[newDestination].damage === 1) {
               newDestination = monstersList[i].key;
+              unmovedMonsters.push(monstersList[i]);
             } else {
               if (monstersList[i].key.charAt(1) !== "4") {
                 newDestination = monstersList[i].key.charAt(0) + (parseInt(monstersList[i].key.charAt(1))+1) + monstersList[i].key.charAt(2);
@@ -2222,9 +2240,11 @@ function battle(player, monster) {
           }
           if (containsMonsters && !containsPlayers) {
             var newDestination = monstersList[i].key;
+            unmovedMonsters.push(monstersList[i]);;
           }    
         console.log("Monster is moving to " + newDestination);
         move(monstersList[i], newDestination);
+        monstersList[i].movingTo = newDestination;
       } else {
         console.log("Broken destination was " + newDestination);
       }
@@ -2238,6 +2258,7 @@ function battle(player, monster) {
       checkBattle(monstersList[newMonster].space);
     }
    destroyedCities.hoverInfo.update(destroyedCities);
+   console.log(unmovedMonsters);
 }
 
 function destroyWall() {
@@ -3128,21 +3149,21 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     else if (quadrant && row) { 
         var chr = String.fromCharCode(96 + quadrant);
         condition = space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0;
-    } else {
-        condition = false;
-        if (failSafe >= 700) {
-          var tempSpace = {
-            selectedSpace: space.selectedSpace,
-            key: space.key
-          };
-          do {
-            var rand = monstersList[Math.floor(Math.random() * monstersList.length)];
-            tempSpace.selectedSpace = rand.space;
-            tempSpace.key = rand.key.substring(0,2) + "0";
-          } while (tempSpace.selectedSpace.occupied && tempSpace.key.charAt(2) != "3")
-          space = tempSpace;
-        }
-    }
+    } 
+    if (failSafe >= 700) {
+      condition = false;
+        var tempSpace = {
+          selectedSpace: space.selectedSpace,
+          key: space.key
+        };
+        do {
+          var rand = monstersList[Math.floor(Math.random() * monstersList.length)];
+          tempSpace.selectedSpace = rand.space;
+          tempSpace.key = rand.key.substring(0,2) + "0";
+          console.log(tempSpace.selectedSpace.occupied + tempSpace.key);
+        } while (tempSpace.selectedSpace.occupied && tempSpace.key.charAt(2) != "3")
+        space = tempSpace;
+      }
     console.log(condition);
   }   
   console.log(object + " found a home");
