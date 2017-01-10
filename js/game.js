@@ -84,6 +84,11 @@ var C = {
      "initialMonster": "initialCard",
      "growingMonster": "growingCard",
      "extinctionMonster": "extinctionCard"
+   },
+   "names": {
+     "initialMonster": "Initial Monster",
+     "growingMonster": "Growing Monster",
+     "extinctionMonster": "Extinction Monster"
    }
  },
  "menuBar": {
@@ -799,21 +804,21 @@ class Setup {
         for (i = 0; i < battleMonster.upgrades.length; i++) {
           if (battleMonster.upgrades[i].indexOf("-1 Mech") > -1) {
             MU["Dice -#"].active(battlePlayer,battleMonster.upgrades[i].substring(8),1);
-            printBattleResults(battleMonster.sprite.key + " drained " + battlePlayer.sprite.key + " " + battleMonster.upgrades[i].substring(8) + "!");
+            printBattleResults(C.monster.names[battleMonster.spriteName] + " drained " + battlePlayer.sprite.key.capitalizeFirstLetter() + " " + battleMonster.upgrades[i].substring(8) + "!");
           } else if (battleMonster.upgrades[i].indexOf("-2 Mech") > -1) {
             MU["Dice -#"].active(battlePlayer,battleMonster.upgrades[i].substring(8),2);
-            printBattleResults(battleMonster.sprite.key + " drained " + battlePlayer.sprite.key + "'s " + battleMonster.upgrades[i].substring(8) + "!");
+            printBattleResults(C.monster.names[battleMonster.sprite.spriteName] + " drained " + battlePlayer.sprite.key.capitalizeFirstLetter() + "'s " + battleMonster.upgrades[i].substring(8) + "!");
           }
           if (battleMonster.upgrades[i].indexOf("+1 Mecha") > -1) {
             MU["Dice Target +#"].active(battlePlayer,battleMonster.upgrades[i].substring(9),1);
-            printBattleResults(battleMonster.sprite.key + " raised " + battlePlayer.sprite.key + "'s " + battleMonster.upgrades[i].substring(8) + " Attack Target!");
+            printBattleResults(C.monster.names[battleMonster.sprite.spriteName] + " raised " + battlePlayer.sprite.key.capitalizeFirstLetter() + "'s " + battleMonster.upgrades[i].substring(8) + " Attack Target!");
           }
         }
         if (battleMonster.upgrades.indexOf("First Attack") === -1) {
           battleTurn = battlePlayer;
         } else {
           battleTurn = battleMonster;
-          printBattleResults(battleMonster.sprite.key + " attacks first!");
+          printBattleResults(C.monsterNames[battleMonster.sprite.spriteName] + " attacks first!");
         }
         attackText = game.add.bitmapText(game.camera.width/C.game.zoomScale + game.camera.x/C.game.zoomScale - 100*globalScale, menuBar.y,'font', "Attack!",20*globalScale);
         attackText.anchor.set(0.5);
@@ -1258,11 +1263,16 @@ function returnToBattle(infoDisplay) {
     });
 }
 
+String.prototype.capitalizeFirstLetter = function() {
+      return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
 function queAttack() {
   if (battleTurn === this.attacker) {
     this.attacker.attacking = true;
     if (this.modifier && this.modifier === "Siege Mode") {
       this.attacker.siegeMode = true;
+      printBattleResults(battlePlayer.sprite.key.capatalizeFirstLetter() +  " Mecha has activated Seige Mode!");
     } else if (this.modifier && this.modifier === "Weaponized Research") {
     }
   }
@@ -1729,12 +1739,17 @@ function attack(attacker,defender) {
   var rhits = 0;
   if (attacker.ratk) {
     rhits = rollDie(attacker.ratk - (defender.ratkDecrease || 0), attacker.ratkGoal || 5);
-  } 
-  var successes = rhits + bhits;
+  }
+  var successes = rhits.hits + bhits.hits;
   if (attacker.siegeMode) {
     successes += 1;
     attacker.def -= 1;
     attacker.canSiege = false;
+  }
+  if (playersList.indexOf(attacker) > -1 ) {
+    printBattleResults(attacker.sprite.key.capitalizeFirstLetter() + " Mecha rolled " + rhits.results.join(", ") + " on Physical Die and " + bhits.results.join(", ") + " on Energy Die!");
+  } else {
+    printBattleResults(C.monster.names[attacker.sprite.spriteName] + " rolled " + bhits.results.join(", ") + " on Attack Die!");
   }
   if (defender.guarenteedDef && successes > 0) {
     successes -= defender.guarenteedDef;
@@ -1742,23 +1757,28 @@ function attack(attacker,defender) {
   console.log(attacker.sprite.key + " hit " +successes + " hit/hits!");
   var defences = rollDie(defender.def, defender.defGoal || 5);
   console.log(defender.sprite.key + " defended " + defences + " hit/hits!");
-  if (successes > defences) {
-    var damageTaken = successes - defences;
+  if (playersList.indexOf(defender) > -1 ) {
+    printBattleResults(defender.sprite.key.capitalizeFirstLetter() + " Mecha rolled " + defences.results.join(", ") + " on Defence Die!");
+  } else {
+    printBattleResults(C.monster.names[defender.sprite.spriteName] + " rolled " + defences.results.join(", ") + " on Defence Die!");
+  }
+  if (successes > defences.hits) {
+    var damageTaken = successes - defences.hits;
     damageTaken = shieldDamage(defender,damageTaken)
     defender.hp -= damageTaken;
     var damaged = defender;
-    var text = defender.sprite.key + " took " + damageTaken.toString() + " damage from " + attacker.sprite.key + ".";
-  } else if (defences > successes) {
-    var damageTaken = defences - successes;
+    var text = defender.sprite.key.capitalizeFirstLetter() + " took " + damageTaken.toString() + " damage from " + attacker.sprite.key.capitalizeFirstLetter() + ".";
+  } else if (defences.hits > successes) {
+    var damageTaken = defences.hits - successes;
     damageTaken = shieldDamage(attacker,damageTaken)
     attacker.hp -= damageTaken;
     var damaged = attacker;
-    var text = attacker.sprite.key + " took " + damageTaken.toString() + " damage from " + defender.sprite.key + " defences!";
+    var text = attacker.sprite.key.capitalizeFirstLetter() + " took " + damageTaken.toString() + " damage from " + defender.sprite.key.capitalizeFirstLetter() + "'s defences!";
   } else {
     var damaged = undefined;
     var damageTaken = undefined;
     console.log("No damage.");
-    var text = defender.sprite.key + " blocked every hit from " + attacker.sprite.key + "!";
+    var text = defender.sprite.key.capitalizeFirstLetter() + " blocked every hit from " + attacker.sprite.key.capitalizeFirstLetter() + "!";
   }
     printBattleResults(text); 
     if (attacker.upgrades.indexOf("Poison Aura") > -1) {
@@ -1854,7 +1874,7 @@ function handleDeath(damaged,survivor,deathCase) {
 function shieldDamage(obj,damage) {
   if (obj.upgrades.indexOf("Nullifier Shield") > -1 && obj.shields === true) {
     damage -= 1;
-    printBattleResults(obj.sprite.key + " blocked 1 damage with Nullifier Shield.");
+    printBattleResults(obj.sprite.key.capitalizeFirstLetter() + " blocked 1 damage with Nullifier Shield.");
     obj.shields = false;
   }
   return damage;
@@ -1975,15 +1995,20 @@ function killResults(results) {
 
 function rollDie(count, goal){ 
   var hits = 0;
+  var results = [];
   for (i = 1; i < count; i++) {
     rollResult = Math.floor(Math.random() * ((6-1)+1) + 1);
     if (rollResult >= goal) {
       hits += 1;
     }
+    results.push(rollResult);
   }
-  return hits;
+  return {
+    hits: hits,
+    results: results
+  }
 } 
-
+/*
 var rollingAnimation;
 
 function updateRollText(rolling,type) {
@@ -2022,7 +2047,7 @@ function updateRollText(rolling,type) {
     hits: hits
   }
 }
-
+*/
 function updateOccupiedRows() {
    occupiedRows = ['center'];
    for (var key in Space) {
@@ -2064,8 +2089,8 @@ function battle(player, monster) {
         }
         battlePlayer.sprite.events.onDragStop._bindings = [];
         battlePlayer.sprite.inputEnabled = false;
-        var increment = C.game.moveSpeed/10
-        game.time.events.repeat(increment, 5, updateRollText, this,battleMonster,"atk");
+        //var increment = C.game.moveSpeed/10
+        //game.time.events.repeat(increment, 5, updateRollText, this,battleMonster,"atk");
       }
       battleMonster.sprite.x += C.mech.battleSpeed - battleSpeedDecrease;
       battleSpeedDecrease += .02;
@@ -2088,8 +2113,8 @@ function battle(player, monster) {
         }
         battlePlayer.sprite.events.onDragStop._bindings = [];
         battlePlayer.sprite.inputEnabled = false;
-        var increment = C.game.moveSpeed/10
-        game.time.events.repeat(increment, 5, updateRollText, this,battlePlayer,"atk");
+        //var increment = C.game.moveSpeed/10
+        //game.time.events.repeat(increment, 5, updateRollText, this,battlePlayer,"atk");
       }
 
       battlePlayer.sprite.x -= C.mech.battleSpeed - battleSpeedDecrease;
@@ -2718,9 +2743,9 @@ function confirmUpgrade(player,upgradeName) {
         upgradeExample.frame = index;
       }
       if (confirmText && consideredUpgrade && consideredUpgrade.desc) {
-        confirmText.setText("Are you sure you would like to purchase " + upgradeName + " on " + turn.sprite.key +"?\n\n" + consideredUpgrade.desc);
+        confirmText.setText("Are you sure you would like to purchase " + upgradeName + " on " + turn.sprite.key.capitalizeFirstLetter() + " Mecha?\n\n" + consideredUpgrade.desc);
       } else if (consideredUpgrade && consideredUpgrade.desc){
-        confirmText = game.add.text(game.camera.x + game.camera.width/2,game.camera.y + game.camera.height/2 - 230,"Are you sure you would like to purchase " + upgradeName + " on " + turn.sprite.key +"?\n\n" + consideredUpgrade.desc, C.game.textStyle);
+        confirmText = game.add.text(game.camera.x + game.camera.width/2,game.camera.y + game.camera.height/2 - 230,"Are you sure you would like to purchase " + upgradeName + " on " + turn.sprite.key.capitalizeFirstLetter() + " Mecha?\n\n" + consideredUpgrade.desc, C.game.textStyle);
         confirmText.anchor.setTo(.5,.5);
       } else {
         if (!confirmText) {
