@@ -499,7 +499,7 @@ function reEnableHover(sprite) {
   sprite.events.onDragStop.add(attachClosestSpace, sprite);
   sprite.events.onDragStop.add(reduceScale, {sprite:sprite});
   sprite.events.onDragStop.add(sprite.glow, {sprite:sprite,fadeOut:true});
-  sprite.events.onInputDown.add(setLastClicked, this);
+  sprite.events.onInputDown.add(setLastClicked, {lastClicked:sprite});
   sprite.events.onInputDown.add(hoverScale, {sprite:sprite});
   sprite.events.onInputOver.add(sprite.glow, {sprite:sprite});
   sprite.events.onInputOver.add(hoverScale, {sprite:sprite});
@@ -756,7 +756,7 @@ class Setup {
             playerBar.playerCard.loadTexture(C.mech.colorCards[battlePlayer.sprite.key]);
           }
           playerBattleTexts.x = game.camera.x/C.game.zoomScale + game.camera.width/C.game.zoomScale - (300*globalScale)/C.game.zoomScale;
-          playerBattleTexts.yincrement = -70*globalScale;
+          playerBattleTexts.yincrement = -130*globalScale;
           playerBattleTexts.xincrement = -130*globalScale;
           var playerBarTween = game.add.tween(playerBar).to({ x: playerBattleTexts.x + playerBattleTexts.xincrement, y: playerBar.y + playerBattleTexts.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           var playerBarTween2 = game.add.tween(playerBar.playerCard).to({ x: game.camera.width/C.game.zoomScale + game.camera.x/C.game.zoomScale - playerBar.playerCard.width/2, y: game.camera.y/C.game.zoomScale + playerBar.playerCard.height/2 }, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
@@ -777,7 +777,7 @@ class Setup {
             monsterBar.monsterCard.loadTexture(C.monster.cards[battleMonster.sprite.spriteName]);
           }
           monsterBattleTexts.x = game.camera.x/C.game.zoomScale + ((300*globalScale)/C.game.zoomScale);
-          monsterBattleTexts.yincrement = -100*globalScale;
+          monsterBattleTexts.yincrement = -130*globalScale;
           monsterBattleTexts.xincrement = 0;
           var monsterBarTween = game.add.tween(monsterBar).to({ x: monsterBattleTexts.x + monsterBattleTexts.xincrement, y: monsterBar.y + monsterBattleTexts.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           var monsterBarTween2 = game.add.tween(monsterBar.monsterCard).to({ x: game.camera.x/C.game.zoomScale + monsterBar.monsterCard.width/2, y: game.camera.y/C.game.zoomScale + monsterBar.monsterCard.height/2 }, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
@@ -804,7 +804,7 @@ class Setup {
         for (i = 0; i < battleMonster.upgrades.length; i++) {
           if (battleMonster.upgrades[i].indexOf("-1 Mech") > -1) {
             MU["Dice -#"].active(battlePlayer,battleMonster.upgrades[i].substring(8),1);
-            printBattleResults(C.monster.names[battleMonster.spriteName] + " drained " + battlePlayer.sprite.key.capitalizeFirstLetter() + " " + battleMonster.upgrades[i].substring(8) + "!");
+            printBattleResults(C.monster.names[battleMonster.sprite.spriteName] + " drained " + battlePlayer.sprite.key.capitalizeFirstLetter() + "'s " + battleMonster.upgrades[i].substring(8) + "!");
           } else if (battleMonster.upgrades[i].indexOf("-2 Mech") > -1) {
             MU["Dice -#"].active(battlePlayer,battleMonster.upgrades[i].substring(8),2);
             printBattleResults(C.monster.names[battleMonster.sprite.spriteName] + " drained " + battlePlayer.sprite.key.capitalizeFirstLetter() + "'s " + battleMonster.upgrades[i].substring(8) + "!");
@@ -818,7 +818,7 @@ class Setup {
           battleTurn = battlePlayer;
         } else {
           battleTurn = battleMonster;
-          printBattleResults(C.monsterNames[battleMonster.sprite.spriteName] + " attacks first!");
+          printBattleResults(C.monster.names[battleMonster.sprite.spriteName] + " attacks first!");
         }
         attackText = game.add.bitmapText(game.camera.width/C.game.zoomScale + game.camera.x/C.game.zoomScale - 100*globalScale, menuBar.y,'font', "Attack!",20*globalScale);
         attackText.anchor.set(0.5);
@@ -1296,6 +1296,10 @@ function makeButton(position,frame) {
 }
 
 function setLastClicked(sprite) {
+  console.log("Test conditions:")
+  console.log(!turn);
+  console.log(!this.lastClicked);
+  console.log(sprite.key != "monster");
   if (!turn && !this.lastClicked && sprite.key != "monster") {
     //setAttributeDisplay(playersList[sprite.number]);
     turn = playersList[sprite.number];
@@ -1640,13 +1644,13 @@ function checkAttack(sprite,pointer) {
 function printBattleResults(text,position) {
   if (resultsList.length > 0) {
     for (i = 0; i < resultsList.length; i++) {
-      resultsList[i].y += globalScale*30;
+      resultsList[i].y += globalScale*23;
     }
   }
   if (!position) {
-    var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(game.camera.y/C.game.zoomScale + 295*globalScale), 'font', text, 25*globalScale);
+    var battleResults = game.add.bitmapText(Math.round(focusX),Math.round(game.camera.y/C.game.zoomScale + 282*globalScale), 'font', text, 20*globalScale);
   } else {
-    var battleResults = game.add.bitmapText(Math.round(position.x),Math.round(position.y + 60*globalScale), 'font', text, 25*globalScale);
+    var battleResults = game.add.bitmapText(Math.round(position.x),Math.round(position.y + 60*globalScale), 'font', text, 20*globalScale);
   }
   battleResults.anchor.x = .5;
   battleResults.anchor.y = .5;
