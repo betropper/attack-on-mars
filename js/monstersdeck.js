@@ -4,7 +4,7 @@ var MonstersDeck = {
    "batk": 2,
    "def": 2,
    "hp": 4,
-   "upgrades": ["Poison Aura","-1 Mech Def"]
+   "upgrades": ["Poison Aura","-1 Mech Defense"]
    },
    {
    "batk": 4,
@@ -52,7 +52,7 @@ var MonstersDeck = {
    "batk": 4,
    "def": 2,
    "hp": 3,
-   "upgrades": ["-1 Mech Def"]
+   "upgrades": ["-1 Mech Defense"]
    },
 
    {
@@ -130,7 +130,7 @@ var MonstersDeck = {
    "batk": 4,
    "def": 4,
    "hp": 6,
-   "upgrades": ["+1 Mecha Def Target"]
+   "upgrades": ["+1 Mecha Defense Target"]
    },
    {
    "batk": 5,
@@ -172,7 +172,7 @@ var MonstersDeck = {
    "batk": 7,
    "def": 4,
    "hp": 3,
-   "upgrades": ["-2 Mech Def", "Feign Death"]
+   "upgrades": ["-2 Mech Defense", "Feign Death"]
    },
    {
    "batk": 6,
@@ -238,7 +238,7 @@ var MonstersDeck = {
     "hp": 6,
     "batkGoal": 4,
     "defGoal": 4,
-    "upgrades": ["-1 Monster Blue Target", "-1 Monster Def Target", "+1 Mecha Blue Target", "+1 Mecha Red Target", "+1 Mecha Def Target"]
+    "upgrades": ["-1 Monster Blue Target", "-1 Monster Defense Target", "+1 Mecha Blue Target", "+1 Mecha Red Target", "+1 Mecha Defense Target"]
    }
   ]
 
@@ -308,7 +308,7 @@ var MU = {
       var playerDie = {
         "Blue Attack": "batk",
         "Red Attack": "ratk",
-        "Def": "def"
+        "Defense": "def"
       };
       if (mech[playerDie[pool]] > 0) {
         console.log(mech[playerDie[pool]]);
@@ -325,7 +325,7 @@ var MU = {
       var playerDie = {
         "Blue Attack": "batk",
         "Red Attack": "ratk",
-        "Def": "def"
+        "Defense": "def"
       };
       mech[playerDie[pool]] += amount;
       mech.tempStolen.splice({pool: pool, amount: amount},1);
@@ -339,7 +339,7 @@ var MU = {
       var playerDie = {
         "Blue Target": "batkGoal",
         "Red Target": "ratkGoal",
-        "Def Target": "defGoal"
+        "Defense Target": "defGoal"
       };
       if (mech[playerDie[pool]] > 0) {
         console.log(mech[playerDie[pool]]);
@@ -359,7 +359,7 @@ var MU = {
       var playerDie = {
         "Blue Target": "batkGoal",
         "Red Target": "ratkGoal",
-        "Def Target": "defGoal"
+        "Defense Target": "defGoal"
       };
       mech[playerDie[pool]] -= amount;
       mech.tempStolen.splice({pool: pool, amount: amount},1);

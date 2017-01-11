@@ -42,7 +42,7 @@ var Pilots = {
         player.truePower = true;
         MU["Dice Target +#"].active(player,"Red Target",-1);
         MU["Dice Target +#"].active(player,"Blue Target",-1);
-        MU["Dice Target +#"].active(player,"Def Target",-1);
+        MU["Dice Target +#"].active(player,"Defense Target",-1);
         printBattleResults("The Teen Prodigy " + player.sprite.key.capitalizeFirstLetter() + " Mecha's targets are boosted for being at death's door!");
       }
     }

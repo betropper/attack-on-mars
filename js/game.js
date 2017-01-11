@@ -307,8 +307,8 @@ class MainMenu {
     var titleText = game.add.bitmapText(game.world.centerX, game.world.centerY - game.height/2.5, 'attackfont', "ATTACK ON MARS", 90*globalScale);
     titleText.anchor.set(0.5);
     playerCount = 4;
-    var countNumber = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/9, 'attackfont', playerCount, 90*globalScale) 
-    countNumber.anchor.set(0.5);
+    //var countNumber = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/9, 'attackfont', playerCount, 90*globalScale) 
+    //countNumber.anchor.set(0.5);
     /*var left = game.add.sprite(game.world.centerX - 140*globalScale, game.world.centerY + game.height/6, "leftright");
     left.frame = 0;
     left.anchor.set(0.5);
@@ -325,10 +325,10 @@ class MainMenu {
     right.events.onInputDown.add(changePlayerCount,]() {action: 1, display: countNumber});
     */
     var versionText = game.add.text(100*globalScale, 80*globalScale, "Version: "+C.game.versionNumber, C.game.smallStyle);
-    var playerCountText = game.add.bitmapText(game.world.centerX, countNumber.y - 140*globalScale, 'attackfont', "Player Count (Locked)", 90*globalScale);
-    playerCountText.anchor.set(.5);
+    //var playerCountText = game.add.bitmapText(game.world.centerX, countNumber.y - 140*globalScale, 'attackfont', "Player Count (Locked)", 90*globalScale);
+    //playerCountText.anchor.set(.5);
     //game.input.onUp.add(checkButtons, {left: left, right: right});
-    var playButton = game.add.bitmapText(game.world.centerX, countNumber.y + 140*globalScale, 'attackfont', "Play Game", 90*globalScale);
+    var playButton = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/9 + 140*globalScale, 'attackfont', "Play Game", 90*globalScale);
     playButton.anchor.set(.5);
     playButton.inputEnabled = true;
     playButton.events.onInputUp.add(clickFade, {inorout:"out", state: "Setup"});
@@ -338,7 +338,7 @@ class MainMenu {
     var creditsButton = game.add.bitmapText(game.world.centerX, settingsButton.y + 140*globalScale, 'attackfont', "Credits", 90*globalScale);
     creditsButton.anchor.set(.5);
     creditsButton.inputEnabled = true;
-    var menuList = [/*left,*/ countNumber, /*right,*/ playerCountText, playButton, settingsButton, creditsButton];
+    var menuList = [/*left,*/ /*countNumber,*/ /*right,*/ /*playerCountText,*/ playButton, settingsButton, creditsButton];
     returnButton = game.add.bitmapText(game.world.centerX + game.width, game.world.centerY - game.height/8, 'attackfont', "Return to Menu", 90*globalScale);
     returnButton.anchor.set(.5);
     //Off screen settings menu
@@ -370,7 +370,7 @@ class MainMenu {
 
 class Credits {
   preload() {
-      var credits = "Illustration:        Alice Bessoni\n\nGame Programming:       Benjamin Muhlestein\n\nGame Design:        Paul Ference\n\nGraphical Design:        Helen Tian";
+      var credits = "Illustration:        Alice Bessoni\n\nGame Design:       Paul Ference\n\nGame Programming:        Benjamin Muhlestein\n\nGraphical Design:        Helen Tian";
       var creditsDisplay = game.add.bitmapText(game.world.centerX, game.world.centerY - game.world.height, 'attackfont', credits, 90*globalScale);
       var creditsTween = game.add.tween(creditsDisplay).to({y: game.world.centerY}, 4000, Phaser.Easing.Linear.None, true);
       creditsDisplay.anchor.setTo(.5);
@@ -774,7 +774,7 @@ class Setup {
             monsterBar.monsterCard.anchor.setTo(.5);
             monsterBar.monsterCard.scale.setTo(globalScale*.35);
           } else if (monsterBar.alive === false) {
-            monsterBar.reset(focusX - game.camera.width/2, battlePlayer.sprite.y);
+            monsterBar.reset(focusX - game.camera.width/2, game.camera.y/C.game.zoomScale + game.camera.height/2/C.game.zoomScale);
             monsterBar.monsterCard.reset(focusX - game.camera.width/2, battleMonster.sprite.y);
             monsterBar.monsterCard.loadTexture(C.monster.cards[battleMonster.sprite.spriteName]);
           }
@@ -806,14 +806,14 @@ class Setup {
         for (i = 0; i < battleMonster.upgrades.length; i++) {
           if (battleMonster.upgrades[i].indexOf("-1 Mech") > -1) {
             MU["Dice -#"].active(battlePlayer,battleMonster.upgrades[i].substring(8),1);
-            printBattleResults(C.monster.names[battleMonster.sprite.spriteName] + " drained " + battlePlayer.sprite.key.capitalizeFirstLetter() + "'s " + battleMonster.upgrades[i].substring(8) + "!");
+            printBattleResults(C.monster.names[battleMonster.sprite.spriteName] + " drained " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mech's " + battleMonster.upgrades[i].substring(8) + " by 1!");
           } else if (battleMonster.upgrades[i].indexOf("-2 Mech") > -1) {
             MU["Dice -#"].active(battlePlayer,battleMonster.upgrades[i].substring(8),2);
-            printBattleResults(C.monster.names[battleMonster.sprite.spriteName] + " drained " + battlePlayer.sprite.key.capitalizeFirstLetter() + "'s " + battleMonster.upgrades[i].substring(8) + "!");
+            printBattleResults(C.monster.names[battleMonster.sprite.spriteName] + " drained " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mech's " + battleMonster.upgrades[i].substring(8) + " by 2!");
           }
           if (battleMonster.upgrades[i].indexOf("+1 Mecha") > -1) {
             MU["Dice Target +#"].active(battlePlayer,battleMonster.upgrades[i].substring(9),1);
-            printBattleResults(C.monster.names[battleMonster.sprite.spriteName] + " raised " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mech's " + battleMonster.upgrades[i].substring(9) + "!");
+            printBattleResults(C.monster.names[battleMonster.sprite.spriteName] + " raised " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mech's " + battleMonster.upgrades[i].substring(9) + " by 1!");
           }
         }
         if (battleMonster.upgrades.indexOf("First Attack") === -1) {
@@ -1911,15 +1911,15 @@ function resetDie(player,monster) {
   var playerDie = {
     "Blue Attack": "batk",
     "Red Attack": "ratk",
-    "Def": "def",
+    "Defense": "def",
     "Blue Target": "batkGoal",
     "Red Target": "ratkGoal",
-    "Def Target": "defGoal"
+    "Defense Target": "defGoal"
   };
   var playerPools = {
     "Blue Target": "batkGoal",
     "Red Target": "ratkGoal",
-    "Def Target": "defGoal"
+    "Defense Target": "defGoal"
   }
   if (player.tempStolen) {
     for (i = 0; i < player.tempStolen.length; i++) {
@@ -2774,6 +2774,7 @@ function chooseUpgrade(event) {
 
 function confirmUpgrade(player,upgradeName) {
       var consideredUpgrade = U[upgradeName];
+      consideredUpgrade.tier = consideredUpgrade.cost/2;
       if ((player.upgrades.indexOf(upgradeName) === -1) && consideredUpgrade && consideredUpgrade.desc) {
       game.kineticScrolling.stop();
       confirmState = true;
@@ -2839,9 +2840,9 @@ function confirmUpgrade(player,upgradeName) {
           }
         }
         if (priceText) {
-          priceText.setText(upgradeName + " is a tier " + consideredUpgrade.cost + " unlock upgrade.\nPurchase " + (consideredUpgrade.cost - discountValue) + " more " + consideredUpgrade.unlockColor + " upgrades and " + upgradeName.replace(' Unlock','')  + " to unlock this.");
+          priceText.setText(upgradeName + " is a tier " + consideredUpgrade.tier + " unlock upgrade.\nPurchase " + (consideredUpgrade.cost - discountValue) + " more " + consideredUpgrade.unlockColor + " upgrades and " + upgradeName.replace(' Unlock','')  + " to unlock this.");
         } else {
-          priceText = game.add.text(confirmText.x, confirmText.y + 400, upgradeName + " is a tier " + consideredUpgrade.cost + " unlock upgrade.\nPurchase " + (consideredUpgrade.cost - discountValue) + " more " + consideredUpgrade.unlockColor + " upgrades and " + upgradeName.replace(' Unlock','')  + " to unlock this.", C.game.smallStyle);
+          priceText = game.add.text(confirmText.x, confirmText.y + 400, upgradeName + " is a tier " + consideredUpgrade.tier + " unlock upgrade.\nPurchase " + (consideredUpgrade.cost - discountValue) + " more " + consideredUpgrade.unlockColor + " upgrades and " + upgradeName.replace(' Unlock','')  + " to unlock this.", C.game.smallStyle);
           priceText.anchor.setTo(.5,.5);
         }
         var back = game.add.text(confirmText.x, priceText.y + 100, "Back", C.game.ynStyle);
@@ -2855,9 +2856,9 @@ function confirmUpgrade(player,upgradeName) {
         back.events.onInputUp.add(upgrade, {upgrading: turn, yn: "no"});
         return;
       } else if (priceText) {
-        priceText.setText(upgradeName + " is a tier " + consideredUpgrade.cost + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue));
+        priceText.setText(upgradeName + " is a tier " + consideredUpgrade.tier + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue));
       } else {
-        priceText = game.add.text(confirmText.x, confirmText.y + 400, upgradeName + " is a tier " + consideredUpgrade.cost + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue),C.game.smallStyle)
+        priceText = game.add.text(confirmText.x, confirmText.y + 400, upgradeName + " is a tier " + consideredUpgrade.tier + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue),C.game.smallStyle)
         priceText.anchor.setTo(.5,.5);
       }
       var yes = game.add.text(confirmText.x - 150, priceText.y + 100, "Yes", C.game.ynStyle);
@@ -3339,7 +3340,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
       }
       obj.def = drawnMonster.def;
       obj.rp = 1;
-      obj.mr = 2;
+      obj.mr = 1;
     } else if (threatLevel <= 24) { 
       do {
         var drawnMonster = MonstersDeck.growingMonsters[Math.floor(Math.random() * MonstersDeck.growingMonsters.length)];
@@ -3439,7 +3440,7 @@ function spawnSpecific(object,space) {
       }
       obj.def = drawnMonster.def;
       obj.rp = 1;
-      obj.mr = 2;
+      obj.mr = 1;
     } else if (threatLevel <= 24) { 
       do {
         var drawnMonster = MonstersDeck.growingMonsters[Math.floor(Math.random() * MonstersDeck.growingMonsters.length)];
