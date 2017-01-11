@@ -9,7 +9,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": ".5.1.0",
+   "versionNumber": ".6.0.0",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -581,6 +581,8 @@ class Setup {
       destroyedCities[i-1] = destroyedCityColumn;
       playersList[i] = spawnRandom(playerNames[i-1], i, "0", true); 
       playersList[i].sprite.number = i;
+      var pilotList = ["Bounty Hunter", "Teen Prodigy", "Co-ordinator", "Media Star"]
+      playersList[i].pilot = pilotList[i-1];
       playersList[i].upgrades = [];
       playersList[i].colorDiscounts = [
         {color: "red", discount: 0 },
@@ -811,7 +813,7 @@ class Setup {
           }
           if (battleMonster.upgrades[i].indexOf("+1 Mecha") > -1) {
             MU["Dice Target +#"].active(battlePlayer,battleMonster.upgrades[i].substring(9),1);
-            printBattleResults(C.monster.names[battleMonster.sprite.spriteName] + " raised " + battlePlayer.sprite.key.capitalizeFirstLetter() + "'s " + battleMonster.upgrades[i].substring(8) + " Attack Target!");
+            printBattleResults(C.monster.names[battleMonster.sprite.spriteName] + " raised " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mech's " + battleMonster.upgrades[i].substring(9) + "!");
           }
         }
         if (battleMonster.upgrades.indexOf("First Attack") === -1) {
@@ -845,6 +847,9 @@ class Setup {
         game.input.enabled = true;
     } else if (battleState === true) {
       battle(battlePlayer,battleMonster);
+      if (battlePlayer.pilot === "Teen Prodigy" && battlePlayer.hp === 1) {
+        Pilots["Teen Prodigy"].active(battlePlayer);
+      }
       // Change this, placeholder ending.
     }
     // set a minimum and maximum scale value
@@ -1014,7 +1019,7 @@ function addHoverInfo(x,y,frame,value,secondaryValue,subtractedValue) {
   infoDescObj.update = function(obj) {
     this.parent = obj;
     if (obj[this.valueName]) {
-      if (this.value != obj[this.valueName].toString()) {
+      if (this.value != obj[this.valueName].toString() || (this.secondaryValue && this.parent[secondaryValue] && this.secondaryValue != this.parent[secondaryValue].toString())) {
         this.value = obj[value].toString();
         this.valueDisplay.text = obj[value].toString();
         if (this.secondaryValue) {
@@ -1087,7 +1092,7 @@ function addBattleInfo(text, frame, value, secondaryValue) {
   battleDescObj.update = function() {
     //this.description.x = this.bar.x;
     //this.valueDisplay.x = this.bar.x;
-    if (this.value != this.parent[value].toString()) {
+    if (this.value != this.parent[value].toString() || (this.secondaryValue && this.parent[secondaryValue] && this.secondaryValue != this.parent[secondaryValue].toString())) {
       this.value = this.parent[value].toString();
       this.valueDisplay.text = this.parent[value].toString();
       if (this.secondaryValue) {
@@ -1785,6 +1790,9 @@ function attack(attacker,defender) {
     var text = defender.sprite.key.capitalizeFirstLetter() + " blocked every hit from " + attacker.sprite.key.capitalizeFirstLetter() + "!";
   }
     printBattleResults(text); 
+    if (damaged && damaged != battlePlayer && battlePlayer.pilot === "Teen Prodigy") {
+      damaged.hp -= Pilots["Teen Prodigy"].passive(battlePlayer);
+    }
     if (attacker.upgrades.indexOf("Poison Aura") > -1) {
       var stacks = countInArray(attacker.upgrades,"Poison Aura");
       MU["Poison Aura"].active(attacker,defender,stacks);
@@ -1803,6 +1811,9 @@ function attack(attacker,defender) {
 }
 function handleDeath(damaged,survivor,deathCase) {
   battlePlayer.attacking = false;
+  if (battlePlayer.truePower) {
+    battlePlayer.truePower === false;
+  }
   globalList = scrubList(globalList);
   if (deathCase === "poisoned") {
     if (battleMonster.upgrades.indexOf("Feign Death") > -1 && battleMonster.feigned === false) {
@@ -1829,6 +1840,12 @@ function handleDeath(damaged,survivor,deathCase) {
     }
     focusSpace.occupied = scrubList(focusSpace.occupied);
     battlePlayer.rp += battleMonster.rp;
+    if (battlePlayer.pilot === "Bounty Hunter") {
+      var chr = String.fromCharCode(96 + battlePlayer.sprite.number);
+      if (battleMonster.key.charAt(0) !== chr) {
+        battlePlayer.rp += 2;
+      }
+    }
     battlePlayer.mr += battleMonster.mr;
     monstersList.splice(battleMonster.sprite.number, 1);
     battleMonster.sprite.destroy();
@@ -1861,6 +1878,12 @@ function handleDeath(damaged,survivor,deathCase) {
   } else if (damaged === battleMonster && damaged != boss) {
     focusSpace.occupied = scrubList(focusSpace.occupied);
     battlePlayer.rp += damaged.rp;
+    if (battlePlayer.pilot === "Bounty Hunter") {
+      var chr = String.fromCharCode(96 + battlePlayer.sprite.number);
+      if (damaged.key.charAt(0) !== chr) {
+        battlePlayer.rp += 2;
+      }
+    }
     battlePlayer.mr += damaged.mr;
     monstersList.splice(damaged.sprite.number, 1);
     damaged.sprite.destroy();
@@ -1888,11 +1911,21 @@ function resetDie(player,monster) {
   var playerDie = {
     "Blue Attack": "batk",
     "Red Attack": "ratk",
-    "Def": "def"
+    "Def": "def",
+    "Blue Target": "batkGoal",
+    "Red Target": "ratkGoal",
+    "Def Target": "defGoal"
   };
+  var playerPools = {
+    "Blue Target": "batkGoal",
+    "Red Target": "ratkGoal",
+    "Def Target": "defGoal"
+  }
   if (player.tempStolen) {
     for (i = 0; i < player.tempStolen.length; i++) {
-      player[playerDie[player.tempStolen[i].pool]] += player.tempStolen[i].amount;
+      if (playerDie[player.tempStolen[i].pool]) {
+        player[playerDie[player.tempStolen[i].pool]] += player.tempStolen[i].amount;
+      }
     }
   }
   player.tempStolen = [];
@@ -2361,6 +2394,12 @@ function move(object,destination,escaping) {
       if (object.hp <= 0) {
         object.space.occupied = removeFromList(monstersList[object.sprite.number], object.space);
         Space[destination].mine.owner.rp += object.rp;
+        if (Space[destination].mine.owner.pilot === "Bounty Hunter") {
+          var chr = String.fromCharCode(96 + Space[destination].mine.owner.sprite.number);
+          if (destination.charAt(0) !== chr) {
+            Space[destination].mine.owner.rp += 2;
+          }
+        }
         Space[destination].mine.owner.mr += object.mr;
         monstersList.splice(object.sprite.number, 1);
         /*PLACE TWEEN HERE*/
@@ -2533,13 +2572,13 @@ function displayExtras() {
   console.log("Displaying Extras for: " + this.player.sprite.key);
   var cameraTween = game.add.tween(game.camera).to( { x: game.width }, C.game.moveSpeed, Phaser.Easing.Back.InOut, true);
   extrasDisplay.setText("Upgrades and extras for " + this.player.sprite.key + ":");
-  var options = ["Electric Fists","Targeting Computer","Siege Mode","Nullifier Shield","The Payload",
+  /*var options = ["Electric Fists","Targeting Computer","Siege Mode","Nullifier Shield","The Payload",
     "Bigger Fists","Weakpoint Analysis","Weaponized Research","Nullifier Shield Unlock","The Payload",
     "Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Gast",
     "More Armor","Field Repair","Even More Armor","Obliteration Ray","Super Go Fast Unlock",
     "5D Accelerators","Autododge","Emergency Jump Jets","Fusion Cannon","Mind-Machine Interface",
     "Hyper Caffeine","Monster Bait","Chaos Systems","Fusion Cannon Unlock","Mind-Machine Interface Unlock"
-  ]
+  ]*/
   var unlocks = ["Nullifier Shield", "Obliteration Ray", "Fusion Cannon", "The Payload", "Super Go Fast", "Mind-Machine Interface"];
   upgradeTokensList.forEach(function(upgrade) {
     upgrade.destroy();
@@ -2570,6 +2609,7 @@ function displayExtras() {
       upgradeTokensList[i] = upgradeToken;
     }
   }
+  
 }
 
   function upgrade(upgrading) {
@@ -3338,9 +3378,15 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
       obj.def = drawnMonster.def;
       obj.rp = 3;
       obj.mr = 4;
-    } 
+    }
+    if (drawnMonster.defGoal) {
+      obj.defGoal = drawnMonster.defGoal
+    }
+    if (drawnMonster.batkGoal) {
+      obj.batkGoal = drawnMonster.batkGoal
+    }
     drawnMonster.drawn = true;
-
+    
   }
   return obj
 }

@@ -21,6 +21,33 @@ var Corp = {
 
 }
 
+var Pilots = { 
+  "Bounty Hunter": {
+    "desc": "Gain two additional Research Points for each monster you defeat outside of your home quadrant.",
+    passive: function(player) {
+    }
+  },
+  "Teen Prodigy": {
+    "desc": "When at two or less health, deal one extra damage whenever you deal one or more damage. When at one health, reduce all target dice numbers by one.",
+    passive: function(player) {
+      if (player.hp <= 2) {
+        printBattleResults("The Teen Prodigy " + player.sprite.key.capitalizeFirstLetter() + " Mecha dealt 1 extra damage for hitting at low health!");
+        return 1;
+      } else {
+        return 0;
+      }
+    },
+    active: function(player) {
+      if (!player.truePower) {
+        player.truePower = true;
+        MU["Dice Target +#"].active(player,"Red Target",-1);
+        MU["Dice Target +#"].active(player,"Blue Target",-1);
+        MU["Dice Target +#"].active(player,"Def Target",-1);
+        printBattleResults("The Teen Prodigy " + player.sprite.key.capitalizeFirstLetter() + " Mecha's targets are boosted for being at death's door!");
+      }
+    }
+  }
+}
 
 var U = {
   "Electric Fists": {

@@ -124,31 +124,35 @@ var MonstersDeck = {
    "batk": 5,
    "def": 5,
    "hp": 4,
-   "upgrades": ["+1 Mecha Target Red"]
+   "upgrades": ["+1 Mecha Red Target"]
    },
    {
    "batk": 4,
    "def": 4,
    "hp": 6,
-   "upgrades": ["+1 Mecha Target Defense"]
+   "upgrades": ["+1 Mecha Def Target"]
    },
    {
    "batk": 5,
    "def": 5,
    "hp": 4,
-   "upgrades": ["+1 Mecha Target Blue"]
+   "upgrades": ["+1 Mecha Blue Target"]
    },
    {
    "batk": 6,
    "def": 4,
    "hp": 3,
-   "upgrades": ["+1 Monster Target Attack", "+1 Monster Target Defense"]
+   "batkGoal": 4,
+   "defGoal": 4,
+   "upgrades": ["-1 Monster Target Attack", "-1 Monster Target Defense"]
    },
    {
    "batk": 6,
    "def": 3,
    "hp": 4,
-   "upgrades": ["+1 Monster Target Attack", "+1 Monster Target Defense"]
+   "batkGoal": 4,
+   "defGoal": 4,
+   "upgrades": ["-1 Monster Target Attack", "-1 Monster Target Defense"]
    },
  ],
  "extinctionMonsters": [
@@ -180,13 +184,13 @@ var MonstersDeck = {
    "batk": 6,
    "def": 5,
    "hp": 4,
-   "upgrades": ["+1 Mech Target Blue"]
+   "upgrades": ["+1 Mecha Blue Target"]
    },
    {
    "batk": 6,
    "def": 4,
    "hp": 5,
-   "upgrades": ["+1 Mech Target Red"]
+   "upgrades": ["+1 Mecha Red Target"]
    },
    {
    "batk": 6,
@@ -232,7 +236,9 @@ var MonstersDeck = {
     "batk": 9,
     "def": 7,
     "hp": 6,
-    "upgrades": ["-1 Monster Target Attack", "-1 Monster Target Defense", "+1 Mecha Target Blue", "+1 Mecha Target Red", "+1 Mecha Target Green"]
+    "batkGoal": 4,
+    "defGoal": 4,
+    "upgrades": ["-1 Monster Blue Target", "-1 Monster Def Target", "+1 Mecha Blue Target", "+1 Mecha Red Target", "+1 Mecha Def Target"]
    }
   ]
 
@@ -344,6 +350,9 @@ var MU = {
         } else {
           mech.tempStolen = [{pool: pool, amount: -amount}];
         }
+      }
+      for (i = 0; i < playerBattleTexts.length; i++) {
+        playerBattleTexts[i].update();
       }
     },
     returnStolen: function(mech,pool,amount) {
