@@ -46,7 +46,28 @@ var Pilots = {
         printBattleResults("The Teen Prodigy " + player.sprite.key.capitalizeFirstLetter() + " Mecha's targets are boosted for being at death's door!");
       }
     }
-  }
+  },
+  "Co-ordinator": {
+      "desc": "When in the same quadrant as another Mecha, all Mecha in that quadrant gain one die of each die type.",
+      passive: function(player) {
+        for (i = 1; i < playersList.length; i++) {
+          if (playersList[i].pilot === "Co-ordinator" && playersList[i].key.charAt(0) === player.key.charAt(0) && playersList[i].sprite.key != player.sprite.key) {
+          printBattleResults("The Co-ordinator " + playersList[i].sprite.key.capitalizeFirstLetter() + " Mech is boosting the fighting " + player.sprite.key.capitalizeFirstLetter() + " Mech!");
+          player.def++
+          player.batk++
+          player.ratk++
+          if (player.changedDie) {
+            player.changedDie.push({value:"def", count:1});
+            player.changedDie.push({value:"batk", count:1});
+            player.changedDie.push({value:"ratk", count:1});
+          } else {
+            player.changedDie = [{value:"def", count:1},{value:"batk", count:1},{value:"ratk", count:1}];
+          }
+          break
+          } 
+        }
+      }
+    }
 }
 
 var U = {

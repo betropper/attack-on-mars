@@ -822,6 +822,7 @@ class Setup {
           battleTurn = battleMonster;
           printBattleResults(C.monster.names[battleMonster.sprite.spriteName] + " attacks first!");
         }
+        Pilots["Co-ordinator"].passive(battlePlayer);
         attackText = game.add.bitmapText(game.camera.width/C.game.zoomScale + game.camera.x/C.game.zoomScale - 100*globalScale, menuBar.y,'font', "Attack!",20*globalScale);
         attackText.anchor.set(0.5);
         attackText.inputEnabled = true;
@@ -1226,7 +1227,9 @@ function changeDieMenu(attacker,modifier) {
   attacker = this.attacker || attacker;
   method = this.modifier || method; 
   if (method === "Weaponized Research") {
-    var currentRPDisplay = battlePlayer.addHoverInfo(focusX - 80*globalScale, focusY + 40*globalScale,6,"rp");
+    pullOutInfo();
+    battlePlayer.sprite.inputEnabled = false;
+    var currentRPDisplay = battlePlayer.addHoverInfo(game.camera.x/C.game.zoomScale + 60*globalScale, game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale*.7,6,"rp");
     printBattleResults("Click on a die color to add one to it for this round at the cost of one RP.");
     printBattleResults("Click on the Weaponized Research button to return.");
     battleTexts.forEach(function(battleText) {
@@ -1248,6 +1251,10 @@ function changeDieMenu(attacker,modifier) {
 
 function returnToBattle(infoDisplay) {
   var infoDisplay = this.infoDisplay || infoDisplay;
+  if (battlePlayer.sprite.input.enabled === false) {
+    battlePlayer.sprite.inputEnabled = true;
+  }
+  pullInInfo();
   if (infoDisplay) {
     infoDisplay.valueIcon.destroy();
     infoDisplay.valueDisplay.destroy();
@@ -1970,7 +1977,7 @@ for (i = 0; i < monsterBattleTexts.length; i++) {
   }
   //checkBattle(focusSpace);
   for (i = 0; i < pendingBattles.length; i++) {
-    if (!pendingBattles[0].pendingMonster.sprite.alive || !pendingBattles[0].pendingPlayer.sprite.alive || pendingBattles[i].pendingPlayer.hp <= 0 || pendingBattles[i].pendingMonster.hp <= 0) {
+    if (!pendingBattles[0].pendingMonster.sprite.alive || !pendingBattles[0].pendingPlayer.sprite.alive || pendingBattles[i].pendingPlayer.hp <= 0 || pendingBattles[i].pendingMonster.hp <= 0 || pendingBattles[i].pendingMonster.key != pendingBattles[i].pendingPlayer.key) {
       pendingBattles.splice(pendingBattles[i], 1);
     }
   }
