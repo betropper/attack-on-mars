@@ -633,6 +633,7 @@ class Setup {
     fade("in");  
   }
   update() {
+
   /*if (Phaser.Device.desktop) {
       if (window.innerWidth < C.game.width) {
         game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
@@ -768,6 +769,19 @@ class Setup {
           if (!monsterBar) {
             monsterBar = game.add.sprite(focusX - game.camera.width/2, game.camera.y/C.game.zoomScale + game.camera.height/2/C.game.zoomScale, 'blackground');
             console.log("MonsterBar.y: " + monsterBar.y);
+            monsterBar.displayInfo = function() {
+              var barxpos = game.camera.x/C.game.zoomScale + game.input.mousePointer.x/C.game.zoomScale;
+              var barypos = game.camera.y/C.game.zoomScale + game.input.mousePointer.y/C.game.zoomScale;
+              if (!monsterBar.upgradeDisplay) {
+
+                monsterBar.upgradeDisplay = game.add.sprite(barypos, barxpos, 'blackground');
+                monsterBar.upgradeDisplay.height = (game.camera.width/C.game.zoomScale)/7;
+                monsterBar.upgradeDisplay.width = game.camera.height/9
+              } else {
+                monsterBar.upgradeDisplay.reset(barxpos,barypos);
+                game.world.bringToTop(monsterBar.upgradeDisplay);
+              }
+            }
             monsterBar.height = (game.camera.width/C.game.zoomScale)/7;
             monsterBar.width = game.camera.height/10;
             monsterBar.monsterCard = game.add.sprite(focusX - game.camera.width/2, battleMonster.sprite.y, C.monster.cards[battleMonster.sprite.spriteName]);
@@ -785,6 +799,9 @@ class Setup {
           var monsterBarTween2 = game.add.tween(monsterBar.monsterCard).to({ x: game.camera.x/C.game.zoomScale + monsterBar.monsterCard.width/2, y: game.camera.y/C.game.zoomScale + monsterBar.monsterCard.height/2 }, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           monsterBar.anchor.setTo(.5);
           game.world.bringToTop(monsterBar);
+          monsterBar.inputEnabled = true;
+          monsterBar.events.onInputOver._bindings = [];
+          monsterBar.events.onInputOver.add(monsterBar.displayInfo, battleMonster);
           battleMonster.addBattleInfo("HP",8,"hp", "maxhp");
           battlePlayer.addBattleInfo("HP",8,"hp", "maxhp");
           battleMonster.addBattleInfo("Blue Attack",5,"batk", "batkGoal" || 5);
@@ -850,6 +867,11 @@ class Setup {
       battle(battlePlayer,battleMonster);
       if (battlePlayer.pilot === "Teen Prodigy" && battlePlayer.hp === 1) {
         Pilots["Teen Prodigy"].active(battlePlayer);
+      }
+      if (monsterBar && monsterBar.alive && monsterBar.input.pointerOver()) {
+        monsterBar.displayInfo();  
+      } else if (monsterBar && monsterBar.upgradeDisplay) {
+        monsterBar.upgradeDisplay.kill();
       }
       // Change this, placeholder ending.
     }

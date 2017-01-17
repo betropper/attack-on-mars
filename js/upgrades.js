@@ -67,6 +67,12 @@ var Pilots = {
           } 
         }
       }
+    },
+    "Media Star": {
+      "desc": "Once per turn, for one action, drag all Monsters within three spaces one space closer to the mecha.",
+      active: function(player) {
+           
+      }
     }
 }
 
