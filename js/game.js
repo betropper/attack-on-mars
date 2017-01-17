@@ -773,13 +773,34 @@ class Setup {
               var barxpos = game.camera.x/C.game.zoomScale + game.input.mousePointer.x/C.game.zoomScale;
               var barypos = game.camera.y/C.game.zoomScale + game.input.mousePointer.y/C.game.zoomScale;
               if (!monsterBar.upgradeDisplay) {
-
                 monsterBar.upgradeDisplay = game.add.sprite(barypos, barxpos, 'blackground');
                 monsterBar.upgradeDisplay.height = (game.camera.width/C.game.zoomScale)/7;
                 monsterBar.upgradeDisplay.width = game.camera.height/9
+                var monsterUpgradeTextContent = "";
+                for (var t = 0; t < battleMonster.upgrades.length; t++) {
+                  if (MU[battleMonster.upgrades[t]]) {
+                  monsterUpgradeTextContent = monsterUpgradeTextContent + "\n" + battleMonster.upgrades[t] + ": " + MU[battleMonster.upgrades[t]].desc;
+                  } else {
+                  monsterUpgradeTextContent = monsterUpgradeTextContent + "\n" + battleMonster.upgrades[t];
+                  }
+                }
+
+                var monsterUpgradeText = game.add.bitmapText(monsterBar.upgradeDisplay.x - monsterBar.upgradeDisplay.width*5., monsterBar.upgradeDisplay.y - monsterBar.upgradeDisplay.height*4.5, 'font', monsterUpgradeTextContent, 120*globalScale); 
+                monsterBar.upgradeDisplay.addChild(monsterUpgradeText);
               } else {
                 monsterBar.upgradeDisplay.reset(barxpos,barypos);
                 game.world.bringToTop(monsterBar.upgradeDisplay);
+                var monsterUpgradeTextContent = "";
+                for (var t = 0; t < battleMonster.upgrades.length; t++) {
+                  if (MU[battleMonster.upgrades[t]]) {
+                  monsterUpgradeTextContent = monsterUpgradeTextContent + "\n" + battleMonster.upgrades[t] + ": " + MU[battleMonster.upgrades[t]].desc;
+                  } else {
+                  monsterUpgradeTextContent = monsterUpgradeTextContent + "\n" + battleMonster.upgrades[t];
+                  }
+
+                }
+
+                monsterBar.upgradeDisplay.children[0].text = monsterUpgradeTextContent;
               }
             }
             monsterBar.height = (game.camera.width/C.game.zoomScale)/7;

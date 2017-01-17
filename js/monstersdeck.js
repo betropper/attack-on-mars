@@ -247,7 +247,7 @@ var MonstersDeck = {
 
 var MU = {
   "Feign Death": {
-    "desc": "After a monster is first reduced below 1 hp, it is restored to 1 hp.",
+    "desc": "After a monster is first \n reduced below 1 hp,  \n it is restored to 1 hp.",
     "cost": 2,
     passive: function(monster) { 
       monster.feigned = false;
