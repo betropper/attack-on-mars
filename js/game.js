@@ -2652,7 +2652,7 @@ function displayExtras() {
       var upgradeToken = game.add.sprite(0,0,'upgradeMatIcons', options.indexOf(this.player.upgrades[i]));
       upgradeToken.scale.setTo(1.2*globalScale);
       upgradeToken.anchor.setTo(.5);
-      upgradeToken.x = game.width + game.camera.width/2 - upgradeToken.width*1.5 + (upgradeToken.width*num);
+      upgradeToken.x = game.width + game.camera.width/2 - upgradeToken.width*2 + (upgradeToken.width*num);
       upgradeToken.y = extrasDisplay.y + 200*globalScale + (Math.floor(i/4)*upgradeToken.height);
       upgradeTokensList[i] = upgradeToken;
     } else if (this.player.upgrades[i] && this.player.upgrades[i] === "LOCKED") {
@@ -2660,19 +2660,20 @@ function displayExtras() {
       var upgradeToken = game.add.sprite(0,0,'upgradeMatIcons', options.indexOf(this.player.upgrades[i-4]) + 5);
       upgradeToken.scale.setTo(1.2*globalScale);
       upgradeToken.anchor.setTo(.5);
-      upgradeToken.x = game.width + game.camera.width/2 - upgradeToken.width*1.5 + (upgradeToken.width*num);
+      upgradeToken.x = game.width + game.camera.width/2 - upgradeToken.width*2 + (upgradeToken.width*num);
       upgradeToken.y = extrasDisplay.y + 200*globalScale + (Math.floor(i/4)*upgradeToken.height);
       upgradeToken.tint = 0x3d3d3d
       upgradeTokensList[i] = upgradeToken;
     }
   }
   if (!pilotIcon) {
-    pilotIcon = game.add.sprite(game.width*2 - 600*globalScale, 0, this.player.pilot);
+    pilotIcon = game.add.sprite(game.width*2 - 750*globalScale, game.world.centerY - 60*globalScale, this.player.pilot);
   } else {
     pilotIcon.destroy();
-    pilotIcon = game.add.sprite(game.width*2 - 600*globalScale, 0, this.player.pilot);
+    pilotIcon = game.add.sprite(game.width*2 - 750*globalScale, game.world.centerY - 60*globalScale, this.player.pilot);
   }
   pilotIcon.scale.setTo(.8*globalScale)
+  pilotIcon.anchor.y = .5
 }
 
   function upgrade(upgrading) {
