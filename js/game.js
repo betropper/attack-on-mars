@@ -2800,9 +2800,14 @@ function chooseUpgrade(event) {
       var choice = options[Math.floor(x / (415*globalScale)) + 5*Math.floor(y /(350*globalScale))];
       console.log(choice);
       console.log("Event was at " + x + " " + y);
-      game.camera.y = game.camera.y;
-      game.input.onTap._bindings = [];
-      confirmUpgrade(turn,choice);
+      var unlocks = ["Nullifier Shield", "Obliteration Ray", "Fusion Cannon", "The Payload", "Super Go Fast", "Mind-Machine Interface"];
+      if (turn.upgrades.length >= 11 && unlocks.indexOf(choice) > -1 ) {
+        return
+      } else {
+        game.camera.y = game.camera.y;
+        game.input.onTap._bindings = [];
+        confirmUpgrade(turn,choice);
+      }
     } else if (monsterResearchTrack < 3 && event.worldX > x1 && event.worldX < x2 && event.worldY > y2 + 400*globalScale && event.worldY < y2 + 830*globalScale) { 
       var mrProviders = [];
       monsterResources = 0;
@@ -2826,7 +2831,12 @@ function chooseUpgrade(event) {
         token.anchor.setTo(.5);
         for (i = 1; i < playersList.length; i++) { 
           if (monsterResearchTrack >= 3) {
-            playersList[i].sprite.closestSpaces = getClosestSpaces(playersList[i].key);
+            playersList[i].sprite.closestSpaces = getClosestSpaces(playersList[i].key); 
+            if (turn.upgrades.length >= 12 && monsterResearchTrack >= 3) {
+              game.camera.y = 0;
+              upgradeButton.tint = 0x3d3d3d;
+              upgradeButton.inputEnabled = false;
+            }
           } else {
             Corp[playersList[i].corp].trackUpgrade(playersList[i],monsterResearchTrack);
           }
