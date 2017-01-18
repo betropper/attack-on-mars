@@ -779,28 +779,30 @@ class Setup {
                 var monsterUpgradeTextContent = "";
                 for (var t = 0; t < battleMonster.upgrades.length; t++) {
                   if (MU[battleMonster.upgrades[t]]) {
-                  monsterUpgradeTextContent = monsterUpgradeTextContent + "\n" + battleMonster.upgrades[t] + ": " + MU[battleMonster.upgrades[t]].desc;
+                  monsterUpgradeTextContent = monsterUpgradeTextContent + battleMonster.upgrades[t] + ": " + MU[battleMonster.upgrades[t]].desc + "\n";
                   } else {
-                  monsterUpgradeTextContent = monsterUpgradeTextContent + "\n" + battleMonster.upgrades[t];
+                  monsterUpgradeTextContent = monsterUpgradeTextContent + battleMonster.upgrades[t] + "\n";
                   }
                 }
-
-                var monsterUpgradeText = game.add.bitmapText(monsterBar.upgradeDisplay.x - monsterBar.upgradeDisplay.width*5., monsterBar.upgradeDisplay.y - monsterBar.upgradeDisplay.height*4.5, 'font', monsterUpgradeTextContent, 120*globalScale); 
-                monsterBar.upgradeDisplay.addChild(monsterUpgradeText);
+                monsterBar.upgradeDisplay.text = game.add.bitmapText(0, 0, 'font', monsterUpgradeTextContent, 15*globalScale); 
+                monsterBar.upgradeDisplay.text.anchor.setTo(.5)
+                //monsterBar.upgradeDisplay.addChild(monsterUpgradeText);
               } else {
                 monsterBar.upgradeDisplay.reset(barxpos,barypos);
                 game.world.bringToTop(monsterBar.upgradeDisplay);
+                game.world.bringToTop(monsterBar.upgradeDisplay.text);
                 var monsterUpgradeTextContent = "";
                 for (var t = 0; t < battleMonster.upgrades.length; t++) {
                   if (MU[battleMonster.upgrades[t]]) {
-                  monsterUpgradeTextContent = monsterUpgradeTextContent + "\n" + battleMonster.upgrades[t] + ": " + MU[battleMonster.upgrades[t]].desc;
+                  monsterUpgradeTextContent = monsterUpgradeTextContent + battleMonster.upgrades[t] + ": " + MU[battleMonster.upgrades[t]].desc + "\n";
                   } else {
-                  monsterUpgradeTextContent = monsterUpgradeTextContent + "\n" + battleMonster.upgrades[t];
+                  monsterUpgradeTextContent = monsterUpgradeTextContent + battleMonster.upgrades[t] + "\n";
                   }
-
                 }
-
-                monsterBar.upgradeDisplay.children[0].text = monsterUpgradeTextContent;
+                monsterBar.upgradeDisplay.text.text = monsterUpgradeTextContent;
+                monsterBar.upgradeDisplay.width = monsterBar.upgradeDisplay.text.width + 20; 
+                monsterBar.upgradeDisplay.height = monsterBar.upgradeDisplay.text.height + 20; 
+                monsterBar.upgradeDisplay.text.reset(barxpos + monsterBar.upgradeDisplay.width/2,barypos + monsterBar.upgradeDisplay.height/2);
               }
             }
             monsterBar.height = (game.camera.width/C.game.zoomScale)/7;
@@ -893,6 +895,7 @@ class Setup {
         monsterBar.displayInfo();  
       } else if (monsterBar && monsterBar.upgradeDisplay) {
         monsterBar.upgradeDisplay.kill();
+        monsterBar.upgradeDisplay.text.kill();
       }
       // Change this, placeholder ending.
     }
