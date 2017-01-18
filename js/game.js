@@ -275,6 +275,9 @@ class Load {
     this.load.image("initialMonster", "assets/InitialIcon.png", C.monster.width, C.monster.height);
     this.load.image("growingMonster", "assets/GrowingIcon.png", C.monster.width, C.monster.height);
     this.load.image("extinctionMonster", "assets/ExtinctionIcon.png", C.monster.width, C.monster.height);
+    this.load.image("Co-ordinator", "assets/Co-ordinator.jpg", 827, 1299);
+    this.load.image("Media Star", "assets/Media Star.jpg", 827, 1299);
+    this.load.image("Teen Prodigy", "assets/Teen Prodigy.jpg", 827, 1299);
     this.load.image("initialCard", "assets/Initial.jpg", 520, 791);
     this.load.image("growingCard", "assets/Growing.jpg", 520, 791);
     this.load.image("extinctionCard", "assets/Extinction.jpg", 520, 791);
@@ -581,7 +584,7 @@ class Setup {
       destroyedCities[i-1] = destroyedCityColumn;
       playersList[i] = spawnRandom(playerNames[i-1], i, "0", true); 
       playersList[i].sprite.number = i;
-      var pilotList = ["Bounty Hunter", "Teen Prodigy", "Co-ordinator", "Media Star"]
+      var pilotList = ["Bounty Hunter", "Teen Prodigy", "Co-ordinator", "Profiteer"]
       playersList[i].pilot = pilotList[i-1];
       playersList[i].upgrades = [];
       playersList[i].colorDiscounts = [
@@ -2662,7 +2665,13 @@ function displayExtras() {
       upgradeTokensList[i] = upgradeToken;
     }
   }
-  
+  if (!pilotIcon) {
+    pilotIcon = game.add.sprite(game.width*2 - 200*globalScale, game.world.centerY - 200*globalScale, this.player.pilot);
+  } else {
+    pilotIcon.destroy();
+    pilotIcon = game.add.sprite(game.width*2 - 200*globalScale, game.world.centerY - 200*globalScale, this.player.pilot);
+  }
+  pilotIcon.scale.setTo.(1*globalScale)
 }
 
   function upgrade(upgrading) {

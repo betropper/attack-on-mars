@@ -73,6 +73,9 @@ var Pilots = {
       active: function(player) {
            
       }
+    },
+    "Profiteer": {
+      "desc": "Sell Monster Resources for three Research Points"
     }
 }
 
