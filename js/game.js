@@ -2728,6 +2728,12 @@ function displayExtras() {
       }
       setAttributeDisplay(upgrading);
     }
+    if (upgrading.upgrades.length >= 12 && monsterResearchTrack >= 3) {
+      game.camera.y = 0;
+      upgradeButton.tint = 0x3d3d3d;
+      upgradeButton.inputEnabled = false;
+      return
+    }
     console.log("Upgrading " + upgrading.sprite.key);
     if (!upgradeMenu) {
     upgradeMenu = game.add.sprite(game.world.centerX, game.world.centerY + C.game.height/2 + (C.upgradeMenu.height*C.upgradeMenu.scale)/2 + 200*globalScale, 'upgradeMat');
@@ -2764,19 +2770,13 @@ function displayExtras() {
         upgradeToken.anchor.setTo(.5);
       }
     }
-  }
-  if (upgrading.upgrades.length >= 12) {
-    game.camera.y = 0;
-    upgradeButton.tint = 0x3d3d3d;
-    upgradeButton.inputEnabled = false;
-  } else {
+  } 
     game.world.bringToTop(upgradeTokens);
     game.world.bringToTop(mrTokens);
     game.kineticScrolling.start();
     game.input.onTap.add(chooseUpgrade, {menu: upgradeMenu});
     game.camera.y = game.height;
     upgradeState = true;
-  }
 }
 
 function chooseUpgrade(event) {
@@ -2786,7 +2786,7 @@ function chooseUpgrade(event) {
     y1 = 1545 * globalScale, y2 = 3650 * globalScale;
     console.log("Points are at " + x1 + "," + x2 + "," + y1 + "," + y2 + ".");
     console.log(event.worldX + " " + event.worldY);
-    if (event.worldX > x1 && event.worldX < x2 && event.worldY > y1 && event.worldY < y2 ){
+    if (event.worldX > x1 && event.worldX < x2 && event.worldY > y1 && event.worldY < y2 && turn.upgrades.length < 12){
       var options = ["Electric Fists","Targeting Computer","Siege Mode","Nullifier Shield","The Payload",
         "Bigger Fists","Weakpoint Analysis","Weaponized Research","Nullifier Shield Unlock","The Payload",
         "Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Gast",
