@@ -210,6 +210,7 @@ var tempFocus;
 var batkDisplay;
 var ratkDisplay;
 var defDisplay;
+var pilotIcon;
 
 class Boot {
   init() {
@@ -584,7 +585,7 @@ class Setup {
       destroyedCities[i-1] = destroyedCityColumn;
       playersList[i] = spawnRandom(playerNames[i-1], i, "0", true); 
       playersList[i].sprite.number = i;
-      var pilotList = ["Bounty Hunter", "Teen Prodigy", "Co-ordinator", "Profiteer"]
+      var pilotList = ["Bounty Hunter", "Teen Prodigy", "Co-ordinator", "Media Star"]
       playersList[i].pilot = pilotList[i-1];
       playersList[i].upgrades = [];
       playersList[i].colorDiscounts = [
@@ -2666,12 +2667,12 @@ function displayExtras() {
     }
   }
   if (!pilotIcon) {
-    pilotIcon = game.add.sprite(game.width*2 - 200*globalScale, game.world.centerY - 200*globalScale, this.player.pilot);
+    pilotIcon = game.add.sprite(game.width*2 - 600*globalScale, 0, this.player.pilot);
   } else {
     pilotIcon.destroy();
-    pilotIcon = game.add.sprite(game.width*2 - 200*globalScale, game.world.centerY - 200*globalScale, this.player.pilot);
+    pilotIcon = game.add.sprite(game.width*2 - 600*globalScale, 0, this.player.pilot);
   }
-  pilotIcon.scale.setTo.(1*globalScale)
+  pilotIcon.scale.setTo(.8*globalScale)
 }
 
   function upgrade(upgrading) {
