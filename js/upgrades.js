@@ -70,12 +70,14 @@ var Pilots = {
     },
     "Media Star": {
       "desc": "Once per turn, for one action, drag all Monsters within three spaces one space closer to the mecha.",
-      active: function(player) {
-           
+      active: function(player) {       
       }
     },
     "Profiteer": {
       "desc": "Sell Monster Resources for three Research Points"
+    }
+    "Engineer": {
+      "desc": "You may spend one action to restore one health. This increases to two health if the mecha has the Field Repair upgrade.",
     }
 }
 

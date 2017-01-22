@@ -585,7 +585,7 @@ class Setup {
       destroyedCities[i-1] = destroyedCityColumn;
       playersList[i] = spawnRandom(playerNames[i-1], i, "0", true); 
       playersList[i].sprite.number = i;
-      var pilotList = ["Bounty Hunter", "Teen Prodigy", "Co-ordinator", "Media Star"]
+      var pilotList = ["Bounty Hunter", "Teen Prodigy", "Co-ordinator", "Engineer"]
       playersList[i].pilot = pilotList[i-1];
       playersList[i].upgrades = [];
       playersList[i].colorDiscounts = [
@@ -2234,6 +2234,9 @@ function battle(player, monster) {
     if (lastClicked && lastClicked.canRepair) {
       repair(lastClicked,null,1); 
     }
+    if (lastClicked && lastClicked.pilot === "Engineer") {
+      repair(lastClicked,null,1);
+    }
   }
   
   function destroyCity(newDestination) {
@@ -2254,7 +2257,9 @@ function battle(player, monster) {
    updateOccupiedRows();
    monstersList = scrubList(monstersList);
    var unmovedMonsters = [];
-    for (var i = 0; i < monstersList.length ; i++) {
+   //Check if someone with Monster Bait is two upgrades away. 2nd
+   //priority  
+   for (var i = 0; i < monstersList.length ; i++) {
         if (monstersList[i].key.charAt(2) !== "0") {
           var newDestination = monstersList[i].key.substring(0,2) + (parseInt(monstersList[i].key.charAt(2)) - 1);
         } else {
@@ -2282,19 +2287,8 @@ function battle(player, monster) {
             }
           }
         }
-        for (y = 0; y < monstersList[i].sprite.closestSpaces.selectedSpaces.length; y++) {
-          if (monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied) {
-            var len = monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied.length;
-          } else {
-            var len = 0;
-          }
-          for (o = 0; o < len; o++) {
-            if (playersList.indexOf(monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied[o]) > -1) {
-              var newDestination = monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied[o].key;
-              console.log("Moving to player at " + newDestination);
-            }
-          }
-        }
+        
+
           if (parseInt(monstersList[i].key.charAt(2)) !== 0 && parseInt(newDestination.charAt(2)) === 0) {
             if (Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined) {
               console.log("U R DED");
@@ -2358,9 +2352,24 @@ function battle(player, monster) {
               }
             }
           }
+        //Checks to see if a player is nearby. 1st priority
+        for (y = 0; y < monstersList[i].sprite.closestSpaces.selectedSpaces.length; y++) {
+          if (monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied) {
+            var len = monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied.length;
+          } else {
+            var len = 0;
+          }
+          for (o = 0; o < len; o++) {
+            if (playersList.indexOf(monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied[o]) > -1) {
+              var foundPlayer = monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied[o];
+              var newDestination = monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied[o].key;
+              console.log("Moving to player at " + newDestination);
+            }
+          }
+        }
           if (containsMonsters && !containsPlayers) {
             var newDestination = monstersList[i].key;
-            unmovedMonsters.push(monstersList[i]);;
+            unmovedMonsters.push(monstersList[i]);
           }    
         console.log("Monster is moving to " + newDestination);
         move(monstersList[i], newDestination);
