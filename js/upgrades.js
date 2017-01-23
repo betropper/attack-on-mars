@@ -75,7 +75,7 @@ var Pilots = {
     },
     "Profiteer": {
       "desc": "Sell Monster Resources for three Research Points"
-    }
+    },
     "Engineer": {
       "desc": "You may spend one action to restore one health. This increases to two health if the mecha has the Field Repair upgrade.",
     }
