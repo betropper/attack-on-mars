@@ -9,7 +9,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": ".6.1.0",
+   "versionNumber": ".7.0.0",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -2354,6 +2354,45 @@ function battle(player, monster) {
 
           }
 
+        //Checks to see if a player is nearby. 1st priority
+        
+        var foundPlayers = [];
+        for (y = 0; y < monstersList[i].sprite.closestSpaces.selectedSpaces.length; y++) {
+          if (monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied) {
+            var len = monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied.length;
+          } else {
+            var len = 0;
+          }
+          for (o = 0; o < len; o++) {
+            if (playersList.indexOf(monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied[o]) > -1) {
+              var foundPlayer = monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied[o];  
+              foundPlayers.push(foundPlayer);
+            }
+          }
+        }
+          console.log(foundPlayers);
+          var monstersKey = monstersList[i].key
+          var directionPriorities = [monstersList[i].key.substring(0,2) + parseInt(Number(monstersKey.charAt(2))-1), monstersList[i].key.charAt(0) + (parseInt(monstersList[i].key.charAt(1))+1) + monstersList[i].key.charAt(2), monstersList[i].key.charAt(0) + (parseInt(monstersList[i].key.charAt(1))-1) + monstersList[i].key.charAt(2), monstersList[i].key.substring(0,2) + parseInt(Number(monstersKey.charAt(2))+1)]
+          if (monstersKey.charAt(1) === "4") {
+            directionPriorities[1] = cycleQuadrant(directionPriorities[1].charAt(0), "clockwise") + "1" + monstersKey.charAt(2);
+          } else if (monstersKey.charAt(1) === "1") {
+            directionPriorities[2] = cycleQuadrant(directionPriorities[2].charAt(0), "counter-clockwise") + "4" + monstersKey.charAt(2);
+          }
+          console.log(directionPriorities);
+        for (p = 0; p < directionPriorities.length; p++) {
+          for (f = 0; f < foundPlayers.length; f++) {
+            if (foundPlayers[f].key === directionPriorities[p]) {
+              var newDestination = foundPlayers[f].key;
+              var foundAPlayer = true; 
+              break;
+            }
+          }
+          if (foundAPlayer) {
+            foundAPlayer = false
+            break;
+          }
+        }
+
         if (Space[newDestination]) {
           if (Space[newDestination].occupied) {
             for (x = 0; x < Space[newDestination].occupied.length; x++) {
@@ -2364,45 +2403,6 @@ function battle(player, monster) {
               }
             }
           }
-        //Checks to see if a player is nearby. 1st priority
-        
-        for (y = 0; y < monstersList[i].sprite.closestSpaces.selectedSpaces.length; y++) {
-          if (monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied) {
-            var len = monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied.length;
-          } else {
-            var len = 0;
-          }
-          var foundPlayers = [];
-          for (o = 0; o < len; o++) {
-            if (playersList.indexOf(monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied[o]) > -1) {
-              var foundPlayer = monstersList[i].sprite.closestSpaces.selectedSpaces[y].occupied[o];  
-              foundPlayers.push(foundPlayer);
-            }
-          }
-        }
-          console.log(foundPlayers);
-          var monstersKey = monstersList[i].key
-          var directionPriorities = [monstersList[i].key.substring(0,2) + parseInt(monstersKey.charAt(2)-1), monstersList[i].key.charAt(0) + (parseInt(monstersList[i].key.charAt(1))+1) + monstersList[i].key.charAt(2), monstersList[i].key.charAt(0) + (parseInt(monstersList[i].key.charAt(1))-1) + monstersList[i].key.charAt(2), monstersList[i].key.substring(0,2) + parseInt(monstersKey.charAt(2)+1)]
-          if (monstersKey.charAt(2) === "4") {
-            directionPriorities[1] = cycleQuadrant(directionPriorities[1].charAt(0), "clockwise") + "1" + monstersKey.charAt(2);
-          } else if (monstersKey.charAt(2) === "1") {
-            directionPriorities[2] = cycleQuadrant(directionPriorities[2].charAt(0), "counter-clockwise") + "4" + monstersKey.charAt(2);
-          }
-          console.log(directionPriorities);
-        for (p = 0; p < directionPriorities.length; p++) {
-          for (fp = 0; fp < foundPlayers.length; p++) {
-            if (foundPlayers[fp].key === directionPriorities[p]) {
-              var newDestination = foundPlayers[fp].key;
-              var foundAPlayer = true; 
-              break;
-            }
-            if (foundAPlayer) {
-              foundAPlayer = false
-              break;
-            }
-          }
-        }
-
           if (containsMonsters && !containsPlayers) {
             var newDestination = monstersList[i].key;
             unmovedMonsters.push(monstersList[i]);
