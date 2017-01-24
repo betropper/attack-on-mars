@@ -2291,7 +2291,7 @@ function battle(player, monster) {
             }
           }
         console.log(twoAwayList);
-        for (m = 0; m < twoAwayList.length; m++) {
+          for (m = 0; m < twoAwayList.length; m++) {
           if (Space[twoAwayList[m].key].occupied) {
             for (l = 0; l < Space[twoAwayList[m].key].occupied.length; l++) {
               if (playersList.indexOf(Space[twoAwayList[m].key].occupied[l]) > -1 && Space[twoAwayList[m].key].occupied[l].upgrades.indexOf("Monster Bait") > -1) {
@@ -2306,52 +2306,42 @@ function battle(player, monster) {
               unmovedMonsters.push(monstersList[i]);
             } else {
               var okCount = 1;
-              var checkedCity = Space[monstersList[i].key];
-              while (destroyedCities.indexOf(checkedCity) > -1) {
-      
-              }
-              if (monstersList[i].key.charAt(1) !== "4") {
-                newDestination = monstersList[i].key.charAt(0) + (parseInt(monstersList[i].key.charAt(1))+1) + monstersList[i].key.charAt(2);
-              } else {
-                if (monstersList[i].key.charAt(0) === "d") {
-                  newDestination = "a10";
-                } else {
-                  newDestination = String.fromCharCode(1 + monstersList[i].key.charCodeAt(0)) + "10";
+              var checkedCity = monstersList[i].key;
+              var checkDirections = [checkedCity.charAt(0) + (parseInt(checkedCity.charAt(1))+1) + checkedCity.charAt(2), checkedCity.charAt(0) + (parseInt(checkedCity.charAt(1))-1) + checkedCity.charAt(2)]
+              var destroyedCitiesKeys = [];
+              destroyedCities.forEach(function(city) {
+                destroyedCitiesKeys.push(city.key);
+              });
+              while (destroyedCitiesKeys.indexOf(checkedCity) > -1 && checkedCity === monstersList[i].key) { 
+                if (parseInt(checkDirections[0].charAt(1)) > 4) {
+                  checkDirections[0] = cycleQuadrant(checkDirections[0].charAt(0), "clockwise") + "1" + checkedCity.charAt(2);
+                } else if (parseInt(checkDirections[1].charAt(1)) > 1) {
+                  checkDirections[1] = cycleQuadrant(checkDirections[1].charAt(0), "counter-clockwise") + "4" + checkedCity.charAt(2);
                 }
-              }
-             for (m = 0; m < destroyedCities.length; m++) {
-              console.log("Checktick");
-              if (destroyedCities[m].key === newDestination || Space[newDestination].occupied) {
-                if (monstersList[i].key.charAt(1) !== "1") {
-                  newDestination = monstersList[i].key.charAt(0) + (parseInt(monstersList[i].key.charAt(1))-1) + monstersList[i].key.charAt(2);
-                } else {
-                  if (monstersList[i].key.charAt(0) === "a") {
-                    newDestination = "d40";
+                console.log("Tick direciton check: ");
+                console.log(checkDirections);
+                  if (destroyedCitiesKeys.indexOf(checkDirections[0]) === -1) { 
+                    checkedCity = checkDirections[0]; 
+                    var direction = 0;
+                  } else if (destroyedCitiesKeys.indexOf(checkDirections[1]) === -1) { 
+                    checkedCity = checkDirections[1]; 
+                    var direction = 1;
                   } else {
-                    newDestination = String.fromCharCode(monstersList[i].key.charCodeAt(0) - 1) + "10";
+                    var checkDirections = [checkDirections[0].charAt(0) + (parseInt(checkDirections[0].charAt(1))+1) + checkDirections[0].charAt(2), checkDirections[1].charAt(0) + (parseInt(checkDirections[1].charAt(1))-1) + checkDirections[1].charAt(2)]
                   }
-                } 
-                break;
-             }
-            }
-             for (m = 0; m < destroyedCities.length; m++) {
-              console.log("Checktick");
-              if (destroyedCities[m].key === newDestination || Space[newDestination].occupied) {
-                if (monstersList[i].key.charAt(1) !== "4") {
-                  newDestination = monstersList[i].key.charAt(0) + (parseInt(monstersList[i].key.charAt(1))+1) + monstersList[i].key.charAt(2);
-                } else {
-                  if (monstersList[i].key.charAt(0) === "d") {
-                    newDestination = "a10";
-                  } else {
-                    newDestination = String.fromCharCode(1 + monstersList[i].key.charCodeAt(0)) + "10";
-                  }
-                } 
-              break;
               }
+              console.log("Monster is moving along a path of destruction to " + checkedCity);
+              checkedCity = monstersList[i].key;
+              var finalDirections = [checkedCity.charAt(0) + (parseInt(checkedCity.charAt(1))+1) + checkedCity.charAt(2), checkedCity.charAt(0) + (parseInt(checkedCity.charAt(1))-1) + checkedCity.charAt(2)]
+              if (parseInt(finalDirections[0].charAt(1)) > 4) {
+                finalDirections[0] = cycleQuadrant(finalDirections[0].charAt(0), "clockwise") + "1" + checkedCity.charAt(2);
+              } else if (parseInt(finalDirections[1].charAt(1)) > 1) {
+                finalDirections[1] = cycleQuadrant(finalDirections[1].charAt(0), "counter-clockwise") + "4" + checkedCity.charAt(2);
+              }
+              newDestination = finalDirections[direction];
+              console.log("direction was " + direction);
+              console.log("Monster at city is moving to " + newDestination);
             }
-           }
-           console.log("Monster at " + monstersList[i].key + " considered moving to " + newDestination);
-
           }
 
         //Checks to see if a player is nearby. 1st priority
@@ -3352,7 +3342,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
         do {
           var rand = monstersList[Math.floor(Math.random() * monstersList.length)];
           tempSpace.selectedSpace = rand.space;
-          tempSpace.key = rand.key.substring(0,2) + "0";
+          tempSpace.key = rand.key.substring(0,2) + "3";
           console.log(tempSpace.selectedSpace.occupied + tempSpace.key);
           console.log(tempSpace);
         } while (tempSpace.selectedSpace.occupied && tempSpace.key.charAt(2) != "3")
