@@ -2313,9 +2313,9 @@ function battle(player, monster) {
                 destroyedCitiesKeys.push(city.key);
               });
               while (destroyedCitiesKeys.indexOf(checkedCity) > -1 && checkedCity === monstersList[i].key) { 
-                if (parseInt(checkDirections[0].charAt(1)) > 4) {
+                if (checkDirections[0].charAt(1) === "5") {
                   checkDirections[0] = cycleQuadrant(checkDirections[0].charAt(0), "clockwise") + "1" + checkedCity.charAt(2);
-                } else if (parseInt(checkDirections[1].charAt(1)) > 1) {
+                } else if (checkDirections[1].charAt(1) === "0") {
                   checkDirections[1] = cycleQuadrant(checkDirections[1].charAt(0), "counter-clockwise") + "4" + checkedCity.charAt(2);
                 }
                 console.log("Tick direciton check: ");
@@ -2333,9 +2333,9 @@ function battle(player, monster) {
               console.log("Monster is moving along a path of destruction to " + checkedCity);
               checkedCity = monstersList[i].key;
               var finalDirections = [checkedCity.charAt(0) + (parseInt(checkedCity.charAt(1))+1) + checkedCity.charAt(2), checkedCity.charAt(0) + (parseInt(checkedCity.charAt(1))-1) + checkedCity.charAt(2)]
-              if (parseInt(finalDirections[0].charAt(1)) > 4) {
+             if (finalDirections[0].charAt(1) === "5") {
                 finalDirections[0] = cycleQuadrant(finalDirections[0].charAt(0), "clockwise") + "1" + checkedCity.charAt(2);
-              } else if (parseInt(finalDirections[1].charAt(1)) > 1) {
+              } else if (finalDirections[1].charAt(1) === "0") {
                 finalDirections[1] = cycleQuadrant(finalDirections[1].charAt(0), "counter-clockwise") + "4" + checkedCity.charAt(2);
               }
               newDestination = finalDirections[direction];
