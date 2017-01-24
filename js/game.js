@@ -2269,6 +2269,7 @@ function battle(player, monster) {
    updateOccupiedRows();
    monstersList = scrubList(monstersList);
    var unmovedMonsters = [];
+
    //Check if someone with Monster Bait is two upgrades away. 2nd
    //priority  
    for (var i = 0; i < monstersList.length ; i++) {
@@ -2299,17 +2300,16 @@ function battle(player, monster) {
             }
           }
         }
-        
-
-          if (parseInt(monstersList[i].key.charAt(2)) !== 0 && parseInt(newDestination.charAt(2)) === 0) {
-            if (Space[newDestination].occupied === false || Space[newDestination].occupied === null || Space[newDestination].occupied === undefined) {
-              console.log("U R DED");
-            }
-          } else if (parseInt(monstersList[i].key.charAt(2)) === 0 )  {
+          if (parseInt(monstersList[i].key.charAt(2)) === 0 )  {
             if (Space[newDestination].damage && Space[newDestination].damage === 1) {
               newDestination = monstersList[i].key;
               unmovedMonsters.push(monstersList[i]);
             } else {
+              var okCount = 1;
+              var checkedCity = Space[monstersList[i].key];
+              while (destroyedCities.indexOf(checkedCity) > -1) {
+      
+              }
               if (monstersList[i].key.charAt(1) !== "4") {
                 newDestination = monstersList[i].key.charAt(0) + (parseInt(monstersList[i].key.charAt(1))+1) + monstersList[i].key.charAt(2);
               } else {
@@ -2377,6 +2377,9 @@ function battle(player, monster) {
             directionPriorities[1] = cycleQuadrant(directionPriorities[1].charAt(0), "clockwise") + "1" + monstersKey.charAt(2);
           } else if (monstersKey.charAt(1) === "1") {
             directionPriorities[2] = cycleQuadrant(directionPriorities[2].charAt(0), "counter-clockwise") + "4" + monstersKey.charAt(2);
+          }
+          if (monstersKey.charAt(2) === "3") {
+            directionPriorities[3] = "center";
           }
           console.log(directionPriorities);
         for (p = 0; p < directionPriorities.length; p++) {
