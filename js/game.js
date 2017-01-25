@@ -850,14 +850,14 @@ class Setup {
         for (i = 0; i < battleMonster.upgrades.length; i++) {
           if (battleMonster.upgrades[i].indexOf("-1 Mech") > -1) {
             MU["Dice -#"].active(battlePlayer,battleMonster.upgrades[i].substring(8),1);
-            printBattleResults(C.monster.names[battleMonster.sprite.spriteName] + " drained " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mech's " + battleMonster.upgrades[i].substring(8) + " by 1!");
+            printBattleResults("Threat drained " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mech's " + battleMonster.upgrades[i].substring(8) + " by 1!");
           } else if (battleMonster.upgrades[i].indexOf("-2 Mech") > -1) {
             MU["Dice -#"].active(battlePlayer,battleMonster.upgrades[i].substring(8),2);
-            printBattleResults(C.monster.names[battleMonster.sprite.spriteName] + " drained " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mech's " + battleMonster.upgrades[i].substring(8) + " by 2!");
+            printBattleResults("Threat drained " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mech's " + battleMonster.upgrades[i].substring(8) + " by 2!");
           }
           if (battleMonster.upgrades[i].indexOf("+1 Mecha") > -1) {
             MU["Dice Target +#"].active(battlePlayer,battleMonster.upgrades[i].substring(9),1);
-            printBattleResults(C.monster.names[battleMonster.sprite.spriteName] + " raised " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mech's " + battleMonster.upgrades[i].substring(9) + " by 1!");
+            printBattleResults("Threat raised " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mech's " + battleMonster.upgrades[i].substring(9) + " by 1!");
           }
         }
         if (battleMonster.upgrades.indexOf("First Attack") === -1) {
@@ -1806,7 +1806,10 @@ function attack(attacker,defender) {
   if (attacker.ratk) {
     rhits = rollDie(attacker.ratk - (defender.ratkDecrease || 0), attacker.ratkGoal || 5);
   }
-  var successes = rhits.hits + bhits.hits;
+  var successes = (rhits.hits || 0) + bhits.hits;
+  console.log("rhits for attacker: " + rhits.hits);
+  console.log("bhits for attacker: " + bhits.hits);
+  console.log(successes);
   if (attacker.siegeMode) {
     successes += 1;
     attacker.def -= 1;
@@ -2090,7 +2093,7 @@ function killResults(results) {
 function rollDie(count, goal){ 
   var hits = 0;
   var results = [];
-  for (i = 1; i < count; i++) {
+  for (i = 1; i < count + 1; i++) {
     rollResult = Math.floor(Math.random() * ((6-1)+1) + 1);
     if (rollResult >= goal) {
       hits += 1;
@@ -2147,7 +2150,8 @@ function updateOccupiedRows() {
    for (var key in Space) {
     if (Space.hasOwnProperty(key)) {
       var obj = Space[key];
-      if (obj.hasOwnProperty("occupied") && obj["occupied"] != false) {
+      if (obj.hasOwnProperty("occupied") && obj["occupied"] != false && obj["occupied"]) {
+        console.log(obj);
         for (mc = 0; mc < obj["occupied"].length; mc++) {
           if (monstersList.indexOf(obj["occupied"][mc]) > -1 || (obj["occupied"][mc].sprite && obj["occupied"][mc].sprite.key === "destroyedCity")) {
            var rowKey = obj["occupied"][mc].key.substring(0,2);
@@ -2516,9 +2520,9 @@ function move(object,destination,escaping) {
       }
     }
   }
-  removeFromList(object, Space[object.key]);
+  Space[object.key].occupied = removeFromList(object, Space[object.key]);
   if (playersList.indexOf(object) > -1) {
-    removeFromList(playersList[object.sprite.number], Space[object.key]);
+    Space[object.key].occupied = removeFromList(playersList[object.sprite.number], Space[object.key]);
   }
   object.key = destination;
   object.sprite.closestSpaces = getClosestSpaces(object.key);
