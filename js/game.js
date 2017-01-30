@@ -607,10 +607,10 @@ class Setup {
     }
     for (var i = 0; i <= 5; i++) {
       if (i <= 3) {
-        monstersList[i] = spawnRandom("monster", i + 1, "3");
+        monstersList[i] = spawnRandom("monster", i + 1, "3", true);
         monstersList[i].sprite.number =  i;
       } else {
-        monstersList[i] = spawnRandom("monster", "random", "3", true);
+        monstersList[i] = spawnRandom("monster", "random", "3");
         monstersList[i].sprite.number =  i;
       }
     }
