@@ -2859,7 +2859,12 @@ function chooseUpgrade(event) {
     } else if (monsterResearchTrack < 3 && event.worldX > x1 && event.worldX < x2 && event.worldY > y2 + 400*globalScale && event.worldY < y2 + 830*globalScale) { 
       var mrProviders = [];
       monsterResources = 0;
+      game.camera.x += game.camera.width;
       for (i = 1; i < playersList.length; i++) {
+        var uparrow = game.add.sprite(game.camera.x + 100*globalScale*i, game.camera.y + 300*globalScale, 'leftright', 1);
+        uparrow.angle = 90;
+        var downarrow = game.add.sprite(uparrow.x, game.camera.y + game.camera.height - 300*globalScale, 'leftright', 2);
+        downarrow.angle = 90;
         if (playersList[i].mr > 0) {
           monsterResources += playersList[i].mr;
           mrProviders.push(playersList[i]);
