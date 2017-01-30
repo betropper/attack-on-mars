@@ -375,7 +375,7 @@ class MainMenu {
 
 class Credits {
   preload() {
-      var credits = "Illustration:        Alice Bessoni\n\nGame Design:       Paul Ference\n\nGame Programming:        Benjamin Muhlestein\n\nGraphical Design:        Helen Tian";
+      var credits = "Illustration:                     Alice Bessoni\n\nGame Design:                 Paul Ference\n\nGame Programming:         Benjamin Muhlestein\n\nGraphical Design:             Helen Tian";
       var creditsDisplay = game.add.bitmapText(game.world.centerX, game.world.centerY - game.world.height, 'attackfont', credits, 90*globalScale);
       var creditsTween = game.add.tween(creditsDisplay).to({y: game.world.centerY}, 4000, Phaser.Easing.Linear.None, true);
       creditsDisplay.anchor.setTo(.5);
@@ -701,7 +701,6 @@ class Setup {
         for (i = 0; i < buttonsTextList.length; i++) {
           buttonsTextList[i].kill();
        }
-
         for (i = 1; i < playersList.length; i++) {
           playersList[i].sprite.scale.setTo(C.mech.scale);
           if (playersList[i] !== battlePlayer) {
