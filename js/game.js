@@ -131,6 +131,7 @@ var focusX,
  changingQuality,
  hoverSprite,
  actionIcons,
+ destroyedCityIcons,
  upgradeTokens,
  mrTokens,
  heldSprite,
@@ -632,6 +633,13 @@ class Setup {
     game.world.bringToTop(menuBar);
     menuBar.kill();
     actionIcons = game.add.group();
+    destroyedCityIcons = game.add.group();
+    var destroyedCityIcon = destroyedCityIcons.create((40*globalScale), 30*globalScale,'destroyedCity');
+    destroyedCityIcon.scale.setTo(.7*globalScale);
+    for (i = 0; i < destroyedCities.length - 1; i++) {
+        var destroyedCityIcon = destroyedCityIcons.create((destroyedCityIcons.children[destroyedCityIcons.length-1].x+(30*globalScale)), 30*globalScale,'destroyedCity');
+        destroyedCityIcon.scale.setTo(.7*globalScale);
+    }
     upgradeTokens = game.add.group();
     mrTokens = game.add.group();
     fade("in");  
@@ -943,7 +951,6 @@ function setAttributeDisplay(obj) {
     hpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 100*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,8,"hp", "maxhp");
     rpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 450*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,6,"rp");
     mpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 700*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,22,"mr");
-    destroyedCities.hoverInfo = destroyedCities.addHoverInfo(0, 0, 1,"length","liveCities");
     for (i = 0; i < 3; i++) {
       var actionPoint = actionIcons.create(ratkDisplay.valueIcon.x + 350*globalScale + (i*(70*globalScale)), ratkDisplay.valueIcon.y + 15*globalScale,'icons',0);
       actionPoint.scale.setTo(.6*globalScale);
@@ -968,7 +975,6 @@ function updateInfoDisplays(obj) {
    rpDisplay.update(obj);
    mpDisplay.update(obj);
    hpDisplay.update(obj);
-   destroyedCities.hoverInfo.update(destroyedCities);
 }
 
 function pullInInfo() {
@@ -1907,7 +1913,7 @@ function handleDeath(damaged,survivor,deathCase) {
       }
     }
     battlePlayer.mr += battleMonster.mr;
-    monstersList.splice(battleMonster.sprite.number, 1);
+    monstersList.splice(monstersList.indexOf(battleMonster), 1);
     battleMonster.sprite.destroy();
     battlePlayer.sprite.x = focusX;
   } else {
@@ -1945,7 +1951,7 @@ function handleDeath(damaged,survivor,deathCase) {
       }
     }
     battlePlayer.mr += damaged.mr;
-    monstersList.splice(damaged.sprite.number, 1);
+    monstersList.splice(monstersList.indexOf(damaged), 1);
     damaged.sprite.destroy();
     battlePlayer.sprite.x = focusX;
     console.log("Monster died, moving back to position " + focusX )
@@ -2250,6 +2256,8 @@ function battle(player, monster) {
         destroyedCities.push(destroyedCityColumn);
         occupiedRows.push(destroyedCityColumn.key.substring(0,2));
         Space[newDestination].damage = 2;
+        var destroyedCityIcon = destroyedCityIcons.create((destroyedCityIcons.children[destroyedCityIcons.length-1].x+(30*globalScale)), 30*globalScale,'destroyedCity');
+        destroyedCityIcon.scale.setTo(.7*globalScale);
       } else {
         Space[newDestination].damage = 1;
       }
@@ -2419,7 +2427,6 @@ function battle(player, monster) {
       console.log(newMonster);
       checkBattle(monstersList[newMonster].space);
     }
-   destroyedCities.hoverInfo.update(destroyedCities);
    console.log(unmovedMonsters);
 }
 
@@ -2491,7 +2498,7 @@ function move(object,destination,escaping) {
     } else if (Space[destination].mine) {
       object.hp -= 1;
       if (object.hp <= 0) {
-        object.space.occupied = removeFromList(monstersList[object.sprite.number], object.space);
+        object.space.occupied = removeFromList(monstersList[monstersList.indexOf(object)], object.space);
         Space[destination].mine.owner.rp += object.rp;
         if (Space[destination].mine.owner.pilot === "Bounty Hunter") {
           var chr = String.fromCharCode(96 + Space[destination].mine.owner.sprite.number);
@@ -2500,7 +2507,7 @@ function move(object,destination,escaping) {
           }
         }
         Space[destination].mine.owner.mr += object.mr;
-        monstersList.splice(object.sprite.number, 1);
+        monstersList.splice(monstersList.indexOf(object), 1);
         /*PLACE TWEEN HERE*/
         var moveTween = game.add.tween(object.sprite).to( { x: destinationX, y: destinationY}, C.game.moveSpeed, Phaser.Easing.Linear.None, true);
         moveTween.onComplete.add(explode, {sprite: object.sprite, mineSpace: Space[destination]})
@@ -2805,7 +2812,7 @@ function displayExtras() {
         upY += (350*globalScale);
       }
       if (upgradeTokens.getFirstDead()) {
-        upgradeTokens.getFirstDead().revive(upX,upY);
+        upgradeTokens.getFirstDead().reset(upX,upY);
       } else {
         var upgradeToken = upgradeTokens.create(upX, upY,'icons',18);
         upgradeToken.scale.setTo(.7*globalScale);
