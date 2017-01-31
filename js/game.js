@@ -2860,11 +2860,23 @@ function chooseUpgrade(event) {
       var mrProviders = [];
       monsterResources = 0;
       game.camera.x += game.camera.width;
+      game.kineticScrolling.stop();
+      var colortext = game.add.text(game.camera.x + 50*globalScale, game.camera.y + 450*globalScale, "Mech:",C.game.textStyle);
+      colortext.anchor.y = .5
+      var maxtext = game.add.text(game.camera.x + 50*globalScale, game.camera.y + 650*globalScale, "Contributed MR:",C.game.textStyle);
+      maxtext.anchor.y = .5
       for (i = 1; i < playersList.length; i++) {
-        var uparrow = game.add.sprite(game.camera.x + 100*globalScale*i, game.camera.y + 300*globalScale, 'leftright', 1);
-        uparrow.angle = 90;
-        var downarrow = game.add.sprite(uparrow.x, game.camera.y + game.camera.height - 300*globalScale, 'leftright', 2);
-        downarrow.angle = 90;
+        var uparrow = game.add.sprite(game.camera.x + 300*globalScale + 200*globalScale*i, game.camera.y + 250*globalScale, 'leftright', 1);
+        uparrow.angle = 270;
+        var downarrow = game.add.sprite(uparrow.x, game.camera.y + game.camera.height - 250*globalScale, 'leftright', 2);
+        downarrow.angle = 270;
+        var monsterDoner  = game.add.sprite(uparrow.x, uparrow.y + 200*globalScale, playerNames[i-1]);
+        uparrow.anchor.setTo(.5);
+        downarrow.anchor.setTo(.5);
+        monsterDoner.anchor.setTo(.5);
+        monsterDoner.totalResources = playersList[i].mr;
+        monsterDoner.contributedResources = 0;
+        var contributed = game.add.text(uparrow.x, game.camera.y + 650*globalScale, monsterDoner.contributedResources + "\n\n\n/\n\n\n" + monsterDoner.totalResources,C.game.textStyle);
         if (playersList[i].mr > 0) {
           monsterResources += playersList[i].mr;
           mrProviders.push(playersList[i]);
