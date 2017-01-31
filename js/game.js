@@ -200,6 +200,8 @@ var battleStarting = false;
 var pendingBattles = [];
 var threatLevel = 0;
 var menuBar;
+var mrMenuFreezeFrame
+var monsterDonerList = [];
 var playerBar;
 var monsterBar;
 var battleState;
@@ -2859,41 +2861,62 @@ function chooseUpgrade(event) {
     } else if (monsterResearchTrack < 3 && event.worldX > x1 && event.worldX < x2 && event.worldY > y2 + 400*globalScale && event.worldY < y2 + 830*globalScale) { 
       var mrProviders = [];
       monsterResources = 0;
-      game.camera.x += game.camera.width;
       game.kineticScrolling.stop();
-      var colortext = game.add.text(game.camera.x + 50*globalScale, game.camera.y + 500*globalScale, "Mech:",C.game.textStyle);
-      colortext.anchor.y = .5
-      var maxtext = game.add.text(game.camera.x + 50*globalScale, game.camera.y + 750*globalScale, "Contributed MR:",C.game.textStyle);
-      maxtext.anchor.y = .5
-      for (i = 1; i < playersList.length; i++) {
-        var uparrow = game.add.sprite(game.camera.x + 300*globalScale + 200*globalScale*i, game.camera.y + 300*globalScale, 'leftright', 1);
-        uparrow.angle = 270;
-        var downarrow = game.add.sprite(uparrow.x, game.camera.y + game.camera.height - 300*globalScale, 'leftright', 2);
-        downarrow.angle = 270;
-        var monsterDoner  = game.add.sprite(uparrow.x, uparrow.y + 200*globalScale, playerNames[i-1]);
-        uparrow.anchor.setTo(.5);
-        downarrow.anchor.setTo(.5);
-        monsterDoner.anchor.setTo(.5);
-        monsterDoner.totalResources = playersList[i].mr;
-        monsterDoner.contributedResources = 0;
-        var contributed = game.add.text(uparrow.x, game.camera.y + 750*globalScale, monsterDoner.contributedResources + "\n-\n" + monsterDoner.totalResources,C.game.textStyle);
-        contributed.anchor.setTo(.5)
-        var extrasReturnButton = game.add.button(game.camera.x + 1000*globalScale, game.camera.y + 900*globalScale,'icons',function() {
-          game.camera.x = 0;
-          game.kineticScrolling.start();
-        });
-        extrasReturnButton.frame = 13
-        extrasReturnButton.anchor.setTo(.5);
-        extrasReturnButton.scale.setTo(globalScale*.7);
-        var extrasReturnText = game.add.text(extrasReturnButton.x,extrasReturnButton.y - extrasReturnButton.height/1.5,"Return to Upgrade Menu",C.game.textStyle);
-        extrasReturnText.anchor.setTo(.5);
-        
-        if (playersList[i].mr > 0) {
-          monsterResources += playersList[i].mr;
-          mrProviders.push(playersList[i]);
+      if (!mrMenuFreezeFrame) {
+        game.camera.x += game.camera.width;
+        mrMenuFreezeFrame = { x: game.camera.x, y: game.camera.y };
+        var colortext = game.add.text(game.camera.x + 50*globalScale, game.camera.y + 500*globalScale, "Mech:",C.game.textStyle);
+        colortext.anchor.y = .5
+        var maxtext = game.add.text(game.camera.x + 50*globalScale, game.camera.y + 750*globalScale, "Contributed MR:",C.game.textStyle);
+        maxtext.anchor.y = .5
+        for (i = 1; i < playersList.length; i++) {
+          var uparrow = game.add.sprite(game.camera.x + 300*globalScale + 200*globalScale*i, game.camera.y + 300*globalScale, 'leftright', 1);
+          uparrow.angle = 270;
+          uparrow.inputEnabled = true;
+          var downarrow = game.add.sprite(uparrow.x, game.camera.y + game.camera.height - 300*globalScale, 'leftright', 2);
+          downarrow.angle = 270;
+          downarrow.inputEnabled = true;
+          var monsterDoner  = game.add.sprite(uparrow.x, uparrow.y + 200*globalScale, playerNames[i-1]);
+          uparrow.anchor.setTo(.5);
+          downarrow.anchor.setTo(.5);
+          monsterDoner.anchor.setTo(.5);
+          monsterDoner.totalResources = playersList[i].mr;
+          monsterDoner.contributedResources = 0;
+          monsterDoner.contributedText = game.add.text(uparrow.x, game.camera.y + 750*globalScale, monsterDoner.contributedResources + "\n-\n" + monsterDoner.totalResources,C.game.textStyle);
+          monsterDoner.contributedText.anchor.setTo(.5)
+          var mrReturnButton = game.add.button(game.camera.x + 1600*globalScale, game.camera.y + 900*globalScale,'icons',function() {
+            game.camera.x = 0;
+            game.kineticScrolling.start();
+          });
+          mrReturnButton.frame = 13
+          mrReturnButton.anchor.setTo(.5);
+          mrReturnButton.scale.setTo(globalScale*.7);
+          var mrReturnText = game.add.text(mrReturnButton.x,mrReturnButton.y - mrReturnButton.height,"Return to Upgrade Menu",C.game.textStyle);
+          mrReturnText.anchor.setTo(.5);
+          //Add in the arrow's functions
+          uparrow.events.onInputDown.add(function() {
+            if (this.monsterDoner.contributedResources < this.monsterDoner.totalResources) {
+              this.monsterDoner.contributedResources += 1;
+              this.monsterDoner.contributedText.text = this.monsterDoner.contributedResources + "\n-\n" + this.monsterDoner.totalResources; 
+            }
+          }, {monsterDoner: monsterDoner}); 
+          downarrow.events.onInputDown.add(function() {
+            if (this.monsterDoner.contributedResources > 0) {
+              this.monsterDoner.contributedResources -= 1;
+              this.monsterDoner.contributedText.text = this.monsterDoner.contributedResources + "\n-\n" + this.monsterDoner.totalResources; 
+            }
+          }, {monsterDoner: monsterDoner}); 
+          monsterDonerList.push(monsterDoner);
         }
-      }
-      if (monsterResources >= 8) {
+      } else {
+          game.camera.x = mrMenuFreezeFrame.x;
+          game.camera.y = mrMenuFreezeFrame.y;
+          for (i = 0; i < monsterDonerList.length; i++) {
+            monsterDonerList[i].totalResources = playersList[i+1].mr;
+            monsterDonerList[i].contributedText.text = monsterDonerList[i].contributedResources + "\n-\n" + monsterDonerList[i].totalResources; 
+          }
+        }
+      /*if (monsterResources >= 8) {
         monsterResearchTrack += 1;
         var mrCount = 0;
         for (i = 0; i < mrProviders.length; i++) {
@@ -2917,7 +2940,7 @@ function chooseUpgrade(event) {
             Corp[playersList[i].corp].trackUpgrade(playersList[i],monsterResearchTrack);
           }
         }
-      }
+      }*/
     }
   }
 }
