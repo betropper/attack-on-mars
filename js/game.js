@@ -2861,14 +2861,14 @@ function chooseUpgrade(event) {
       monsterResources = 0;
       game.camera.x += game.camera.width;
       game.kineticScrolling.stop();
-      var colortext = game.add.text(game.camera.x + 50*globalScale, game.camera.y + 450*globalScale, "Mech:",C.game.textStyle);
+      var colortext = game.add.text(game.camera.x + 50*globalScale, game.camera.y + 500*globalScale, "Mech:",C.game.textStyle);
       colortext.anchor.y = .5
-      var maxtext = game.add.text(game.camera.x + 50*globalScale, game.camera.y + 650*globalScale, "Contributed MR:",C.game.textStyle);
+      var maxtext = game.add.text(game.camera.x + 50*globalScale, game.camera.y + 750*globalScale, "Contributed MR:",C.game.textStyle);
       maxtext.anchor.y = .5
       for (i = 1; i < playersList.length; i++) {
-        var uparrow = game.add.sprite(game.camera.x + 300*globalScale + 200*globalScale*i, game.camera.y + 250*globalScale, 'leftright', 1);
+        var uparrow = game.add.sprite(game.camera.x + 300*globalScale + 200*globalScale*i, game.camera.y + 300*globalScale, 'leftright', 1);
         uparrow.angle = 270;
-        var downarrow = game.add.sprite(uparrow.x, game.camera.y + game.camera.height - 250*globalScale, 'leftright', 2);
+        var downarrow = game.add.sprite(uparrow.x, game.camera.y + game.camera.height - 300*globalScale, 'leftright', 2);
         downarrow.angle = 270;
         var monsterDoner  = game.add.sprite(uparrow.x, uparrow.y + 200*globalScale, playerNames[i-1]);
         uparrow.anchor.setTo(.5);
@@ -2876,7 +2876,18 @@ function chooseUpgrade(event) {
         monsterDoner.anchor.setTo(.5);
         monsterDoner.totalResources = playersList[i].mr;
         monsterDoner.contributedResources = 0;
-        var contributed = game.add.text(uparrow.x, game.camera.y + 650*globalScale, monsterDoner.contributedResources + "\n\n\n/\n\n\n" + monsterDoner.totalResources,C.game.textStyle);
+        var contributed = game.add.text(uparrow.x, game.camera.y + 750*globalScale, monsterDoner.contributedResources + "\n-\n" + monsterDoner.totalResources,C.game.textStyle);
+        contributed.anchor.setTo(.5)
+        var extrasReturnButton = game.add.button(game.camera.x + 1000*globalScale, game.camera.y + 900*globalScale,'icons',function() {
+          game.camera.x = 0;
+          game.kineticScrolling.start();
+        });
+        extrasReturnButton.frame = 13
+        extrasReturnButton.anchor.setTo(.5);
+        extrasReturnButton.scale.setTo(globalScale*.7);
+        var extrasReturnText = game.add.text(extrasReturnButton.x,extrasReturnButton.y - extrasReturnButton.height/1.5,"Return to Upgrade Menu",C.game.textStyle);
+        extrasReturnText.anchor.setTo(.5);
+        
         if (playersList[i].mr > 0) {
           monsterResources += playersList[i].mr;
           mrProviders.push(playersList[i]);
