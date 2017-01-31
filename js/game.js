@@ -9,7 +9,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": ".7.0.0",
+   "versionNumber": ".7.4.0",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -2869,6 +2869,15 @@ function chooseUpgrade(event) {
         colortext.anchor.y = .5
         var maxtext = game.add.text(game.camera.x + 50*globalScale, game.camera.y + 750*globalScale, "Contributed MR:",C.game.textStyle);
         maxtext.anchor.y = .5
+        var mrReturnButton = game.add.button(game.camera.x + 1600*globalScale, game.camera.y + 900*globalScale,'icons',function() {
+          game.camera.x = 0;
+          game.kineticScrolling.start();
+        });
+        mrReturnButton.frame = 13
+        mrReturnButton.anchor.setTo(.5);
+        mrReturnButton.scale.setTo(globalScale*.7);
+        var mrReturnText = game.add.text(mrReturnButton.x,mrReturnButton.y - mrReturnButton.height,"Return to Upgrade Menu",C.game.textStyle);
+        mrReturnText.anchor.setTo(.5);
         for (i = 1; i < playersList.length; i++) {
           var uparrow = game.add.sprite(game.camera.x + 300*globalScale + 200*globalScale*i, game.camera.y + 300*globalScale, 'leftright', 1);
           uparrow.angle = 270;
@@ -2884,15 +2893,6 @@ function chooseUpgrade(event) {
           monsterDoner.contributedResources = 0;
           monsterDoner.contributedText = game.add.text(uparrow.x, game.camera.y + 750*globalScale, monsterDoner.contributedResources + "\n-\n" + monsterDoner.totalResources,C.game.textStyle);
           monsterDoner.contributedText.anchor.setTo(.5)
-          var mrReturnButton = game.add.button(game.camera.x + 1600*globalScale, game.camera.y + 900*globalScale,'icons',function() {
-            game.camera.x = 0;
-            game.kineticScrolling.start();
-          });
-          mrReturnButton.frame = 13
-          mrReturnButton.anchor.setTo(.5);
-          mrReturnButton.scale.setTo(globalScale*.7);
-          var mrReturnText = game.add.text(mrReturnButton.x,mrReturnButton.y - mrReturnButton.height,"Return to Upgrade Menu",C.game.textStyle);
-          mrReturnText.anchor.setTo(.5);
           //Add in the arrow's functions
           uparrow.events.onInputDown.add(function() {
             if (this.monsterDoner.contributedResources < this.monsterDoner.totalResources) {
