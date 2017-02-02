@@ -407,9 +407,59 @@ var U = {
     "color": "purple",
     "cost": 8
   },
+  "Obliteration Ray Unlock": {
+    "desc": "Increses the max capacity of the Mecha for all equipment by one.",
+    "color": "purple",
+    "unlock": true,
+    "unlockColor": "purple",
+    "cost": 3
+  },
   "Fusion Cannon": {
     "desc": "Spend an action to attack an adjacent monster with Red Die. This cannot cause counter damage.",
     "color": "red",
     "cost": 8
+  },
+  "Fusion Cannon Unlock": {
+    "desc": "Increses Fusion Cannon range to two spaces.",
+    "color": "red",
+    "unlock": true,
+    "unlockColor": "purple",
+    "cost": 3
+  },
+  "The Payload": {
+    "desc": "If this Mecha hits 0 health, roll its max health against the monster that killed\nit as an attack, target number 4.",
+    "color": "black",
+    "cost": 8
+  },
+  "The Payload Unlock": {
+    "desc": "Once per round, you may spend one health for an automatic success.",
+    "color": "black",
+    "unlock": true,
+    "unlockColor": "red",
+    "cost": 3
+  },
+  "Super Go Fast": {
+    "desc": "Spend an action to move two spaces in any direction",
+    "color": "green",
+    "cost": 8
+  },
+  "Super Go Fast Unlock": {
+    "desc": "Reduces green (defence) dice target number by one.",
+    "color": "green",
+    "unlock": true,
+    "unlockColor": "black",
+    "cost": 3
+  },
+  "Mind-Machine Interface": {
+    "desc": "This mech may re-roll all missed Blue Attack die once per round.",
+    "color": "blue",
+    "cost": 8
+  },
+  "Mind-Machine Interface Unlock": {
+    "desc": "This mech may spend 4 MR once per round to re-roll all missed die.",
+    "color": "blue",
+    "unlock": true,
+    "unlockColor": "yellow",
+    "cost": 3
   }
 }

@@ -9,7 +9,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": ".7.4.0",
+   "versionNumber": ".8.0.0",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -137,6 +137,7 @@ var focusX,
  heldSprite,
  monsterResources = 0,
  monsterResearchTrack = 0,
+ mrConfirmButton,
  upgradeTokensList = [],
  upgradeExample
 var options = ["Electric Fists","Targeting Computer","Siege Mode","Nullifier Shield","The Payload",
@@ -2860,15 +2861,18 @@ function chooseUpgrade(event) {
       }
     } else if (monsterResearchTrack < 3 && event.worldX > x1 && event.worldX < x2 && event.worldY > y2 + 400*globalScale && event.worldY < y2 + 830*globalScale) { 
       var mrProviders = [];
-      monsterResources = 0;
       game.kineticScrolling.stop();
       if (!mrMenuFreezeFrame) {
+        monsterResources = 0;
         game.camera.x += game.camera.width;
-        mrMenuFreezeFrame = { x: game.camera.x, y: game.camera.y };
+        mrMenuFreezeFrame = { x: game.camera.x, y: game.camera.y};
         var colortext = game.add.text(game.camera.x + 50*globalScale, game.camera.y + 500*globalScale, "Mech:",C.game.textStyle);
         colortext.anchor.y = .5
         var maxtext = game.add.text(game.camera.x + 50*globalScale, game.camera.y + 750*globalScale, "Contributed MR:",C.game.textStyle);
         maxtext.anchor.y = .5
+        var totalContributions = game.add.text(game.camera.x + 1600*globalScale, game.camera.y + 500*globalScale, "8 MR needed to reach tier 1:",C.game.textStyle);
+        totalContributions.anchor.y = .5
+        totalContributions.anchor.x = .5
         var mrReturnButton = game.add.button(game.camera.x + 1600*globalScale, game.camera.y + 900*globalScale,'icons',function() {
           game.camera.x = 0;
           game.kineticScrolling.start();
@@ -2895,19 +2899,61 @@ function chooseUpgrade(event) {
           monsterDoner.contributedText.anchor.setTo(.5)
           //Add in the arrow's functions
           uparrow.events.onInputDown.add(function() {
-            if (this.monsterDoner.contributedResources < this.monsterDoner.totalResources) {
+            if (this.monsterDoner.contributedResources < this.monsterDoner.totalResources && monsterResources != 8) {
               this.monsterDoner.contributedResources += 1;
               this.monsterDoner.contributedText.text = this.monsterDoner.contributedResources + "\n-\n" + this.monsterDoner.totalResources; 
+              monsterResources += 1;
+              if (monsterResources < 8) {
+                totalContributions.text = (8 - monsterResources) + " MR needed to reach Level " + (monsterResearchTrack + 1);
+              } else { 
+                totalContributions.text = "Confirm Monster Research Upgrade?";
+                mrConfirmButton.revive(); 
+              }
             }
           }, {monsterDoner: monsterDoner}); 
           downarrow.events.onInputDown.add(function() {
             if (this.monsterDoner.contributedResources > 0) {
               this.monsterDoner.contributedResources -= 1;
               this.monsterDoner.contributedText.text = this.monsterDoner.contributedResources + "\n-\n" + this.monsterDoner.totalResources; 
+              monsterResources -= 1;
+              totalContributions.text = (8 - monsterResources) + " MR needed to reach Level " + (monsterResearchTrack + 1);
+              mrConfirmButton.kill(); 
             }
           }, {monsterDoner: monsterDoner}); 
           monsterDonerList.push(monsterDoner);
         }
+        mrConfirmButton = game.add.button(totalContributions.x, totalContributions.y + 100*globalScale, 'icons', function() {
+            game.camera.x = 0;
+            game.kineticScrolling.start();
+            monsterResearchTrack += 1;
+            for (i = 0; i < monsterDonerList.length; i++) {
+             playersList[i+1].mr -= monsterDonerList[i].contributedResources; 
+             monsterDonerList[i].contributedResources = 0;
+             monsterResources = 0;
+             totalContributions.text = (8 - monsterResources) + " MR needed to reach Level " + (monsterResearchTrack + 1);
+             monsterDonerList[i].contributedText.text = monsterDonerList[i].contributedResources + "\n-\n" + monsterDonerList[i].totalResources; 
+            }
+              mrConfirmButton.kill(); 
+              var token = mrTokens.create((x1+(255*globalScale))+(530*globalScale*(monsterResearchTrack)), y2 + 615*globalScale,'icons',18);
+              token.scale.setTo(globalScale);
+              token.anchor.setTo(.5);
+              for (i = 1; i < playersList.length; i++) { 
+                if (monsterResearchTrack >= 3) {
+                  playersList[i].sprite.closestSpaces = getClosestSpaces(playersList[i].key); 
+                  if (turn.upgrades.length >= 12 && monsterResearchTrack >= 3) {
+                    game.camera.y = 0;
+                    upgradeButton.tint = 0x3d3d3d;
+                    upgradeButton.inputEnabled = false;
+                  }
+                } else {
+                  Corp[playersList[i].corp].trackUpgrade(playersList[i],monsterResearchTrack);
+                }
+              }
+          });
+          mrConfirmButton.frame = 22;
+          mrConfirmButton.anchor.setTo(.5);
+          mrConfirmButton.scale.setTo(globalScale*.7);
+          mrConfirmButton.kill();
       } else {
           game.camera.x = mrMenuFreezeFrame.x;
           game.camera.y = mrMenuFreezeFrame.y;
