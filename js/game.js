@@ -142,7 +142,7 @@ var focusX,
  upgradeExample
 var options = ["Electric Fists","Targeting Computer","Siege Mode","Nullifier Shield","The Payload",
 "Bigger Fists","Weakpoint Analysis","Weaponized Research","Nullifier Shield Unlock","The Payload",
-"Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Gast",
+"Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Fast",
 "More Armor","Field Repair","Even More Armor","Obliteration Ray","Super Go Fast Unlock",
 "5D Accelerators","Autododge","Emergency Jump Jets","Fusion Cannon","Mind-Machine Interface",
 "Hyper Caffeine","Monster Bait","Chaos Systems","Fusion Cannon Unlock","Mind-Machine Interface Unlock"
@@ -2682,7 +2682,7 @@ function displayExtras() {
   extrasDisplay.setText("Upgrades and extras for " + this.player.sprite.key + ":");
   /*var options = ["Electric Fists","Targeting Computer","Siege Mode","Nullifier Shield","The Payload",
     "Bigger Fists","Weakpoint Analysis","Weaponized Research","Nullifier Shield Unlock","The Payload",
-    "Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Gast",
+    "Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Fast",
     "More Armor","Field Repair","Even More Armor","Obliteration Ray","Super Go Fast Unlock",
     "5D Accelerators","Autododge","Emergency Jump Jets","Fusion Cannon","Mind-Machine Interface",
     "Hyper Caffeine","Monster Bait","Chaos Systems","Fusion Cannon Unlock","Mind-Machine Interface Unlock"
@@ -2796,7 +2796,7 @@ function displayExtras() {
   }
   var options = ["Electric Fists","Targeting Computer","Siege Mode","Nullifier Shield","The Payload",
     "Bigger Fists","Weakpoint Analysis","Weaponized Research","Nullifier Shield Unlock","The Payload",
-    "Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Gast",
+    "Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Fast",
     "More Armor","Field Repair","Even More Armor","Obliteration Ray","Super Go Fast Unlock",
     "5D Accelerators","Autododge","Emergency Jump Jets","Fusion Cannon","Mind-Machine Interface",
     "Hyper Caffeine","Monster Bait","Chaos Systems","Fusion Cannon Unlock","Mind-Machine Interface Unlock"
@@ -2840,7 +2840,7 @@ function chooseUpgrade(event) {
     if (event.worldX > x1 && event.worldX < x2 && event.worldY > y1 && event.worldY < y2 && turn.upgrades.length < 12){
       var options = ["Electric Fists","Targeting Computer","Siege Mode","Nullifier Shield","The Payload",
         "Bigger Fists","Weakpoint Analysis","Weaponized Research","Nullifier Shield Unlock","The Payload",
-        "Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Gast",
+        "Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Fast",
         "More Armor","Field Repair","Even More Armor","Obliteration Ray","Super Go Fast Unlock",
         "5D Accelerators","Autododge","Emergency Jump Jets","Fusion Cannon","Mind-Machine Interface",
         "Hyper Caffeine","Monster Bait","Chaos Systems","Fusion Cannon Unlock","Mind-Machine Interface Unlock"
@@ -3059,9 +3059,9 @@ function confirmUpgrade(player,upgradeName) {
           }
         }
         if (priceText) {
-          priceText.setText(upgradeName + " is a tier " + consideredUpgrade.tier + " unlock upgrade.\nPurchase " + (consideredUpgrade.cost - discountValue) + " more " + consideredUpgrade.unlockColor + " upgrades and " + upgradeName.replace(' Unlock','')  + " to unlock this.");
+          priceText.setText(upgradeName + " is an unlock upgrade.\nPurchase " + (consideredUpgrade.cost - discountValue) + " more " + consideredUpgrade.unlockColor + " upgrades and " + upgradeName.replace(' Unlock','')  + " to unlock this.");
         } else {
-          priceText = game.add.text(confirmText.x, confirmText.y + 400, upgradeName + " is a tier " + consideredUpgrade.tier + " unlock upgrade.\nPurchase " + (consideredUpgrade.cost - discountValue) + " more " + consideredUpgrade.unlockColor + " upgrades and " + upgradeName.replace(' Unlock','')  + " to unlock this.", C.game.smallStyle);
+          priceText = game.add.text(confirmText.x, confirmText.y + 400, upgradeName + " is an unlock upgrade.\nPurchase " + (consideredUpgrade.cost - discountValue) + " more " + consideredUpgrade.unlockColor + " upgrades and " + upgradeName.replace(' Unlock','')  + " to unlock this.", C.game.smallStyle);
           priceText.anchor.setTo(.5,.5);
         }
         var back = game.add.text(confirmText.x, priceText.y + 100, "Back", C.game.ynStyle);
