@@ -443,7 +443,6 @@ function changeQuality() {
 
 function fade(inorout, state) {
   console.log("Fading " + inorout);
-  console.log(state);
   if (inorout === "out") {
     var start = 1;
     var end = 0;
@@ -458,7 +457,6 @@ function fade(inorout, state) {
   if (state && state === "Restart") {
     fadeTween.onComplete.add(completeKill, this);
   } else if (state) {
-    console.log(state);
     fadeTween.onComplete.add(changeState, {state: state});
   }
 }
