@@ -417,7 +417,105 @@ var U = {
   "Fusion Cannon": {
     "desc": "Spend an action to attack an adjacent monster with Red Die. This cannot cause counter damage.",
     "color": "red",
-    "cost": 8
+    "cost": 8,
+    active: function() {
+      console.log("Select a monster to attack.");
+      fusionButton.activated = true;
+      var foundMonsters = [];
+      if (!game.coverbg) {
+        game.coverbg = game.add.sprite(game.bg.width, 0, 'blackground');
+        game.coverbg.width = game.width - game.bg.width;
+        game.coverbg.height = game.height;
+        game.coverbg.text = game.add.text(game.coverbg.x + game.coverbg.width/2, game.coverbg.y + game.coverbg.height/2,"Select an adjacent monster to use the Fusion Cannon on.\nHit the Fusion Cannon button again to cancel.",C.game.textStyle);
+        game.coverbg.text.anchor.setTo(.5);
+        game.coverbg.alpha = 0;
+        game.coverbg.text.alpha = 0;
+      } else {
+        game.coverbg.text.text = "Select an adjacent monster to use the Fusion Cannon on.\nHit the Fusion Cannon button again to cancel.";
+      }
+      game.add.tween(game.coverbg).to( { alpha: 1}, 1000, Phaser.Easing.Linear.None, true);
+      game.add.tween(game.coverbg.text).to( { alpha: 1}, 1000, Phaser.Easing.Linear.None, true);
+      game.world.bringToTop(fusionButton);
+      game.world.bringToTop(game.coverbg.text);
+      var disabledInputs = [];
+      for (var i = 0; i < game.world.children.length; i++) {
+        if (game.world.children[i].inputEnabled) {
+          disabledInputs.push(game.world.children[i]);
+          game.world.children[i].inputEnabled = null;
+        } 
+      }
+      console.log(disabledInputs);
+      for (y = 0; y < this.player.sprite.closestSpaces.selectedSpaces.length; y++) {
+        if (this.player.sprite.closestSpaces.selectedSpaces[y].occupied) {
+          var len = this.player.sprite.closestSpaces.selectedSpaces[y].occupied.length;
+        } else {
+          var len = 0;
+        }
+        for (o = 0; o < len; o++) {
+          if (monstersList.indexOf(this.player.sprite.closestSpaces.selectedSpaces[y].occupied[o]) > -1) {
+            var foundMonster = this.player.sprite.closestSpaces.selectedSpaces[y].occupied[o];  
+            foundMonster.sprite.inputEnabled = true;
+            foundMonsters.push(foundMonster);
+            foundMonster.sprite.events.onInputDown.add(function() {
+              tweenTint(this.monster.sprite, 0xffffff, 0xef0202, 100, true);
+              this.monster.scale = C.mech.scale;
+              var rhits = rollDie(this.player.ratk - (this.monster.ratkDecrease || 0), this.player.ratkGoal || 5);
+              var defences = rollDie(this.monster.def, this.monster.defGoal || 5);
+              var successes = rhits.hits - defences.hits;
+              if (successes > 0) {
+                this.monster.hp -= rhits - defences; 
+              game.coverbg.text.text = this.player.sprite.key.capitalizeFirstLetter() + " fired and rolled " + rhits.results.join(", ") + ".\nMonster rolled " + defences.results.join(", ") + ".\n" + successes + " damage done.\nHit the Fusion Cannon button again to return."
+              } else {
+              game.coverbg.text.text = this.player.sprite.key.capitalizeFirstLetter() + " fired and rolled " + rhits.results.join(", ") + ".\nMonster rolled " + defences.results.join(", ") + ".\nNo damage done.\nHit the Fusion Cannon button again to return."
+              }
+              if (this.monster.hp <= 0) {
+                this.monster.space.occupied = removeFromList(monstersList[monstersList.indexOf(this.monster)], this.monster.space);
+                this.player.rp += this.monster.rp;
+                if (this.player.pilot === "Bounty Hunter") {
+                  var chr = String.fromCharCode(96 + this.player.sprite.number);
+                  if (destination.charAt(0) !== chr) {
+                    this.player.rp += 2;
+                  }
+                }
+                this.player.mr += this.monster.mr;
+                monstersList[monstersList.indexOf(this.monster)].sprite.destroy();
+                this.monster.sprite.destroy();
+                monstersList.splice(monstersList.indexOf(this.monster), 1);
+              } 
+              if (actionPoints <= 1 || this.monster.hp <= 0) {
+                U["Fusion Cannon"].end(this.player, this.disabledInputs, this.foundMonsters)
+              }
+              actionPoints -= 1;
+            }, {player: this.player, monster: foundMonster, disabledInputs: disabledInputs, foundMonsters: foundMonsters});
+          }
+        }
+      }
+      fusionButton.inputEnabled = true;
+      fusionButton.events.onInputDown._bindings = [];
+      fusionButton.events.onInputDown.add(U["Fusion Cannon"].end, {disabledInputs: disabledInputs, player: this.player, foundMonsters: foundMonsters});
+    },
+    end: function(player, disabledInputs, foundMonsters) {
+        var player = this.player || player;
+        var disabledInputs = this.disabledInputs || disabledInputs;
+        var foundMonsters = this.foundMonsters || foundMonsters;
+        for (i = 0; i < disabledInputs.length; i++) {
+          disabledInputs[i].inputEnabled = true;
+        }
+        for (i = 0; i < foundMonsters.length; i++) {
+          if (foundMonsters[i].hp > 0) {
+            foundMonsters[i].sprite.events.onInputDown._bindings = [];
+            foundMonsters[i].sprite.events.onInputDown.add(setLastClicked, {lastClicked:foundMonsters[i].sprite});
+            foundMonsters[i].sprite.events.onInputDown.add(hoverScale, {sprite:foundMonsters[i].sprite});
+          } else {
+            foundMonsters[i].sprite.destroy();
+          }
+        }
+        game.coverbg.alpha = 0;
+        game.coverbg.text.alpha = 0;
+        fusionButton.activated = false;
+        fusionButton.events.onInputDown._bindings = [];
+        fusionButton.events.onInputDown.add(U["Fusion Cannon"].active, {player: this.player});
+      }
   },
   "Fusion Cannon Unlock": {
     "desc": "Increses Fusion Cannon range to two spaces.",

@@ -841,7 +841,7 @@ class Setup {
           battlePlayer.addBattleInfo("HP",8,"hp", "maxhp");
           battleMonster.addBattleInfo("Blue Attack",5,"batk", "batkGoal" || 5);
           battlePlayer.addBattleInfo("Blue Attack",5,"batk", "batkGoal" || 5);
-          battlePlayer.addBattleInfo("Red Attack",4,"ratk","ratkGoal" || 5);
+          battlePlayer.addBattleInfo("Red Attack",9,"ratk","ratkGoal" || 5);
           battlePlayer.addBattleInfo("Defence",7,"def", "defGoal" || 5);
           battleMonster.addBattleInfo("Defence",7,"def","defGoal" || 5);
           game.world.bringToTop(menuBar);
@@ -946,7 +946,7 @@ function setAttributeDisplay(obj) {
       hoverSprite.scale.setTo(2*globalScale);
     }
     batkDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 100*globalScale, hoverSprite.y,5,"batk","batkGoal");
-    ratkDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 100*globalScale, hoverSprite.y + batkDisplay.valueIcon.width,4,"ratk","ratkGoal");
+    ratkDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 100*globalScale, hoverSprite.y + batkDisplay.valueIcon.width,9,"ratk","ratkGoal");
     defDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 450*globalScale, hoverSprite.y,7,"def","defGoal");
     hpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 100*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,8,"hp", "maxhp");
     rpDisplay = obj.addHoverInfo(hoverSprite.x + hoverSprite.width + 450*globalScale, hoverSprite.y + batkDisplay.valueIcon.width*2,6,"rp");
@@ -1403,6 +1403,8 @@ function setLastClicked(sprite) {
     mineButton.events.onInputDown.add(U.Mines.active, {player: lastClicked});
     extrasButton = makeButton(10, 10);
     mineButton.events.onInputDown.add(displayExtras, {player: lastClicked});
+    fusionButton = makeButton(7, 9)
+    fusionButton.events.onInputDown.add(U["Fusion Cannon"].active, {player: lastClicked});
   } else if (!turn /*&& this.lastClicked*/) {
     return;
   }
@@ -1487,6 +1489,16 @@ function setLastClicked(sprite) {
       wallButton.inputEnabled = false;
     }
 
+    if (normalState && lastClicked.upgrades.indexOf("Fusion Cannon") > -1 && fusionButton.activated != true) {
+      fusionButton.tint = 0xffffff;
+      fusionButton.inputEnabled = true;
+      fusionButton.events.onInputDown._bindings = [];
+      fusionButton.events.onInputDown.add(U["Fusion Cannon"].active, {player: lastClicked});
+    } else if (fusionButton && fusionButton.activated != true) {
+      fusionButton.tint = 0x3d3d3d;
+      fusionButton.inputEnabled = false;
+    }
+
     if (normalState && lastClicked.upgrades.indexOf("Mines") > -1) {
       mineButton.tint = 0xffffff;
       mineButton.inputEnabled = true;
@@ -1529,9 +1541,11 @@ function setLastClicked(sprite) {
    }
   } else if (sprite.key === "monster") {
     buttonsList.forEach(function(button) {    
-      button.events.onInputDown._bindings = [];
-      button.tint = 0x3d3d3d;
-      button.inputEnabled = false;
+      if (!fusionButton.activated) {
+        button.events.onInputDown._bindings = [];
+        button.tint = 0x3d3d3d;
+        button.inputEnabled = false;
+      }
     });
     }
     /*if (upgradeText) {
@@ -2439,8 +2453,10 @@ function destroyWall() {
 }
 
 function explode(sprite) { 
-    this.mineSpace.mine.destroy();
-    this.mineSpace.mine = false;
+    if (this.mineSpace) {
+      this.mineSpace.mine.destroy();
+      this.mineSpace.mine = false;
+    }
     var dieTween = game.add.tween(this.sprite).to( { x: game.world.centerX + game.width/2 + this.sprite.width*2, angle: 720}, 700, Phaser.Easing.Linear.None, true);
     dieTween.onComplete.add(this.sprite.kill, this);
 }
@@ -3606,6 +3622,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     drawnMonster.drawn = true;
     
   }
+  random.parentobj = obj;
   return obj
 }
 
