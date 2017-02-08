@@ -9,7 +9,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": ".8.1.0",
+   "versionNumber": ".9.0.0",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -147,6 +147,7 @@ var options = ["Electric Fists","Targeting Computer","Siege Mode","Nullifier Shi
 "5D Accelerators","Autododge","Emergency Jump Jets","Fusion Cannon","Mind-Machine Interface",
 "Hyper Caffeine","Monster Bait","Chaos Systems","Fusion Cannon Unlock","Mind-Machine Interface Unlock"
 ]
+var unlocks = ["Nullifier Shield", "Obliteration Ray", "Fusion Cannon", "The Payload", "Super Go Fast", "Mind-Machine Interface"];
 var boss = {};
 var battleSpeedDecrease = 0;
 var boughtBool;
@@ -590,6 +591,7 @@ class Setup {
       var pilotList = ["Bounty Hunter", "Teen Prodigy", "Co-ordinator", "Engineer"]
       playersList[i].pilot = pilotList[i-1];
       playersList[i].upgrades = [];
+      playersList[i].rpPerTurn = 3;
       playersList[i].colorDiscounts = [
         {color: "red", discount: 0 },
         {color: "blue", discount: 0},
@@ -1371,6 +1373,7 @@ function setLastClicked(sprite) {
   if (!turn && !this.lastClicked && sprite.key != "monster") {
     //setAttributeDisplay(playersList[sprite.number]);
     turn = playersList[sprite.number];
+    turn.rp += turn.rpPerTurn;
     //turn.sprite.inputEnabled = true;
     closestSpaces = getClosestSpaces(turn.key);
     turn.sprite.closestSpaces = closestSpaces;
@@ -1411,7 +1414,7 @@ function setLastClicked(sprite) {
   if (playerNames.indexOf(sprite.key) > -1) {
     lastClicked = playersList[this.lastClicked] || playersList[sprite.number];
     var normalState = !battleState && !zoomIn && !zoomOut;
-    if (turn.sprite === sprite && turn.upgrades.length < 9) {
+    if (turn.sprite === sprite && (turn.upgrades.length < 12 || monsterResearchTrack < 3)) {
       upgradeButton.inputEnabled = true;
       upgradeButton.tint = 0xffffff;
       upgradeButton.events.onInputUp._bindings = [];
@@ -1625,7 +1628,7 @@ class GameOver {
         game.input.enabled = true;
         var gg = game.add.text(game.world.centerX, game.world.centerY + 100*globalScale, "GAME\nOVER",C.game.textStyle);
         if (destroyedCities.length >= (playerCount * 4) - 4) {
-          var ggreason = game.add.text(game.world.centerX, game.world.centerY, "You lost all your cities.", C.game.textStyle);
+          var ggreason = game.add.text(game.world.centerX, game.world.centerY, "You lost too many cities.", C.game.textStyle);
         } else {
           var ggreason = game.add.text(game.world.centerX, game.world.centerY, "You lost all your mechs.", C.game.textStyle);
         }
@@ -2694,13 +2697,6 @@ function displayExtras() {
   console.log("Displaying Extras for: " + this.player.sprite.key);
   var cameraTween = game.add.tween(game.camera).to( { x: game.width }, C.game.moveSpeed, Phaser.Easing.Back.InOut, true);
   extrasDisplay.setText("Upgrades and extras for " + this.player.sprite.key + ":");
-  /*var options = ["Electric Fists","Targeting Computer","Siege Mode","Nullifier Shield","The Payload",
-    "Bigger Fists","Weakpoint Analysis","Weaponized Research","Nullifier Shield Unlock","The Payload",
-    "Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Fast",
-    "More Armor","Field Repair","Even More Armor","Obliteration Ray","Super Go Fast Unlock",
-    "5D Accelerators","Autododge","Emergency Jump Jets","Fusion Cannon","Mind-Machine Interface",
-    "Hyper Caffeine","Monster Bait","Chaos Systems","Fusion Cannon Unlock","Mind-Machine Interface Unlock"
-  ]*/
   var unlocks = ["Nullifier Shield", "Obliteration Ray", "Fusion Cannon", "The Payload", "Super Go Fast", "Mind-Machine Interface"];
   upgradeTokensList.forEach(function(upgrade) {
     upgrade.destroy();
@@ -2712,7 +2708,7 @@ function displayExtras() {
     var target = this.player.upgrades.length;
   }
   for (i = 0; i < target; i++) {
-    if (this.player.upgrades[i] && this.player.upgrades[i] != "LOCKED") {
+    if (this.player.upgrades[i] && this.player.upgrades[i].indexOf("LOCKED") === -1) {
       var num = i%4
       var upgradeToken = game.add.sprite(0,0,'upgradeMatIcons', options.indexOf(this.player.upgrades[i]));
       upgradeToken.scale.setTo(1.2*globalScale);
@@ -2720,9 +2716,9 @@ function displayExtras() {
       upgradeToken.x = game.width + game.camera.width/2 - upgradeToken.width*2 + (upgradeToken.width*num);
       upgradeToken.y = extrasDisplay.y + 200*globalScale + (Math.floor(i/4)*upgradeToken.height);
       upgradeTokensList[i] = upgradeToken;
-    } else if (this.player.upgrades[i] && this.player.upgrades[i] === "LOCKED") {
+    } else if (this.player.upgrades[i] && this.player.upgrades[i].indexOf("LOCKED") === 0) {
       var num = i%4
-      var upgradeToken = game.add.sprite(0,0,'upgradeMatIcons', options.indexOf(this.player.upgrades[i-4]) + 5);
+      var upgradeToken = game.add.sprite(0,0,'upgradeMatIcons', options.indexOf(this.player.upgrades[i].substring(7)) + 5);
       upgradeToken.scale.setTo(1.2*globalScale);
       upgradeToken.anchor.setTo(.5);
       upgradeToken.x = game.width + game.camera.width/2 - upgradeToken.width*2 + (upgradeToken.width*num);
@@ -2742,11 +2738,17 @@ function displayExtras() {
 }
 
   function upgrade(upgrading) {
-    var upgrading = this.upgrading || upgrading 
+    var upgrading = this.upgrading || upgrading;
+    upgrading.tiersOwned = [0,0,0,0];
+    for (i = 0; i < upgrading.upgrades.length; i++) {
+      if (U[upgrading.upgrades[i]] && unlocks.indexOf(U[upgrading.upgrades[i]]) === -1) {
+        U[upgrading.upgrades[i]].tier = U[upgrading.upgrades[i]].cost/2;
+        upgrading.tiersOwned[U[upgrading.upgrades[i]].tier] += 1; 
+      }
+    }
     confirmState = false;
     if (this.yn) {
         var boughtUpgrade = U[this.boughtUpgrade];
-        var unlocks = ["Nullifier Shield", "Obliteration Ray", "Fusion Cannon", "The Payload", "Super Go Fast", "Mind-Machine Interface"];
         if (this.yn === "yes" && boughtUpgrade) {
           if (boughtUpgrade.passive) {
             boughtUpgrade.passive(upgrading);
@@ -2771,11 +2773,17 @@ function displayExtras() {
               break
             }
           }
-          if (upgrading.upgrades.indexOf(this.boughtUpgrade) === -1) {
-            upgrading.upgrades.push(this.boughtUpgrade);
-          }
           if (unlocks.indexOf(this.boughtUpgrade) > -1) {
-            upgrading.upgrades[upgrading.upgrades.indexOf(this.boughtUpgrade) + 4] = "LOCKED";
+            U[this.boughtUpgrade].taken = true;
+            upgrading.upgrades.unshift(this.boughtUpgrade);
+            if (upgrading.upgrades.length >= 5) {
+              for (i = upgrading.upgrades.length; i >= 4; i--) {
+               upgrading.upgrades[i+1] = upgrading.upgrades[i];
+              }
+            }
+            upgrading.upgrades[4] = "LOCKED " + this.boughtUpgrade;
+          } else if (upgrading.upgrades.indexOf(this.boughtUpgrade) === -1) {
+            upgrading.upgrades.push(this.boughtUpgrade);
           }
           for (u = 0; u < unlocks.length; u++) {
             if (upgrading.upgrades.indexOf(unlocks[u]) > -1 && upgrading.upgrades.indexOf(unlocks[u]+" Unlock") === -1 ) {
@@ -2784,12 +2792,19 @@ function displayExtras() {
                   if (U[unlocks[u]+" Unlock"].passive) {
                     U[unlocks[u]+" Unlock"].passive(upgrading);
                   }
-                  upgrading.upgrades[upgrading.upgrades.indexOf(unlocks[u]) + 4] = unlocks[u]+" Unlock";
+                    upgrading.upgrades[upgrading.upgrades.indexOf(unlocks[u]) + 4] = unlocks[u]+" Unlock";
                 }
               }
           }
         }
         boughtBool = true;
+        upgrading.tiersOwned = [0,0,0,0];
+        for (i = 0; i < upgrading.upgrades.length; i++) {
+          if (U[upgrading.upgrades[i]] && unlocks.indexOf(U[upgrading.upgrades[i]]) === -1) {
+            U[upgrading.upgrades[i]].tier = U[upgrading.upgrades[i]].cost/2;
+            upgrading.tiersOwned[U[upgrading.upgrades[i]].tier] += 1; 
+          }
+        }
       }
       setAttributeDisplay(upgrading);
     }
@@ -2976,31 +2991,6 @@ function chooseUpgrade(event) {
             monsterDonerList[i].contributedText.text = monsterDonerList[i].contributedResources + "\n-\n" + monsterDonerList[i].totalResources; 
           }
         }
-      /*if (monsterResources >= 8) {
-        monsterResearchTrack += 1;
-        var mrCount = 0;
-        for (i = 0; i < mrProviders.length; i++) {
-          while (mrProviders[i].mr > 0 && mrCount < 8) {
-            mrProviders[i].mr -= 1;
-            mrCount += 1;
-          }
-        }
-        var token = mrTokens.create((x1+(255*globalScale))+(530*globalScale*(monsterResearchTrack)), y2 + 615*globalScale,'icons',18);
-        token.scale.setTo(globalScale);
-        token.anchor.setTo(.5);
-        for (i = 1; i < playersList.length; i++) { 
-          if (monsterResearchTrack >= 3) {
-            playersList[i].sprite.closestSpaces = getClosestSpaces(playersList[i].key); 
-            if (turn.upgrades.length >= 12 && monsterResearchTrack >= 3) {
-              game.camera.y = 0;
-              upgradeButton.tint = 0x3d3d3d;
-              upgradeButton.inputEnabled = false;
-            }
-          } else {
-            Corp[playersList[i].corp].trackUpgrade(playersList[i],monsterResearchTrack);
-          }
-        }
-      }*/
     }
   }
 }
@@ -3047,7 +3037,23 @@ function confirmUpgrade(player,upgradeName) {
           console.log("KILLED.");
         }
       }
-      if (consideredUpgrade.color === "black" || consideredUpgrade.color === "purple") {
+      if (!priceText) {
+        priceText = game.add.text(confirmText.x, confirmText.y + 400,"",C.game.smallStyle)
+        priceText.anchor.setTo(.5,.5);
+      }
+      if (player.upgrades.indexOf(upgrade) > -1) {
+        priceText.setText("This mech already owns this upgrade!");
+        for (i = 0; i < game.world.children.length; i++) {
+          if (game.world.children[i].text && (game.world.children[i].text === "Yes"  || game.world.children[i].text === "No")) {
+            game.world.children[i].destroy();
+          }
+        }
+        var back = game.add.text(confirmText.x, priceText.y + 100, "Back", C.game.ynStyle);
+        back.anchor.setTo(.5,.5);
+        back.inputEnabled = true;
+        back.events.onInputUp.add(upgrade, {upgrading: turn, yn: "no"});
+        return;
+      } else if (consideredUpgrade.color === "black" || consideredUpgrade.color === "purple") {
         if (!priceText) {
           priceText = game.add.text(confirmText.x, confirmText.y + 400,"You have selected a " + consideredUpgrade.color + " upgrade.\nBlack and Purple upgrades are not available in the Demo version of Attack on Mars, purchase the full game to try them out!", C.game.smallStyle); 
           priceText.anchor.setTo(.5);
@@ -3088,11 +3094,39 @@ function confirmUpgrade(player,upgradeName) {
         back.inputEnabled = true;
         back.events.onInputUp.add(upgrade, {upgrading: turn, yn: "no"});
         return;
+      } else if (consideredUpgrade.taken) {
+        priceText.setText("Another mech has already purchased this unique upgrade.");
+        var back = game.add.text(confirmText.x, priceText.y + 100, "Back", C.game.ynStyle);
+        for (i = 0; i < game.world.children.length; i++) {
+          if (game.world.children[i].text && (game.world.children[i].text === "Yes"  || game.world.children[i].text === "No")) {
+            game.world.children[i].destroy();
+          }
+        }
+        back.anchor.setTo(.5,.5);
+        back.inputEnabled = true;
+        back.events.onInputUp.add(upgrade, {upgrading: turn, yn: "no"});
+        return;
       } else if (priceText) {
-        priceText.setText(upgradeName + " is a tier " + consideredUpgrade.tier + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue));
-      } else {
-        priceText = game.add.text(confirmText.x, confirmText.y + 400, upgradeName + " is a tier " + consideredUpgrade.tier + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue),C.game.smallStyle)
-        priceText.anchor.setTo(.5,.5);
+        if (consideredUpgrade.tier == 1 || player.tiersOwned[consideredUpgrade.tier-1] >= 2) {
+          priceText.setText(upgradeName + " is a tier " + consideredUpgrade.tier + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue));
+        } else {
+          priceText.setText(upgradeName + " is a tier " + consideredUpgrade.tier + " upgrade, and you currently own " + player.tiersOwned[consideredUpgrade.tier-1] + " tier " + (consideredUpgrade.tier-1) + " upgrades.\nYou need 2 upgrades from the previous tier to purchase from this tier."); 
+        var back = game.add.text(confirmText.x, priceText.y + 100, "Back", C.game.ynStyle);
+        for (i = 0; i < game.world.children.length; i++) {
+          if (game.world.children[i].text && (game.world.children[i].text === "Yes"  || game.world.children[i].text === "No")) {
+            game.world.children[i].destroy();
+          }
+        }
+        back.anchor.setTo(.5,.5);
+        back.inputEnabled = true;
+        back.events.onInputUp.add(upgrade, {upgrading: turn, yn: "no"});
+        return;
+        }
+      }
+      for (i = 0; i < game.world.children.length; i++) {
+        if (game.world.children[i].text && game.world.children[i].text === "Back") {
+          game.world.children[i].destroy();
+        }
       }
       var yes = game.add.text(confirmText.x - 150, priceText.y + 100, "Yes", C.game.ynStyle);
       yes.anchor.setTo(.5,.5);
@@ -3231,6 +3265,7 @@ function changeTurn() {
       console.log(turn);
       if (turn.rpPerTurn && turn.sprite.alive) {
         turn.rp += turn.rpPerTurn;
+        console.log(turn.sprite.key + " gained " + turn.rpPerTurn + " RP.");
       }
       upgradeButton.reset(upgradeButton.x, upgradeButton.y);
       //game.world.bringToTop(upgradeButton);
