@@ -479,9 +479,6 @@ var U = {
                   }
                 }
                 this.player.mr += this.monster.mr;
-                monstersList[monstersList.indexOf(this.monster)].sprite.destroy();
-                this.monster.sprite.destroy();
-                monstersList.splice(monstersList.indexOf(this.monster), 1);
               } 
               if (actionPoints <= 1 || this.monster.hp <= 0) {
                 U["Fusion Cannon"].end(this.player, this.disabledInputs, this.foundMonsters)
@@ -503,11 +500,12 @@ var U = {
           disabledInputs[i].inputEnabled = true;
         }
         for (i = 0; i < foundMonsters.length; i++) {
-          if (foundMonsters[i].hp > 0) {
+          if (foundMonsters[i] && foundMonsters[i].hp > 0) {
             foundMonsters[i].sprite.events.onInputDown._bindings = [];
             foundMonsters[i].sprite.events.onInputDown.add(setLastClicked, {lastClicked:foundMonsters[i].sprite});
             foundMonsters[i].sprite.events.onInputDown.add(hoverScale, {sprite:foundMonsters[i].sprite});
-          } else {
+          } else if (foundMonsters[i].sprite) {
+            monstersList.splice(monstersList.indexOf(foundMonsters[i]), 1);
             foundMonsters[i].sprite.destroy();
           }
         }
