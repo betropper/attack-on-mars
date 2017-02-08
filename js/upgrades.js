@@ -457,13 +457,14 @@ var U = {
             foundMonster.sprite.inputEnabled = true;
             foundMonsters.push(foundMonster);
             foundMonster.sprite.events.onInputDown.add(function() {
+              console.log(this.monster);
               tweenTint(this.monster.sprite, 0xffffff, 0xef0202, 100, true);
               this.monster.scale = C.mech.scale;
               var rhits = rollDie(this.player.ratk - (this.monster.ratkDecrease || 0), this.player.ratkGoal || 5);
               var defences = rollDie(this.monster.def, this.monster.defGoal || 5);
               var successes = rhits.hits - defences.hits;
               if (successes > 0) {
-                this.monster.hp -= rhits - defences; 
+                this.monster.hp -= successes; 
               game.coverbg.text.text = this.player.sprite.key.capitalizeFirstLetter() + " fired and rolled " + rhits.results.join(", ") + ".\nMonster rolled " + defences.results.join(", ") + ".\n" + successes + " damage done.\nHit the Fusion Cannon button again to return."
               } else {
               game.coverbg.text.text = this.player.sprite.key.capitalizeFirstLetter() + " fired and rolled " + rhits.results.join(", ") + ".\nMonster rolled " + defences.results.join(", ") + ".\nNo damage done.\nHit the Fusion Cannon button again to return."
