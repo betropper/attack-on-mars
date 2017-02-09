@@ -2762,7 +2762,6 @@ function displayExtras() {
                 }
             }
           }
-
           if ((boughtUpgrade.cost - discountValue) > 0) {
             upgrading.rp -= (boughtUpgrade.cost - discountValue);
             console.log("cost was " + (boughtUpgrade.cost-discountValue));
@@ -2804,6 +2803,17 @@ function displayExtras() {
             U[upgrading.upgrades[i]].tier = U[upgrading.upgrades[i]].cost/2;
             upgrading.tiersOwned[U[upgrading.upgrades[i]].tier] += 1; 
           }
+          var timesBought = 0;
+          for (i = 1; i < playersList.length; i++) {
+            if (playersList[i].upgrades.indexOf(this.boughtUpgrade) > -1) {
+              timesBought += 1;
+              if (timesBought >= 3) {
+                console.log("Ran out of " + this.boughtUpgrade);
+                U[this.boughtUpgrade].taken = true;
+                break;
+              }
+            }
+          }
         }
       }
       setAttributeDisplay(upgrading);
@@ -2823,13 +2833,6 @@ function displayExtras() {
     var upgradeDescription = game.add.text(upgradeMenu.x, upgradeMenu.y - upgradeMenu.height/2 - 100*globalScale, "Click on an upgrade to see its details, scroll up to return to the game", C.game.textStyle);
     upgradeDescription.anchor.setTo(.5,.5);
   }
-  var options = ["Electric Fists","Targeting Computer","Siege Mode","Nullifier Shield","The Payload",
-    "Bigger Fists","Weakpoint Analysis","Weaponized Research","Nullifier Shield Unlock","The Payload",
-    "Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Fast",
-    "More Armor","Field Repair","Even More Armor","Obliteration Ray","Super Go Fast Unlock",
-    "5D Accelerators","Autododge","Emergency Jump Jets","Fusion Cannon","Mind-Machine Interface",
-    "Hyper Caffeine","Monster Bait","Chaos Systems","Fusion Cannon Unlock","Mind-Machine Interface Unlock"
-  ]
   upgradeTokens.callAll('kill');
   var x1 = 340 * globalScale, x2 = 2425 * globalScale,
   y1 = 1545 * globalScale, y2 = 3650 * globalScale;
@@ -2867,14 +2870,6 @@ function chooseUpgrade(event) {
     console.log("Points are at " + x1 + "," + x2 + "," + y1 + "," + y2 + ".");
     console.log(event.worldX + " " + event.worldY);
     if (event.worldX > x1 && event.worldX < x2 && event.worldY > y1 && event.worldY < y2 && turn.upgrades.length < 12){
-      var options = ["Electric Fists","Targeting Computer","Siege Mode","Nullifier Shield","The Payload",
-        "Bigger Fists","Weakpoint Analysis","Weaponized Research","Nullifier Shield Unlock","The Payload",
-        "Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Fast",
-        "More Armor","Field Repair","Even More Armor","Obliteration Ray","Super Go Fast Unlock",
-        "5D Accelerators","Autododge","Emergency Jump Jets","Fusion Cannon","Mind-Machine Interface",
-        "Hyper Caffeine","Monster Bait","Chaos Systems","Fusion Cannon Unlock","Mind-Machine Interface Unlock"
-      ]
-      //var upgradeToken = upgradeTokens.create(event.x, event.y + game.camera.y,'icons',18);
       var x = event.worldX - x1,
           y = event.worldY - y1;
       var choice = options[Math.floor(x / (415*globalScale)) + 5*Math.floor(y /(350*globalScale))];
@@ -3095,7 +3090,11 @@ function confirmUpgrade(player,upgradeName) {
         back.events.onInputUp.add(upgrade, {upgrading: turn, yn: "no"});
         return;
       } else if (consideredUpgrade.taken) {
-        priceText.setText("Another mech has already purchased this unique upgrade.");
+        if (unlocks.indexOf(consideredUpgrade) > -1) {
+          priceText.setText("Another mech has already purchased this unique upgrade.");
+        } else {
+          priceText.setText("This upgrade is out of stock. Three other mechs have purchased it.");
+        }
         var back = game.add.text(confirmText.x, priceText.y + 100, "Back", C.game.ynStyle);
         for (i = 0; i < game.world.children.length; i++) {
           if (game.world.children[i].text && (game.world.children[i].text === "Yes"  || game.world.children[i].text === "No")) {
@@ -3234,7 +3233,6 @@ function changeTurn() {
       moveMonsters();
     }
     actionPoints = 3;
-    //turn.sprite.inputEnabled = false
     do {
       if (turn && turn.sprite.number && turn.sprite.number < playerCount) {
         turn = playersList[turn.sprite.number + 1];
@@ -3268,7 +3266,6 @@ function changeTurn() {
         console.log(turn.sprite.key + " gained " + turn.rpPerTurn + " RP.");
       }
       upgradeButton.reset(upgradeButton.x, upgradeButton.y);
-      //game.world.bringToTop(upgradeButton);
       upgradeButton.events.onInputUp._bindings = [];
       upgradeButton.loadTexture(turn.sprite.key);
       upgradeButton.events.onInputUp.add(upgrade, {upgrading: turn});
