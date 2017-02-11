@@ -3289,6 +3289,27 @@ function attachClosestSpace(sprite,pointer) {
       closestSpaces.selectedSpaces.push(obj.space);
       closestSpaces.keys.push(obj.key);
       console.log(closestSpaces);
+   if (obj.upgrades.indexOf("Super Go Fast") > -1) { 
+        var availableSpaces = closestSpaces.keys;
+        //Finds the closest spaces from two spaces away in case of
+        //super go fast upgrade
+        var twoAwayList = [];
+        for (m = 0; m < closestSpaces.keys.length; m++) {
+            //monstersList[i].sprite.closestSpaces.selectedSpaces[m].closestSpaces = getClosestSpaces(monstersList[i].sprite.closestSpaces.keys[m]) 
+            var checkKeys = getClosestSpaces(closestSpaces.keys[m]).keys;
+            for (l = 0; l < checkKeys.length; l++) {
+              checkKeys[l] = {key: checkKeys[l], parent: closestSpaces.keys[m], space: Space[checkKeys[l]]}
+              twoAwayList.push(checkKeys[l]);
+            }
+          }
+        twoAwayList.forEach(function(i) {
+          if (closestSpaces.keys.indexOf(i.key) === -1) {
+            closestSpaces.selectedSpaces.push(i.space);
+            closestSpaces.keys.push(i.key);
+          }
+        });
+
+      }
     }
     for (i = 0; i < closestSpaces.selectedSpaces.length; i++) {
         var spaceObjX = closestSpaces.selectedSpaces[i].x*C.bg.scale*C.bg.resizeX + game.bg.position.x;
