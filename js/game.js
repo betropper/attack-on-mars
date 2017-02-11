@@ -9,7 +9,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": ".9.0.0",
+   "versionNumber": ".9.1.0",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -592,6 +592,7 @@ class Setup {
       playersList[i].pilot = pilotList[i-1];
       playersList[i].upgrades = [];
       playersList[i].rpPerTurn = 3;
+      playersList[i].tiersOwned = [0,0,0,0];
       playersList[i].colorDiscounts = [
         {color: "red", discount: 0 },
         {color: "blue", discount: 0},
@@ -2739,13 +2740,6 @@ function displayExtras() {
 
   function upgrade(upgrading) {
     var upgrading = this.upgrading || upgrading;
-    upgrading.tiersOwned = [0,0,0,0];
-    for (i = 0; i < upgrading.upgrades.length; i++) {
-      if (U[upgrading.upgrades[i]] && unlocks.indexOf(U[upgrading.upgrades[i]]) === -1) {
-        U[upgrading.upgrades[i]].tier = U[upgrading.upgrades[i]].cost/2;
-        upgrading.tiersOwned[U[upgrading.upgrades[i]].tier] += 1; 
-      }
-    }
     confirmState = false;
     if (this.yn) {
         var boughtUpgrade = U[this.boughtUpgrade];
@@ -2796,13 +2790,10 @@ function displayExtras() {
               }
           }
         }
-        boughtBool = true;
-        upgrading.tiersOwned = [0,0,0,0];
-        for (i = 0; i < upgrading.upgrades.length; i++) {
-          if (U[upgrading.upgrades[i]] && unlocks.indexOf(U[upgrading.upgrades[i]]) === -1) {
-            U[upgrading.upgrades[i]].tier = U[upgrading.upgrades[i]].cost/2;
-            upgrading.tiersOwned[U[upgrading.upgrades[i]].tier] += 1; 
-          }
+          boughtBool = true;
+          upgrading.tiersOwned[(boughtUpgrade.cost/2)-1] += 1;
+          console.log(upgrading.tiersOwned[(boughtUpgrade.cost/2)-1]);
+          console.log("TESTMEMES")
           var timesBought = 0;
           for (i = 1; i < playersList.length; i++) {
             if (playersList[i].upgrades.indexOf(this.boughtUpgrade) > -1) {
@@ -2815,7 +2806,6 @@ function displayExtras() {
             }
           }
         }
-      }
       setAttributeDisplay(upgrading);
     }
     if (upgrading.upgrades.length >= 12 && monsterResearchTrack >= 3) {
@@ -2998,6 +2988,7 @@ function confirmUpgrade(player,upgradeName) {
       confirmState = true;
       game.camera.y = upgradeMenu.y + upgradeMenu.height/2 + game.camera.height/2;
       var index = options.indexOf(upgradeName);
+      var timesBought = 0;
       if (!upgradeExample) {
         var upgradeExample = game.add.sprite(game.world.centerX, game.height/2 + game.camera.y, 'upgradeMatIcons', index);
         upgradeExample.scale.setTo(globalScale);
@@ -3106,10 +3097,10 @@ function confirmUpgrade(player,upgradeName) {
         back.events.onInputUp.add(upgrade, {upgrading: turn, yn: "no"});
         return;
       } else if (priceText) {
-        if (consideredUpgrade.tier == 1 || player.tiersOwned[consideredUpgrade.tier-1] >= 2) {
+        if (consideredUpgrade.tier == 1 || player.tiersOwned[consideredUpgrade.tier-2] >= 2) {
           priceText.setText(upgradeName + " is a tier " + consideredUpgrade.tier + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue));
         } else {
-          priceText.setText(upgradeName + " is a tier " + consideredUpgrade.tier + " upgrade, and you currently own " + player.tiersOwned[consideredUpgrade.tier-1] + " tier " + (consideredUpgrade.tier-1) + " upgrades.\nYou need 2 upgrades from the previous tier to purchase from this tier."); 
+          priceText.setText(upgradeName + " is a tier " + consideredUpgrade.tier + " upgrade, and you currently own " + player.tiersOwned[consideredUpgrade.tier-2] + " tier " + (consideredUpgrade.tier-1) + " upgrades.\nYou need 2 upgrades from the previous tier to purchase from this tier."); 
         var back = game.add.text(confirmText.x, priceText.y + 100, "Back", C.game.ynStyle);
         for (i = 0; i < game.world.children.length; i++) {
           if (game.world.children[i].text && (game.world.children[i].text === "Yes"  || game.world.children[i].text === "No")) {
