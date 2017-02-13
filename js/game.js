@@ -271,6 +271,7 @@ class Load {
     this.load.image("yellowCard",C.mech.colorCards.yellowfile,520,791);
     this.load.image("gameboard",C.bg.file,C.bg.width,C.bg.height);
     this.load.image("background",C.mbg.file,C.mbg.width,C.mbg.height);
+    this.load.image("bgtile","assets/rsz_img_0021_2.jpg",182,158);
     this.load.image("blue", "assets/PlayerIcon1.png",C.mech.width,C.mech.height);
     this.load.image("red", "assets/PlayerIcon2.png",C.mech.width,C.mech.height);
     this.load.image("green", "assets/PlayerIcon3.png",C.mech.width,C.mech.height);
@@ -311,6 +312,7 @@ class MainMenu {
   }
 
   create() {
+    game.tilebg = game.add.tileSprite(0,0,182,158,'bgtile');
     game.mbg = game.add.sprite(game.world.centerX, game.world.centerY, "background");
     game.mbg.anchor.setTo(.5);
     game.mbg.scale.setTo(C.mbg.scale, C.mbg.scale);
