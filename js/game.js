@@ -108,9 +108,9 @@ var C = {
   "height": 72
  }, 
  "upgradeMenu": {
-  "width": 1725,
-  "height": 2350,
-  "scale": 1.3 * globalScale
+  "width": 2875,
+  "height": 3917,
+  "scale": globalScale
  
  },
  "icons": {
@@ -262,7 +262,8 @@ class Load {
     //this.load.spritesheet('icons', "assets/Icons.png", C.icons.width, C.icons.height)
     game.load.atlasJSONArray('icons', 'assets/Icons.png', 'assets/icons.json');
     game.load.atlasJSONArray('upgradeMatIcons', 'assets/UpgradeMatSpritesheet.png', 'assets/UpgradeMatSpritesheet.json');
-    this.load.image("upgradeMat","assets/UpgradeMat.png",469,676);
+    //this.load.image("upgradeMat","assets/UpgradeMat.png",469,676);
+    this.load.image("upgradeMat","assets/rsz_img_0021_1.jpg",2875,3917);
     this.load.image("blackground","assets/blackbox.png",512,512);
     this.load.image("redCard",C.mech.colorCards.redfile,520,791);
     this.load.image("blueCard",C.mech.colorCards.bluefile,520,791);
