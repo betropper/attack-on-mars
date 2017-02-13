@@ -360,7 +360,9 @@ class MainMenu {
     var settingsList = [returnButton,lowButton,medButton,highButton,qualityDisplay];
     console.log(settingsList);
     for (var i = 1; i < settingsList.length; i++) {
-      settingsList[i].inputEnabled = true;
+      if (settingsList[i] != qualityDisplay) {
+        settingsList[i].inputEnabled = true;
+      }
       settingsList[i].anchor.setTo(.5);
       settingsList[i].events.onInputUp.add(changeQuality, {quality: settingsList[i].text});
     }
@@ -2825,16 +2827,16 @@ function displayExtras() {
     upgradeDescription.anchor.setTo(.5,.5);
   }
   upgradeTokens.callAll('kill');
-  var x1 = 340 * globalScale, x2 = 2425 * globalScale,
-  y1 = 1545 * globalScale, y2 = 3650 * globalScale;
+  var x1 = 149 * globalScale, x2 = 2660 * globalScale,
+  y1 = 2032 * globalScale, y2 = 4489 * globalScale;
   for (i = 0; i < upgrading.upgrades.length; i++) {
     if (options.indexOf(upgrading.upgrades[i]) > -1) {
       var upgradeLocation = options.indexOf(upgrading.upgrades[i]);
-      var upX = x1 + (415/2)*globalScale + (415*globalScale)*upgradeLocation;
-      var upY = y1 + ((350/2)*globalScale);
+      var upX = x1 + (501/2)*globalScale + (501*globalScale)*upgradeLocation;
+      var upY = y1 + ((407/2)*globalScale);
       while (upX > x2) {
-        upX -= (415*globalScale)*5;
-        upY += (350*globalScale);
+        upX -= (501*globalScale)*5;
+        upY += (407*globalScale);
       }
       if (upgradeTokens.getFirstDead()) {
         upgradeTokens.getFirstDead().reset(upX,upY);
@@ -2856,14 +2858,14 @@ function displayExtras() {
 function chooseUpgrade(event) {
   if (game.camera.y >= 430) {
     console.log(event);
-    var x1 = 340 * globalScale, x2 = 2425 * globalScale,
-    y1 = 1545 * globalScale, y2 = 3650 * globalScale;
+    var x1 = 149 * globalScale, x2 = 2660 * globalScale,
+    y1 = 2032 * globalScale, y2 = 4480 * globalScale;
     console.log("Points are at " + x1 + "," + x2 + "," + y1 + "," + y2 + ".");
     console.log(event.worldX + " " + event.worldY);
     if (event.worldX > x1 && event.worldX < x2 && event.worldY > y1 && event.worldY < y2 && turn.upgrades.length < 12){
       var x = event.worldX - x1,
           y = event.worldY - y1;
-      var choice = options[Math.floor(x / (415*globalScale)) + 5*Math.floor(y /(350*globalScale))];
+      var choice = options[Math.floor(x / (501*globalScale)) + 5*Math.floor(y /(407*globalScale))];
       console.log(choice);
       console.log("Event was at " + x + " " + y);
       var unlocks = ["Nullifier Shield", "Obliteration Ray", "Fusion Cannon", "The Payload", "Super Go Fast", "Mind-Machine Interface"];
@@ -2874,12 +2876,12 @@ function chooseUpgrade(event) {
         game.input.onTap._bindings = [];
         confirmUpgrade(turn,choice);
       }
-    } else if (monsterResearchTrack < 3 && event.worldX > x1 && event.worldX < x2 && event.worldY > y2 + 400*globalScale && event.worldY < y2 + 830*globalScale) { 
+    } else if (monsterResearchTrack < 3 && event.worldX > x1 && event.worldX < x2 && event.worldY > 4680*globalScale && event.worldY < y2 + 830*globalScale) { 
       var mrProviders = [];
       game.kineticScrolling.stop();
       if (!mrMenuFreezeFrame) {
         monsterResources = 0;
-        game.camera.x += game.camera.width;
+        game.camera.x += game.camera.width + 100;
         mrMenuFreezeFrame = { x: game.camera.x, y: game.camera.y};
         var colortext = game.add.text(game.camera.x + 50*globalScale, game.camera.y + 500*globalScale, "Mech:",C.game.textStyle);
         colortext.anchor.y = .5
@@ -3000,11 +3002,11 @@ function confirmUpgrade(player,upgradeName) {
       if (confirmText && consideredUpgrade && consideredUpgrade.desc) {
         confirmText.setText("Are you sure you would like to purchase " + upgradeName + " on " + turn.sprite.key.capitalizeFirstLetter() + " Mecha?\n\n" + consideredUpgrade.desc);
       } else if (consideredUpgrade && consideredUpgrade.desc){
-        confirmText = game.add.text(game.camera.x + game.camera.width/2,game.camera.y + game.camera.height/2 - 230,"Are you sure you would like to purchase " + upgradeName + " on " + turn.sprite.key.capitalizeFirstLetter() + " Mecha?\n\n" + consideredUpgrade.desc, C.game.textStyle);
+        confirmText = game.add.text(game.camera.x + game.camera.width/2,game.camera.y + game.camera.height/2 - 460*globalScale,"Are you sure you would like to purchase " + upgradeName + " on " + turn.sprite.key.capitalizeFirstLetter() + " Mecha?\n\n" + consideredUpgrade.desc, C.game.textStyle);
         confirmText.anchor.setTo(.5,.5);
       } else {
         if (!confirmText) {
-          confirmText = game.add.text(game.camera.x + game.camera.width/2,game.camera.y + game.camera.height/2 - 230,"Currently a WIP! Check back later to access this upgrade!", C.game.textStyle);
+          confirmText = game.add.text(game.camera.x + game.camera.width/2,game.camera.y + game.camera.height/2 - 460*globalScale,"Currently a WIP! Check back later to access this upgrade!", C.game.textStyle);
           confirmText.anchor.setTo(.5,.5);
         } else {
           confirmText.setText("Currently a WIP! Check back later to access this upgrade!");
@@ -3025,7 +3027,7 @@ function confirmUpgrade(player,upgradeName) {
         }
       }
       if (!priceText) {
-        priceText = game.add.text(confirmText.x, confirmText.y + 400,"",C.game.smallStyle)
+        priceText = game.add.text(confirmText.x, confirmText.y + 800*globalScale,"",C.game.smallStyle)
         priceText.anchor.setTo(.5,.5);
       }
       if (player.upgrades.indexOf(upgrade) > -1) {
@@ -3035,7 +3037,7 @@ function confirmUpgrade(player,upgradeName) {
             game.world.children[i].destroy();
           }
         }
-        var back = game.add.text(confirmText.x, priceText.y + 100, "Back", C.game.ynStyle);
+        var back = game.add.text(confirmText.x, priceText.y + 200*globalScale, "Back", C.game.ynStyle);
         back.anchor.setTo(.5,.5);
         back.inputEnabled = true;
         back.events.onInputUp.add(upgrade, {upgrading: turn, yn: "no"});
@@ -3052,7 +3054,7 @@ function confirmUpgrade(player,upgradeName) {
             game.world.children[i].destroy();
           }
         }
-        var back = game.add.text(confirmText.x, priceText.y + 100, "Back", C.game.ynStyle);
+        var back = game.add.text(confirmText.x, priceText.y + 200*globalScale, "Back", C.game.ynStyle);
         back.anchor.setTo(.5,.5);
         back.inputEnabled = true;
         back.events.onInputUp.add(upgrade, {upgrading: turn, yn: "no"});
@@ -3071,7 +3073,7 @@ function confirmUpgrade(player,upgradeName) {
           priceText = game.add.text(confirmText.x, confirmText.y + 400, upgradeName + " is an unlock upgrade.\nPurchase " + (consideredUpgrade.cost - discountValue) + " more " + consideredUpgrade.unlockColor + " upgrades and " + upgradeName.replace(' Unlock','')  + " to unlock this.", C.game.smallStyle);
           priceText.anchor.setTo(.5,.5);
         }
-        var back = game.add.text(confirmText.x, priceText.y + 100, "Back", C.game.ynStyle);
+        var back = game.add.text(confirmText.x, priceText.y + 200*globalScale, "Back", C.game.ynStyle);
         for (i = 0; i < game.world.children.length; i++) {
           if (game.world.children[i].text && (game.world.children[i].text === "Yes"  || game.world.children[i].text === "No")) {
             game.world.children[i].destroy();
@@ -3087,7 +3089,7 @@ function confirmUpgrade(player,upgradeName) {
         } else {
           priceText.setText("This upgrade is out of stock. Three other mechs have purchased it.");
         }
-        var back = game.add.text(confirmText.x, priceText.y + 100, "Back", C.game.ynStyle);
+        var back = game.add.text(confirmText.x, priceText.y + 200*globalScale, "Back", C.game.ynStyle);
         for (i = 0; i < game.world.children.length; i++) {
           if (game.world.children[i].text && (game.world.children[i].text === "Yes"  || game.world.children[i].text === "No")) {
             game.world.children[i].destroy();
@@ -3102,7 +3104,7 @@ function confirmUpgrade(player,upgradeName) {
           priceText.setText(upgradeName + " is a tier " + consideredUpgrade.tier + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue));
         } else {
           priceText.setText(upgradeName + " is a tier " + consideredUpgrade.tier + " upgrade, and you currently own " + player.tiersOwned[consideredUpgrade.tier-2] + " tier " + (consideredUpgrade.tier-1) + " upgrades.\nYou need 2 upgrades from the previous tier to purchase from this tier."); 
-        var back = game.add.text(confirmText.x, priceText.y + 100, "Back", C.game.ynStyle);
+        var back = game.add.text(confirmText.x, priceText.y + 200*globalScale, "Back", C.game.ynStyle);
         for (i = 0; i < game.world.children.length; i++) {
           if (game.world.children[i].text && (game.world.children[i].text === "Yes"  || game.world.children[i].text === "No")) {
             game.world.children[i].destroy();
@@ -3119,11 +3121,11 @@ function confirmUpgrade(player,upgradeName) {
           game.world.children[i].destroy();
         }
       }
-      var yes = game.add.text(confirmText.x - 150, priceText.y + 100, "Yes", C.game.ynStyle);
+      var yes = game.add.text(confirmText.x - 150, priceText.y + 200*globalScale, "Yes", C.game.ynStyle);
       yes.anchor.setTo(.5,.5);
       yes.inputEnabled = true;
       yes.events.onInputUp.add(upgrade, {upgrading: turn, yn: "yes", boughtUpgrade: upgradeName});
-      var no = game.add.text(confirmText.x + 150, priceText.y + 100, "No", C.game.ynStyle);
+      var no = game.add.text(confirmText.x + 150, priceText.y + 200*globalScale, "No", C.game.ynStyle);
       no.anchor.setTo(.5,.5);
       no.inputEnabled = true;
       no.events.onInputUp.add(upgrade, {upgrading: turn, yn: "no"});
