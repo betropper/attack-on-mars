@@ -108,9 +108,9 @@ var C = {
   "height": 72
  }, 
  "upgradeMenu": {
-  "width": 2875,
-  "height": 3917,
-  "scale": globalScale
+  "width": 5750,
+  "height": 7833,
+  "scale": globalScale/2
  
  },
  "icons": {
@@ -263,7 +263,15 @@ class Load {
     game.load.atlasJSONArray('icons', 'assets/Icons.png', 'assets/icons.json');
     game.load.atlasJSONArray('upgradeMatIcons', 'assets/UpgradeMatSpritesheet.png', 'assets/UpgradeMatSpritesheet.json');
     //this.load.image("upgradeMat","assets/UpgradeMat.png",469,676);
-    this.load.image("upgradeMat","assets/rsz_img_0021_1.jpg",2875,3917);
+    
+    if (globalScale == 1) {
+      this.load.image("upgradeMat","assets/IMG_0021.JPG",2875*2,3917*2);
+    } else {
+      this.load.image("upgradeMat","assets/rsz_img_0021_1.jpg",2875,3917);
+      C.upgradeMenu.width = C.upgradeMenu.width/2
+      C.upgradeMenu.height = C.upgradeMenu.height/2
+      C.upgradeMenu.scale = globalScale;
+    }
     this.load.image("blackground","assets/blackbox.png",512,512);
     this.load.image("redCard",C.mech.colorCards.redfile,520,791);
     this.load.image("blueCard",C.mech.colorCards.bluefile,520,791);
@@ -555,7 +563,18 @@ function checkButtons() {
 class Setup {
 
   preload() {
-    game.tilebg = game.add.tileSprite(0,0,64,64,'bgtile');
+    //game.tilebg = game.add.tileSprite(0,0,600,202,'bgtile')
+    //game.tilebg.width = game.width*5;
+    //game.tilebg.height = game.height*5;
+    //game.tilebg.tileScale = .5;
+    game.bg = game.add.sprite(0, game.world.centerY - game.height / 2, "gameboard");
+    game.bg.scale.setTo(C.bg.scale, C.bg.scale);
+    upgradeMenu = game.add.sprite(game.world.centerX, game.world.centerY + C.game.height/2 + (C.upgradeMenu.height*C.upgradeMenu.scale)/2 + 200*globalScale, 'upgradeMat');
+    upgradeMenu.anchor.setTo(.5,.5);
+    upgradeMenu.scale.x = C.upgradeMenu.scale;
+    upgradeMenu.scale.y = C.upgradeMenu.scale;
+    var upgradeDescription = game.add.text(upgradeMenu.x, upgradeMenu.y - upgradeMenu.height/2 - 100*globalScale, "Click on an upgrade to see its details, scroll up to return to the game", C.game.textStyle);
+    upgradeDescription.anchor.setTo(.5,.5);
   }
 
   create() {
@@ -579,8 +598,6 @@ if (Phaser.Device.desktop) {
 }
   game.camera.bounds = null;
   console.log("Placing Board");
-  game.bg = game.add.sprite(0, game.world.centerY - game.height / 2, "gameboard");
-  game.bg.scale.setTo(C.bg.scale, C.bg.scale);
   if (!playerCount || Number.isInteger(playerCount) == false || playerCount < 2) {
     playerCount = 2;
   } else if (playerCount > 4) {
@@ -2820,14 +2837,6 @@ function displayExtras() {
       return
     }
     console.log("Upgrading " + upgrading.sprite.key);
-    if (!upgradeMenu) {
-    upgradeMenu = game.add.sprite(game.world.centerX, game.world.centerY + C.game.height/2 + (C.upgradeMenu.height*C.upgradeMenu.scale)/2 + 200*globalScale, 'upgradeMat');
-    upgradeMenu.anchor.setTo(.5,.5);
-    upgradeMenu.scale.x = C.upgradeMenu.scale;
-    upgradeMenu.scale.y = C.upgradeMenu.scale;
-    var upgradeDescription = game.add.text(upgradeMenu.x, upgradeMenu.y - upgradeMenu.height/2 - 100*globalScale, "Click on an upgrade to see its details, scroll up to return to the game", C.game.textStyle);
-    upgradeDescription.anchor.setTo(.5,.5);
-  }
   upgradeTokens.callAll('kill');
   var x1 = 149 * globalScale, x2 = 2660 * globalScale,
   y1 = 2032 * globalScale, y2 = 4489 * globalScale;
