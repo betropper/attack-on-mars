@@ -312,7 +312,6 @@ class MainMenu {
   }
 
   create() {
-    game.tilebg = game.add.tileSprite(0,0,182,158,'bgtile');
     game.mbg = game.add.sprite(game.world.centerX, game.world.centerY, "background");
     game.mbg.anchor.setTo(.5);
     game.mbg.scale.setTo(C.mbg.scale, C.mbg.scale);
@@ -559,101 +558,103 @@ class Setup {
   }
 
   create() {
-    console.log(playersList);
-    //if (playersList.length === 0) {
-    for (var i = 0; i < obj_keys.length; i++) {
-      Space[obj_keys[i]].occupied = false;
-    }   
-    game.stage.smoothed = true;
-  if (Phaser.Device.desktop) {
-    /*if (window.innerWidth < C.game.width) {
-      game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-    } else {
-      game.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
-      game.scale.setUserScale((window.innerWidth)/2800,(window.innerHeight)/1280);
-    }*/
-      game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+  //game.tilebg = game.add.tileSprite(0,0,16,16,'bgtile');
+  console.log(playersList);
+  //if (playersList.length === 0) {
+  for (var i = 0; i < obj_keys.length; i++) {
+    Space[obj_keys[i]].occupied = false;
+  }   
+  game.stage.smoothed = true;
+if (Phaser.Device.desktop) {
+  /*if (window.innerWidth < C.game.width) {
+    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
   } else {
-    alert("You are on mobile!");
-    game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
+    game.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
+    game.scale.setUserScale((window.innerWidth)/2800,(window.innerHeight)/1280);
+  }*/
+    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+} else {
+  alert("You are on mobile!");
+  game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
+}
+  game.camera.bounds = null;
+  console.log("Placing Board");
+  game.bg = game.add.sprite(0, game.world.centerY - game.height / 2, "gameboard");
+  game.bg.scale.setTo(C.bg.scale, C.bg.scale);
+  if (!playerCount || Number.isInteger(playerCount) == false || playerCount < 2) {
+    playerCount = 2;
+  } else if (playerCount > 4) {
+    playerCount = 4;
   }
-    game.camera.bounds = null;
-    console.log("Placing Board");
-    game.bg = game.add.sprite(0, game.world.centerY - game.height / 2, "gameboard");
-    game.bg.scale.setTo(C.bg.scale, C.bg.scale);
-    if (!playerCount || Number.isInteger(playerCount) == false || playerCount < 2) {
-      playerCount = 2;
-    } else if (playerCount > 4) {
-      playerCount = 4;
+  game.time.events.add(Phaser.Timer.SECOND * 1, spawnBoss, this);
+  for (var i = 1; i <= playerCount; i++) {
+    console.log(i);
+    var destroyedCityColumn = spawnRandom("destroyedCity", i, "0", false);
+    destroyedCities[i-1] = destroyedCityColumn;
+    playersList[i] = spawnRandom(playerNames[i-1], i, "0", true); 
+    playersList[i].sprite.number = i;
+    var pilotList = ["Bounty Hunter", "Teen Prodigy", "Co-ordinator", "Engineer"]
+    playersList[i].pilot = pilotList[i-1];
+    playersList[i].upgrades = [];
+    playersList[i].rpPerTurn = 3;
+    playersList[i].tiersOwned = [0,0,0,0];
+    playersList[i].colorDiscounts = [
+      {color: "red", discount: 0 },
+      {color: "blue", discount: 0},
+      {color: "green", discount: 0},
+      {color: "yellow",discount: 0},
+      {color: "purple", discount: 0},
+      {color: "black", discount: 0}
+    ]
+    playersList[i].sprite.inputEnabled = true;
+    playersList[i].sprite.input.enableDrag(true);
+    playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
+    closestSpaces = getClosestSpaces(playersList[i].key);
+    playersList[i].sprite.closestSpaces = closestSpaces;
+    playersList[i].sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
+    reEnableHover(playersList[i].sprite);
+  }
+  for (var i = 0; i <= 5; i++) {
+    if (i <= 3) {
+      monstersList[i] = spawnRandom("monster", i + 1, "3", true);
+      monstersList[i].sprite.number =  i;
+    } else {
+      monstersList[i] = spawnRandom("monster", "random", "3");
+      monstersList[i].sprite.number =  i;
     }
-    game.time.events.add(Phaser.Timer.SECOND * 1, spawnBoss, this);
-    for (var i = 1; i <= playerCount; i++) {
-      console.log(i);
-      var destroyedCityColumn = spawnRandom("destroyedCity", i, "0", false);
-      destroyedCities[i-1] = destroyedCityColumn;
-      playersList[i] = spawnRandom(playerNames[i-1], i, "0", true); 
-      playersList[i].sprite.number = i;
-      var pilotList = ["Bounty Hunter", "Teen Prodigy", "Co-ordinator", "Engineer"]
-      playersList[i].pilot = pilotList[i-1];
-      playersList[i].upgrades = [];
-      playersList[i].rpPerTurn = 3;
-      playersList[i].tiersOwned = [0,0,0,0];
-      playersList[i].colorDiscounts = [
-        {color: "red", discount: 0 },
-        {color: "blue", discount: 0},
-        {color: "green", discount: 0},
-        {color: "yellow",discount: 0},
-        {color: "purple", discount: 0},
-        {color: "black", discount: 0}
-      ]
-      playersList[i].sprite.inputEnabled = true;
-      playersList[i].sprite.input.enableDrag(true);
-      playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
-      closestSpaces = getClosestSpaces(playersList[i].key);
-      playersList[i].sprite.closestSpaces = closestSpaces;
-      playersList[i].sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
-      reEnableHover(playersList[i].sprite);
-    }
-    for (var i = 0; i <= 5; i++) {
-      if (i <= 3) {
-        monstersList[i] = spawnRandom("monster", i + 1, "3", true);
-        monstersList[i].sprite.number =  i;
-      } else {
-        monstersList[i] = spawnRandom("monster", "random", "3");
-        monstersList[i].sprite.number =  i;
-      }
-    }
+  }
 
-    // Add in text that is displayed.
-    
-    extrasDisplay = game.add.text(game.width*1.5, 20*globalScale, "", C.game.textStyle);
-    extrasDisplay.anchor.setTo(.5);
-    var extrasReturnButton = game.add.button(extrasDisplay.x,extrasDisplay.y + game.width/2.5 + 50*globalScale,'icons',function() {
-      game.camera.x = 0;
-    });
-    extrasReturnButton.frame = 13
-    extrasReturnButton.anchor.setTo(.5);
-    extrasReturnButton.scale.setTo(globalScale*.7);
-    var extrasReturnText = game.add.text(extrasReturnButton.x,extrasReturnButton.y - extrasReturnButton.height/1.5,"Return to Movement Screen",C.game.textStyle);
-    extrasReturnText.anchor.setTo(.5);
-    menuBar = game.add.sprite(0,game.height - game.camera.width/5,"blackground");
-    menuBar.width = game.camera.width;
-    menuBar.height = game.camera.width/5;
-    game.world.bringToTop(menuBar);
-    menuBar.kill();
-    actionIcons = game.add.group();
-    destroyedCityIcons = game.add.group();
-    var destroyedCityIcon = destroyedCityIcons.create((40*globalScale), 30*globalScale,'destroyedCity');
-    destroyedCityIcon.scale.setTo(.7*globalScale);
-    for (i = 0; i < destroyedCities.length - 1; i++) {
-        var destroyedCityIcon = destroyedCityIcons.create((destroyedCityIcons.children[destroyedCityIcons.length-1].x+(30*globalScale)), 30*globalScale,'destroyedCity');
-        destroyedCityIcon.scale.setTo(.7*globalScale);
-    }
-    upgradeTokens = game.add.group();
-    mrTokens = game.add.group();
-    fade("in");  
+  // Add in text that is displayed.
+  
+  extrasDisplay = game.add.text(game.width*1.5, 20*globalScale, "", C.game.textStyle);
+  extrasDisplay.anchor.setTo(.5);
+  var extrasReturnButton = game.add.button(extrasDisplay.x,extrasDisplay.y + game.width/2.5 + 50*globalScale,'icons',function() {
+    game.camera.x = 0;
+  });
+  extrasReturnButton.frame = 13
+  extrasReturnButton.anchor.setTo(.5);
+  extrasReturnButton.scale.setTo(globalScale*.7);
+  var extrasReturnText = game.add.text(extrasReturnButton.x,extrasReturnButton.y - extrasReturnButton.height/1.5,"Return to Movement Screen",C.game.textStyle);
+  extrasReturnText.anchor.setTo(.5);
+  menuBar = game.add.sprite(0,game.height - game.camera.width/5,"blackground");
+  menuBar.width = game.camera.width;
+  menuBar.height = game.camera.width/5;
+  game.world.bringToTop(menuBar);
+  menuBar.kill();
+  actionIcons = game.add.group();
+  destroyedCityIcons = game.add.group();
+  var destroyedCityIcon = destroyedCityIcons.create((40*globalScale), 30*globalScale,'destroyedCity');
+  destroyedCityIcon.scale.setTo(.7*globalScale);
+  for (i = 0; i < destroyedCities.length - 1; i++) {
+      var destroyedCityIcon = destroyedCityIcons.create((destroyedCityIcons.children[destroyedCityIcons.length-1].x+(30*globalScale)), 30*globalScale,'destroyedCity');
+      destroyedCityIcon.scale.setTo(.7*globalScale);
   }
-  update() {
+  upgradeTokens = game.add.group();
+  mrTokens = game.add.group();
+  fade("in");  
+}
+update() {
+  //game.tilebg.x += 1;
 
   /*if (Phaser.Device.desktop) {
       if (window.innerWidth < C.game.width) {
