@@ -1753,6 +1753,9 @@ function printBattleResults(text,position) {
   if (resultsList.length > 0) {
     for (i = 0; i < resultsList.length; i++) {
       resultsList[i].y += globalScale*23;
+      if (resultsList[i].rerollButton) {
+        resultsList[i].rerollButton.y += globalScale*23;
+      }
     }
   }
   if (!position) {
@@ -1763,6 +1766,13 @@ function printBattleResults(text,position) {
   battleResults.anchor.x = .5;
   battleResults.anchor.y = .5;
   game.world.bringToTop(battleResults);
+  if (battlePlayer.canReroll) {
+    if (battlePlayer.upgrades.indexOf("Mind-Machine Interface") > -1 && battleResults.text.indexOf("Energy Die") > -1) {
+      battleResults.rerollButton = game.add.sprite(battleResults.x - battleResults.width/2 - 40*globalScale, battleResults.y, 'icons', 16);
+      battleResults.rerollButton.scale.setTo(.18*globalScale);
+      game.world.bringToTop(battleResults.rerollButton);
+    } 
+  }
   resultsList.push(battleResults);
   return battleResults;
 }
@@ -2125,6 +2135,9 @@ function killBattleInfo() {
   }
   monsterBattleTexts = [];
   for (i = 0; i < resultsList.length; i++) {
+    if (resultsList[i].rerollButton) {
+      resultsList[i].rerollButton.destroy();
+    }
     resultsList[i].destroy();
   }
   resultsList = []

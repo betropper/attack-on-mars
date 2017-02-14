@@ -550,7 +550,10 @@ var U = {
   "Mind-Machine Interface": {
     "desc": "This mech may re-roll all missed Blue Attack die once per round.",
     "color": "blue",
-    "cost": 8
+    "cost": 8,
+    passive: function(player) {
+      player.canReroll = true;
+    }
   },
   "Mind-Machine Interface Unlock": {
     "desc": "This mech may spend 4 MR once per round to re-roll all missed die.",
