@@ -9,7 +9,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": ".9.1.0",
+   "versionNumber": ".9.3.0",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -198,6 +198,8 @@ var focusSpace;
 var battlePlayer = null;
 var battleMonster = null;
 var battleTurn = null;
+var monsterAttackText;
+var monsterAttackButton;
 var battleStarting = false;
 var pendingBattles = [];
 var threatLevel = 0;
@@ -261,9 +263,8 @@ class Load {
     console.log("Loading.");
     //this.load.spritesheet('icons', "assets/Icons.png", C.icons.width, C.icons.height)
     game.load.atlasJSONArray('icons', 'assets/Icons.png', 'assets/icons.json');
-    game.load.atlasJSONArray('upgradeMatIcons', 'assets/UpgradeMatSpritesheet.png', 'assets/UpgradeMatSpritesheet.json');
-    //this.load.image("upgradeMat","assets/UpgradeMat.png",469,676);
-    
+    //game.load.atlasJSONArray('upgradeMatIcons', 'assets/UpgradeMatSpritesheet.png', 'assets/UpgradeMatSpritesheet.json');
+    game.load.spritesheet('upgradeMatIcons','assets/UpgradeMatIconsSheet-min.png', 5048/5, 4888/6);
     if (globalScale == 1) {
       this.load.image("upgradeMat","assets/IMG_0021.JPG",2875*2,3917*2);
     } else {
@@ -1363,6 +1364,12 @@ String.prototype.capitalizeFirstLetter = function() {
 function queAttack() {
   if (battleTurn === this.attacker) {
     this.attacker.attacking = true;
+    for (i = 0; i < resultsList.length; i++) {
+      if (resultsList[i].rerollButton) {
+        resultsList[i].rerollButton.destroy();
+        resultsList[i].rerollText.destroy();
+      }
+    }
     if (this.modifier && this.modifier === "Siege Mode") {
       this.attacker.siegeMode = true;
       printBattleResults(battlePlayer.sprite.key.capatalizeFirstLetter() +  " Mecha has activated Seige Mode!");
@@ -1534,30 +1541,6 @@ function setLastClicked(sprite) {
       mineButton.tint = 0x3d3d3d;
       mineButton.inputEnabled = false;
     }
-
-    /*
-    if (arrows = []) {
-      var directions = [{direction: "left", angle: 180},{direction: "up", angle: -90}, {direction: "inward", angle: 90}, {direction: "right", angle:0}];
-      for (i = 0; i < directions.length; i++) {
-        arrowButton = game.add.sprite(menuBar.x + 200 + i*50, menuBar.y + 85, 'arrow');
-        arrowButton.anchor.set(0.5);
-        arrowButton.inputEnabled = true;
-        arrowButton.width = 40;
-        arrowButton.height = 40;
-        arrowButton.battleButton = false;
-        arrowButton.attributes = directions[i];
-        arrowButton.angle = arrowButton.attributes.angle; 
-        arrows.push(arrowButton);
-        buttonsList.push(arrowButton);
-        arrowButton.events.onInputDown.add(arrowMove, {moving: lastClicked, direction: arrows[i].attributes.direction});
-      }
-    } else {
-      for (i = 0; i < arrows.length; i++) {
-        arrows[i].reset(arrows[i].x, arrows[i].y);
-        arrows[i].events.onInputDown._bindings = [];
-        arrows[i].events.onInputDown.add(arrowMove, {moving: lastClicked, direction: arrows[i].attributes.direction});
-      } 
-    }*/
    for (i = 0; i < buttonsList.length; i++) {
      if (buttonsList[i] && buttonsList[i].alive) {
         var num = i%3
@@ -1755,6 +1738,7 @@ function printBattleResults(text,position) {
       resultsList[i].y += globalScale*23;
       if (resultsList[i].rerollButton) {
         resultsList[i].rerollButton.y += globalScale*23;
+        resultsList[i].rerollText.y += globalScale*23;
       }
     }
   }
@@ -1768,13 +1752,35 @@ function printBattleResults(text,position) {
   game.world.bringToTop(battleResults);
   if (battlePlayer.canReroll) {
     if (battlePlayer.upgrades.indexOf("Mind-Machine Interface") > -1 && battleResults.text.indexOf("Energy Die") > -1) {
-      battleResults.rerollButton = game.add.sprite(battleResults.x - battleResults.width/2 - 40*globalScale, battleResults.y, 'icons', 16);
+      battleResults.rerollButton = game.add.button(battleResults.x - battleResults.width/2 - 40*globalScale, battleResults.y, 'icons', function() {
+        console.log("Value Rerolled!");
+      });
+      battleResults.rerollButton.frame = 16
       battleResults.rerollButton.scale.setTo(.18*globalScale);
+      battleResults.rerollButton.anchor.setTo(0,.5);
       game.world.bringToTop(battleResults.rerollButton);
+      battleResults.rerollText = game.add.bitmapText(battleResults.rerollButton.x - 60*globalScale, battleResults.y, 'font', "Reroll?", 20*globalScale);
+      battleResults.rerollText.anchor.setTo(0,.5);
+      /*game.input.onDown.add(function(event) {
+        button = this.button;
+        console.log("You tried to unpause.");
+        var localX = event.worldX / C.game.zoomScale 
+        var localY = event.worldY / C.game.zoomScale 
+        console.log(localX + " , " + localY);
+        console.log(button.x + " , " + button.y);
+        if (game.paused && localX > button.x - button.width/2 && localX < button.x + button.width/2 && localY < button.y + button.height/2 && localY > button.y - button.height/2) {
+          game.paused = false;
+        }
+      },{button: battleResults.rerollButton});*/
+
     } 
   }
   resultsList.push(battleResults);
   return battleResults;
+}
+
+function displayRerollOptions() {
+
 }
 
 function countInArray(array, what) {
@@ -1861,6 +1867,9 @@ function attack(attacker,defender) {
   var rhits = 0;
   if (attacker.ratk) {
     rhits = rollDie(attacker.ratk - (defender.ratkDecrease || 0), attacker.ratkGoal || 5);
+  }
+  if (attacker.canReroll) {
+    attacker.rerollValues = {rhits: rhits, bhits: bhits};
   }
   var successes = (rhits.hits || 0) + bhits.hits;
   console.log("rhits for attacker: " + rhits.hits);
@@ -2137,6 +2146,7 @@ function killBattleInfo() {
   for (i = 0; i < resultsList.length; i++) {
     if (resultsList[i].rerollButton) {
       resultsList[i].rerollButton.destroy();
+      resultsList[i].rerollText.destroy();
     }
     resultsList[i].destroy();
   }
@@ -2245,24 +2255,48 @@ function battle(player, monster) {
           battleTexts[i].kill();
         }
         battlePlayer.sprite.events.onDragStop._bindings = [];
-        battlePlayer.sprite.inputEnabled = false;
         //var increment = C.game.moveSpeed/10
         //game.time.events.repeat(increment, 5, updateRollText, this,battleMonster,"atk");
       }
-      battleMonster.sprite.x += C.mech.battleSpeed - battleSpeedDecrease;
-      battleSpeedDecrease += .02;
-      if (battleMonster.sprite.x >= focusX) {
-        attack(battleMonster,battlePlayer);
-        battleSpeedDecrease = 0;
-        if (battleState === true) {
-          battleMonster.sprite.x = focusX - C.mech.battleSpacing;
-          for (i = 0; i < battleTexts.length; i++) {
-            battleTexts[i].reset(battleTexts[i].x, battleTexts[i].y);
+      if (battleMonster.attacking) {
+        battleMonster.sprite.x += C.mech.battleSpeed - battleSpeedDecrease;
+        battleSpeedDecrease += .02;
+        if (battleMonster.sprite.x >= focusX) {
+          attack(battleMonster,battlePlayer);
+          battleSpeedDecrease = 0;
+          if (battleState === true) {
+            battleMonster.sprite.x = focusX - C.mech.battleSpacing;
+            for (i = 0; i < battleTexts.length; i++) {
+              battleTexts[i].reset(battleTexts[i].x, battleTexts[i].y);
+            }
+            battlePlayer.sprite.inputEnabled = true;
+            battleMonster.attacking = false;
+            battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
           }
-          battlePlayer.sprite.inputEnabled = true;
-          battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
         }
-      }
+      } else if (!monsterAttackButton) {
+        monsterAttackButton = game.add.button(battleTexts[0].x,battleTexts[0].y + 30*globalScale,'icons', function() {
+          battleMonster.attacking = true;
+          monsterAttackButton.kill();
+          monsterAttackText.kill();
+          for (i = 0; i < resultsList.length; i++) {
+            if (resultsList[i].rerollButton) {
+              resultsList[i].rerollButton.destroy();
+              resultsList[i].rerollText.destroy();
+            }
+          }
+        });
+        monsterAttackButton.scale.setTo(.4*globalScale);
+        monsterAttackButton.anchor.setTo(.5);
+        monsterAttackButton.frame = 12;
+        monsterAttackText = game.add.bitmapText(monsterAttackButton.x, monsterAttackButton.y + 60*globalScale, 'font', "Click for Monster's attack.", 13*globalScale);
+       monsterAttackText.anchor.setTo(.5) 
+        } else if (monsterAttackButton && !monsterAttackButton.alive) {
+          monsterAttackButton.reset(battleTexts[0].x,battleTexts[0].y + 30*globalScale);
+          monsterAttackText.reset(monsterAttackButton.x, monsterAttackButton.y + 60*globalScale);
+          game.world.bringToTop(monsterAttackButton);
+          game.world.bringToTop(monsterAttackText);
+        }
     } else if (battleTurn === battlePlayer && battlePlayer.attacking === true) {
       if (attackText) {
         for (i = 0; i < battleTexts.length; i++) {
@@ -2747,7 +2781,7 @@ function displayExtras() {
     if (this.player.upgrades[i] && this.player.upgrades[i].indexOf("LOCKED") === -1) {
       var num = i%4
       var upgradeToken = game.add.sprite(0,0,'upgradeMatIcons', options.indexOf(this.player.upgrades[i]));
-      upgradeToken.scale.setTo(1.2*globalScale);
+      upgradeToken.scale.setTo(globalScale/3);
       upgradeToken.anchor.setTo(.5);
       upgradeToken.x = game.width + game.camera.width/2 - upgradeToken.width*2 + (upgradeToken.width*num);
       upgradeToken.y = extrasDisplay.y + 200*globalScale + (Math.floor(i/4)*upgradeToken.height);
@@ -2755,7 +2789,7 @@ function displayExtras() {
     } else if (this.player.upgrades[i] && this.player.upgrades[i].indexOf("LOCKED") === 0) {
       var num = i%4
       var upgradeToken = game.add.sprite(0,0,'upgradeMatIcons', options.indexOf(this.player.upgrades[i].substring(7)) + 5);
-      upgradeToken.scale.setTo(1.2*globalScale);
+      upgradeToken.scale.setTo(globalScale/3);
       upgradeToken.anchor.setTo(.5);
       upgradeToken.x = game.width + game.camera.width/2 - upgradeToken.width*2 + (upgradeToken.width*num);
       upgradeToken.y = extrasDisplay.y + 200*globalScale + (Math.floor(i/4)*upgradeToken.height);
@@ -3018,7 +3052,7 @@ function confirmUpgrade(player,upgradeName) {
       var timesBought = 0;
       if (!upgradeExample) {
         var upgradeExample = game.add.sprite(game.world.centerX, game.height/2 + game.camera.y, 'upgradeMatIcons', index);
-        upgradeExample.scale.setTo(globalScale);
+        upgradeExample.scale.setTo(globalScale/2);
         upgradeExample.anchor.setTo(.5);
       } else {
         upgradeExample.frame = index;
