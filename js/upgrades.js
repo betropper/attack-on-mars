@@ -375,6 +375,7 @@ var U = {
       "desc": "Up to twice per round, you may turn one dice from one color into one dice of another color.\nCannot turn dice that have already been rolled into another color.",
       "color": "black",
       "cost": 6,
+      "allowsReroll": true,
       passive: function(player) {
       }
     },
@@ -551,8 +552,25 @@ var U = {
     "desc": "This mech may re-roll all missed Blue Attack die once per round.",
     "color": "blue",
     "cost": 8,
+    "allowsReroll": true,
     passive: function(player) {
       player.canReroll = true;
+    },
+    active: function() {
+      var player = this.attacker;
+      console.log("Chose the Mind Machine Interface.")
+      for (i = 0; i < rerollTexts.length; i++) {
+          rerollTexts[i].destroy();
+      }
+      rerollTexts = [];
+      if (battleTurn == battlePlayer) {
+        for (i = 0; i < battleTexts.length; i++) {
+            battleTexts[i].revive();
+        }
+      } else if (monsterAttackButton && !monsterAttackButton.alive) {
+        monsterAttackButton.disabled = false;
+      }
+
     }
   },
   "Mind-Machine Interface Unlock": {
@@ -560,6 +578,7 @@ var U = {
     "color": "blue",
     "unlock": true,
     "unlockColor": "yellow",
+    "allowsReroll": true,
     "cost": 3
   }
 }

@@ -155,6 +155,7 @@ var upgradeState;
 var confirmState;
 var confirmText;
 var battleTexts = [];
+var rerollTexts = [];
 var playerBattleTexts = [];
 var monsterBattleTexts = [];
 var extraBattleTexts = [];
@@ -906,6 +907,7 @@ update() {
         attackText.inputEnabled = true;
         attackText.events.onInputDown.add(queAttack, {attacker: battlePlayer});
         battleTexts.push(attackText);
+        game.add.tween(attackText).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + 20*globalScale}, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true);
         if (battlePlayer.upgrades.indexOf("Emergency Jump Jets") > -1) {  
           addBattleText("Run",attemptEscape, "Emergency Jump Jets");
         } else if (battleMonster != boss && battlePlayer.key.charAt(2) != "0" ){
@@ -916,11 +918,6 @@ update() {
         }
         if (battlePlayer.weaponizedResearchCharges && battlePlayer.weaponizedResearchCharges > 0) {
           addBattleText("Wp Rsrch: " + battlePlayer.weaponizedResearchCharges,changeDieMenu,"Weaponized Research");
-        }
-        for (i = 0; i < battleTexts.length; i++) {
-          var yincrement = i*30*globalScale;
-          game.add.tween(battleTexts[i]).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + yincrement + 20*globalScale}, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true)
-          game.world.bringToTop(battleTexts[i]);
         }
         barsMoving = false;
         game.input.enabled = true;
@@ -1066,12 +1063,27 @@ function allowBattle() {
     }
 }
 
-function addBattleText(text, action, modifier) {
-  var battleText = game.add.bitmapText(game.camera.width/C.game.zoomScale + game.camera.x/C.game.zoomScale - 100*globalScale, battleTexts[battleTexts.length - 1].y + 60*globalScale, 'font', text, 20*globalScale);
+function addBattleText(text, action, modifier, listName) {
+  if (!listName) {
+    var list = battleTexts;
+  } else {
+    var list = rerollTexts;
+  }
+  if (list.length >= 1) {
+    var battleText = game.add.bitmapText(game.camera.width/C.game.zoomScale + game.camera.x/C.game.zoomScale - 100*globalScale, list[list.length - 1].y + 60*globalScale, 'font', text, 20*globalScale);
+  } else {
+    var battleText = game.add.bitmapText(game.camera.width/C.game.zoomScale + game.camera.x/C.game.zoomScale - 100*globalScale, menuBar.y + menuBar.height, 'font', text, 20*globalScale);
+  }
   battleText.anchor.setTo(0.5);
   battleText.inputEnabled = true;
   battleText.events.onInputDown.add(action, {attacker: battlePlayer, modifier: modifier});
-  battleTexts.push(battleText);
+  if (battleTurn == battleMonster && !listName) {
+    battleText.inputEnabled = false;
+  }
+  list.push(battleText);
+  var yincrement = list.indexOf(battleText)*30*globalScale;
+  game.add.tween(battleText).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + yincrement + 20*globalScale}, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true)
+  game.world.bringToTop(battleText);
 }
 //'value' is the name of the changed value as a string.
 
@@ -1754,6 +1766,7 @@ function printBattleResults(text,position) {
     if (battlePlayer.upgrades.indexOf("Mind-Machine Interface") > -1 && battleResults.text.indexOf("Energy Die") > -1) {
       battleResults.rerollButton = game.add.button(battleResults.x - battleResults.width/2 - 40*globalScale, battleResults.y, 'icons', function() {
         console.log("Value Rerolled!");
+        displayRerollOptions(battlePlayer);
       });
       battleResults.rerollButton.frame = 16
       battleResults.rerollButton.scale.setTo(.18*globalScale);
@@ -1779,8 +1792,22 @@ function printBattleResults(text,position) {
   return battleResults;
 }
 
-function displayRerollOptions() {
-
+function displayRerollOptions(player) {
+  for (i = 0; i < battleTexts.length; i++) {
+      battleTexts[i].kill();
+  }
+  if (monsterAttackButton && monsterAttackButton.alive) {
+    monsterAttackButton.kill();
+    monsterAttackButton.disabled = true;
+    monsterAttackText.kill();
+  }
+  console.log(player.upgrades);
+  for (i = 0; i < player.upgrades.length; i++) {
+    console.log("Tick.");
+    if (U[player.upgrades[i]].allowsReroll) {
+      addBattleText(player.upgrades[i], U[player.upgrades[i]].active, 0, "rerollTexts");
+    }
+  }
 }
 
 function countInArray(array, what) {
@@ -2291,7 +2318,7 @@ function battle(player, monster) {
         monsterAttackButton.frame = 12;
         monsterAttackText = game.add.bitmapText(monsterAttackButton.x, monsterAttackButton.y + 60*globalScale, 'font', "Click for Monster's attack.", 13*globalScale);
        monsterAttackText.anchor.setTo(.5) 
-        } else if (monsterAttackButton && !monsterAttackButton.alive) {
+        } else if (monsterAttackButton && !monsterAttackButton.alive && !monsterAttackButton.disabled) {
           monsterAttackButton.reset(battleTexts[0].x,battleTexts[0].y + 30*globalScale);
           monsterAttackText.reset(monsterAttackButton.x, monsterAttackButton.y + 60*globalScale);
           game.world.bringToTop(monsterAttackButton);
@@ -2317,6 +2344,7 @@ function battle(player, monster) {
           battlePlayer.sprite.x = focusX + C.mech.battleSpacing;
           for (i = 0; i < battleTexts.length; i++) {
             battleTexts[i].reset(battleTexts[i].x, battleTexts[i].y);
+            battleTexts[i].inputEnabled = true;
           }
           battlePlayer.sprite.inputEnabled = true;
           battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
