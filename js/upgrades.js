@@ -558,7 +558,17 @@ var U = {
     },
     active: function() {
       var player = this.attacker;
+      var enemy = player.rerollValues.enemy;
       console.log("Chose the Mind Machine Interface.")
+      console.log(player.rerollValues.bhits.results)
+      var bhits = rollDie(player.batk - (enemy.batkDecrease || 0), player.batkGoal || 5);
+      player.rerollValues.bhits = bhits;
+      if (player.rerollValues.damageTaken) {
+        player.hp += player.rerollValues.damageTaken;
+      } else if (player.rerollValues.damageDealt) {
+        enemy.hp += player.rerollValues.damageDealt;
+      }
+      attack(player,enemy);
       for (i = 0; i < rerollTexts.length; i++) {
           rerollTexts[i].destroy();
       }

@@ -767,6 +767,8 @@ update() {
         game.world.bringToTop(menuBar);*/
         menuBar.attachedToCamera = false;
     } if (battleStarting) {
+      game.world.bringToTop(battleMonster);
+      game.world.bringToTop(battlePlayer);
       var lookAt = focusX; 
       battlePlayer.sprite.x = Phaser.Math.clamp(battlePlayer.sprite.x + C.mech.battleSpeed/2, 0, lookAt + C.mech.battleSpacing);
       battleMonster.sprite.x = Phaser.Math.clamp(battleMonster.sprite.x - C.mech.battleSpeed/2, lookAt - C.mech.battleSpacing, 3000);
@@ -908,6 +910,16 @@ update() {
         attackText.events.onInputDown.add(queAttack, {attacker: battlePlayer});
         battleTexts.push(attackText);
         game.add.tween(attackText).to({ y: game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + 20*globalScale}, C.game.zoomSpeed*2, Phaser.Easing.Back.InOut, true);
+        if (!monsterAttackButton) {
+          monsterAttackButton = game.add.button(battleTexts[0].x, game.camera.y/C.game.zoomScale + game.camera.height/C.game.zoomScale - (game.camera.height/8) + 80*globalScale,'icons', allowMonsterTurn);
+          monsterAttackButton.scale.setTo(.4*globalScale);
+          monsterAttackButton.anchor.setTo(.5);
+          monsterAttackButton.frame = 12;
+          monsterAttackText = game.add.bitmapText(monsterAttackButton.x, monsterAttackButton.y + 60*globalScale, 'font', "Click for Monster's attack.", 13*globalScale);
+          monsterAttackText.anchor.setTo(.5) 
+          monsterAttackButton.kill();
+          monsterAttackText.kill();
+        }
         if (battlePlayer.upgrades.indexOf("Emergency Jump Jets") > -1) {  
           addBattleText("Run",attemptEscape, "Emergency Jump Jets");
         } else if (battleMonster != boss && battlePlayer.key.charAt(2) != "0" ){
@@ -1890,23 +1902,27 @@ function attackOfOppertunity() {
 }
 
 function attack(attacker,defender) {
-  var bhits = rollDie(attacker.batk - (defender.batkDecrease || 0), attacker.batkGoal || 5);
-  var rhits = 0;
-  if (attacker.ratk) {
-    rhits = rollDie(attacker.ratk - (defender.ratkDecrease || 0), attacker.ratkGoal || 5);
-  }
-  if (attacker.canReroll) {
-    attacker.rerollValues = {rhits: rhits, bhits: bhits};
+  if (!attacker.rerollValues) {
+    var bhits = rollDie(attacker.batk - (defender.batkDecrease || 0), attacker.batkGoal || 5);
+    var rhits = 0;
+    if (attacker.ratk) {
+      rhits = rollDie(attacker.ratk - (defender.ratkDecrease || 0), attacker.ratkGoal || 5);
+    }
+    var defences = rollDie(defender.def, defender.defGoal || 5);
+    if (attacker.siegeMode) {
+      successes += 1;
+      attacker.def -= 1;
+      attacker.canSiege = false;
+    }
+  } else {
+    var bhits = attacker.rerollValues.bhits;
+    var rhits = attacker.rerollValues.rhits;
+    var defences = attacker.rerollValues.enemydef;
   }
   var successes = (rhits.hits || 0) + bhits.hits;
   console.log("rhits for attacker: " + rhits.hits);
   console.log("bhits for attacker: " + bhits.hits);
   console.log(successes);
-  if (attacker.siegeMode) {
-    successes += 1;
-    attacker.def -= 1;
-    attacker.canSiege = false;
-  }
   if (playersList.indexOf(attacker) > -1 ) {
     printBattleResults(attacker.sprite.key.capitalizeFirstLetter() + " Mecha rolled " + rhits.results.join(", ") + " on Physical Die and " + bhits.results.join(", ") + " on Energy Die!");
   } else {
@@ -1916,7 +1932,6 @@ function attack(attacker,defender) {
     successes -= defender.guarenteedDef;
   }
   console.log(attacker.sprite.key + " hit " +successes + " hit/hits!");
-  var defences = rollDie(defender.def, defender.defGoal || 5);
   console.log(defender.sprite.key + " defended " + defences + " hit/hits!");
   if (playersList.indexOf(defender) > -1 ) {
     printBattleResults(defender.sprite.key.capitalizeFirstLetter() + " Mecha rolled " + defences.results.join(", ") + " on Defence Die!");
@@ -1942,6 +1957,14 @@ function attack(attacker,defender) {
     var text = defender.sprite.key.capitalizeFirstLetter() + " blocked every hit from " + attacker.sprite.key.capitalizeFirstLetter() + "!";
   }
     printBattleResults(text); 
+    if (attacker.canReroll) {
+      attacker.rerollValues = {rhits: rhits, bhits: bhits, enemydef: defences, enemy: defender};
+      if (damaged && damaged == defender) {
+        attacker.rerollValues.damageDealt = damageTaken;
+      } else if (damaged) {
+        attacker.rerollValues.damageTaken = damageTaken;
+      }
+    }
     if (damaged && damaged != battlePlayer && battlePlayer.pilot === "Teen Prodigy") {
       damaged.hp -= Pilots["Teen Prodigy"].passive(battlePlayer);
     }
@@ -2008,7 +2031,7 @@ function handleDeath(damaged,survivor,deathCase) {
     return;
   }
   if (damaged === battlePlayer) {
-    battleMonster.sprite.x = focusX;
+    var monsterWinTween = game.add.tween(battleMonster.sprite).to( { x: focusX }, 1000, Phaser.Easing.Linear.None, true);
     if (damaged.key.charAt(2) === "0") {
       destroyCity(damaged.key);
     }
@@ -2038,16 +2061,20 @@ function handleDeath(damaged,survivor,deathCase) {
     }
     battlePlayer.mr += damaged.mr;
     monstersList.splice(monstersList.indexOf(damaged), 1);
-    damaged.sprite.destroy();
-    battlePlayer.sprite.x = focusX;
+    //damaged.sprite.destroy();
+    var deathTween = game.add.tween(damaged.sprite).to( { alpha: 0 }, 1000, Phaser.Easing.Linear.None, true);
+    deathTween.onComplete.add(function() {
+      this.damaged.sprite.destroy 
+    }, {damaged: damaged});
+    var playerTween = game.add.tween(battlePlayer.sprite).to( { x: focusX }, 1000, Phaser.Easing.Linear.None, true);
     console.log("Monster died, moving back to position " + focusX )
   } else if (damaged === boss) {
     var winTween = game.add.tween(damaged.sprite).to( { alpha: 0 }, 1000, Phaser.Easing.Linear.None, true);
     winTween.onComplete.add(winGame, {winner: survivor});
     return
   }
-}
-  finishBattle();
+  }
+  monsterAttackButton.endState = true; 
 }
 
 function shieldDamage(obj,damage) {
@@ -2089,9 +2116,16 @@ function resetDie(player,monster) {
 }
 
 function finishBattle(exception) {
-  if (exception && exception != "Running") {
+  console.log(exception);
+  if (exception != "Running") {
     pendingBattles.splice(0,1);
-  }
+    if (battlePlayer.sprite) {
+      battlePlayer.sprite.x = focusX;
+    }
+    if (battleMonster.sprite) {
+      battleMonster.sprite.x = focusX;
+    }
+  } 
   resetDie(battlePlayer,battleMonster);
   for (i = 0; i < battleTexts.length; i++) {
     battleTexts[i].destroy();
@@ -2152,6 +2186,14 @@ for (i = 0; i < monsterBattleTexts.length; i++) {
     zoomOut = true;
     battleState = false;
   }
+  monsterAttackButton.endState = false;
+  monsterAttackText.text = "Click for Monster's Attack.";
+  monsterAttackButton.disabled = false;
+  monsterAttackButton.frame = 12; 
+  monsterAttackButton.events.onInputUp._bindings = [];
+  monsterAttackButton.events.onInputUp.add(allowMonsterTurn, this);
+  monsterAttackButton.kill();
+  monsterAttackText.kill();
 }
 
 function killBattleInfo() {
@@ -2261,6 +2303,17 @@ function updateOccupiedRows() {
     }
   }
 }
+function allowMonsterTurn() {
+  battleMonster.attacking = true;
+  monsterAttackButton.kill();
+  monsterAttackText.kill();
+  for (i = 0; i < resultsList.length; i++) {
+    if (resultsList[i].rerollButton) {
+      resultsList[i].rerollButton.destroy();
+      resultsList[i].rerollText.destroy();
+    }
+  }
+}
 
 function battle(player, monster) {
   //Simple Placeholder battle
@@ -2271,6 +2324,19 @@ function battle(player, monster) {
   }
   for (i = 0; i < monsterBattleTexts.length; i++) {
     monsterBattleTexts[i].update(); 
+  }
+  if (monsterAttackButton.endState) {
+    for (i = 0; i < battleTexts.length; i++) {
+      battleTexts[i].kill();
+    }
+    monsterAttackButton.reset(battleTexts[0].x,battleTexts[0].y + 30*globalScale);
+    monsterAttackText.reset(monsterAttackButton.x, monsterAttackButton.y + 60*globalScale);
+    game.world.bringToTop(monsterAttackButton);
+    game.world.bringToTop(monsterAttackText);
+    monsterAttackButton.frame = 13;
+    monsterAttackButton.events.onInputUp._bindings = [];
+    monsterAttackButton.events.onInputUp.add(finishBattle,undefined);
+    monsterAttackText.text = "Click to finish battle."
   }
   if (battleTurn === battleMonster && battleMonster.sprite) {
       if (attackText) {
@@ -2301,29 +2367,16 @@ function battle(player, monster) {
             battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
           }
         }
-      } else if (!monsterAttackButton) {
-        monsterAttackButton = game.add.button(battleTexts[0].x,battleTexts[0].y + 30*globalScale,'icons', function() {
-          battleMonster.attacking = true;
-          monsterAttackButton.kill();
-          monsterAttackText.kill();
-          for (i = 0; i < resultsList.length; i++) {
-            if (resultsList[i].rerollButton) {
-              resultsList[i].rerollButton.destroy();
-              resultsList[i].rerollText.destroy();
-            }
-          }
-        });
-        monsterAttackButton.scale.setTo(.4*globalScale);
-        monsterAttackButton.anchor.setTo(.5);
-        monsterAttackButton.frame = 12;
-        monsterAttackText = game.add.bitmapText(monsterAttackButton.x, monsterAttackButton.y + 60*globalScale, 'font', "Click for Monster's attack.", 13*globalScale);
-       monsterAttackText.anchor.setTo(.5) 
-        } else if (monsterAttackButton && !monsterAttackButton.alive && !monsterAttackButton.disabled) {
-          monsterAttackButton.reset(battleTexts[0].x,battleTexts[0].y + 30*globalScale);
-          monsterAttackText.reset(monsterAttackButton.x, monsterAttackButton.y + 60*globalScale);
-          game.world.bringToTop(monsterAttackButton);
-          game.world.bringToTop(monsterAttackText);
-        }
+      } else if (monsterAttackButton && !monsterAttackButton.disabled && !monsterAttackButton.alive && !monsterAttackButton.endState) {
+        monsterAttackButton.reset(battleTexts[0].x,battleTexts[0].y + 30*globalScale);
+        monsterAttackText.reset(monsterAttackButton.x, monsterAttackButton.y + 60*globalScale);
+        game.world.bringToTop(monsterAttackButton);
+        game.world.bringToTop(monsterAttackText);
+        monsterAttackButton.events.frame = 12;
+        monsterAttackButton.events.onInputUp = [];
+        monsterAttackButton.events.onInputUp.add(allowMonsterTurn,this);
+        monsterAttackText.text = "Click for Monster's Attack."
+      }
     } else if (battleTurn === battlePlayer && battlePlayer.attacking === true) {
       if (attackText) {
         for (i = 0; i < battleTexts.length; i++) {
@@ -2341,7 +2394,9 @@ function battle(player, monster) {
         battleSpeedDecrease = 0;
         attack(battlePlayer,battleMonster);
         if (battleState === true) {
-          battlePlayer.sprite.x = focusX + C.mech.battleSpacing;
+          if (!monsterAttackButton.endState) {
+            battlePlayer.sprite.x = focusX + C.mech.battleSpacing;
+          }
           for (i = 0; i < battleTexts.length; i++) {
             battleTexts[i].reset(battleTexts[i].x, battleTexts[i].y);
             battleTexts[i].inputEnabled = true;
