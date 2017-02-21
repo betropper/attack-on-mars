@@ -555,9 +555,13 @@ var U = {
     "allowsReroll": true,
     passive: function(player) {
       player.canReroll = true;
+      player.rerollUses["Mind-Machine Interface"].maxCharges += 1;
+      player.rerollUses["Mind-Machine Interface"].charges += 1;
     },
     active: function() {
-      var player = this.attacker;
+      printBattleResults("Rerolling all Blue Die using the Mind Machine Interface...");
+      var player = this.attacker; 
+      player.rerollUses["Mind-Machine Interface"].charges -= 1;
       var enemy = player.rerollValues.enemy;
       console.log("Chose the Mind Machine Interface.")
       console.log(player.rerollValues.bhits.results)
@@ -569,6 +573,10 @@ var U = {
         enemy.hp += player.rerollValues.damageDealt;
       }
       attack(player,enemy);
+      for (i = 0; i < resultsList.disabledButtons.length; i++) {
+        resultsList.disabledButtons[i].rerollButton.revive();
+        resultsList.disabledButtons[i].rerollText.revive();
+      }
       for (i = 0; i < rerollTexts.length; i++) {
           rerollTexts[i].destroy();
       }

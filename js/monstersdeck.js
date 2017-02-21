@@ -262,7 +262,7 @@ var MU = {
     revive: function(monster) {
       monster = this.monster || monster;
       var feignTween = game.add.tween(monster.sprite).to( { alpha: 1 }, 400, Phaser.Easing.Linear.None, true);
-      printBattleResults(monster.sprite.key + " feigned its death!");
+      printBattleResults("The monster feigned its death!");
       monster.hp = 1;
       monster.feigned = true;
       battlePlayer.inputEnabled = true;

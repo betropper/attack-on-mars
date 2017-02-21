@@ -625,6 +625,20 @@ if (Phaser.Device.desktop) {
       {color: "purple", discount: 0},
       {color: "black", discount: 0}
     ]
+    playersList[i].rerollUses = {
+      "Mind-Machine Interface": {
+        "maxCharges": 0,
+        "charges": 0,
+      },
+      "Mind-Machine Interface Unlock": {
+        "maxCharges": 0,
+        "charges": 0,
+      },
+      "Chaos Systems": {
+        "maxCharges": 0,
+        "charges": 0,
+      } 
+    }
     playersList[i].sprite.inputEnabled = true;
     playersList[i].sprite.input.enableDrag(true);
     playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
@@ -1805,22 +1819,36 @@ function printBattleResults(text,position) {
 }
 
 function displayRerollOptions(player) {
-  for (i = 0; i < battleTexts.length; i++) {
-      battleTexts[i].kill();
-  }
-  if (monsterAttackButton && monsterAttackButton.alive) {
-    monsterAttackButton.kill();
-    monsterAttackButton.disabled = true;
-    monsterAttackText.kill();
-  }
-  console.log(player.upgrades);
   for (i = 0; i < player.upgrades.length; i++) {
     console.log("Tick.");
-    if (U[player.upgrades[i]].allowsReroll) {
-      addBattleText(player.upgrades[i], U[player.upgrades[i]].active, 0, "rerollTexts");
+    if (U[player.upgrades[i]].allowsReroll && player.rerollUses[player.upgrades[i]].charges > 0) {
+      addBattleText(player.upgrades[i] + ": " + player.rerollUses[player.upgrades[i]].charges, U[player.upgrades[i]].active, 0, "rerollTexts");
     }
   }
+  if (rerollTexts.length > 0) {
+    printBattleResults("Rerolling. Click a valid option to reroll with.")
+    resultsList.disabledButtons = [];
+    for (i = 0; i < battleTexts.length; i++) {
+        battleTexts[i].kill();
+    }
+    for (i = 0; i < resultsList.length; i++) {
+      if (resultsList[i].rerollButton) {
+        resultsList[i].rerollButton.kill();
+        resultsList[i].rerollText.kill();
+        resultsList.disabledButtons.push(resultsList[i]);
+      }
+    }
+    if (monsterAttackButton && monsterAttackButton.alive) {
+      monsterAttackButton.kill();
+      monsterAttackButton.disabled = true;
+      monsterAttackText.kill();
+    }
+    console.log(player.upgrades);
+  } else {
+    printBattleResults("You're all out of reroll charges!");
+  }
 }
+
 
 function countInArray(array, what) {
     var count = 0;
@@ -2062,6 +2090,12 @@ function handleDeath(damaged,survivor,deathCase) {
     battlePlayer.mr += damaged.mr;
     monstersList.splice(monstersList.indexOf(damaged), 1);
     //damaged.sprite.destroy();
+    for (i = 0; i < resultsList.length; i++) {
+      if (resultsList[i].rerollButton) {
+        resultsList[i].rerollButton.destroy();
+        resultsList[i].rerollText.destroy();
+      }
+    }
     var deathTween = game.add.tween(damaged.sprite).to( { alpha: 0 }, 1000, Phaser.Easing.Linear.None, true);
     deathTween.onComplete.add(function() {
       this.damaged.sprite.destroy 
@@ -2375,7 +2409,7 @@ function battle(player, monster) {
         monsterAttackButton.events.frame = 12;
         monsterAttackButton.events.onInputUp = [];
         monsterAttackButton.events.onInputUp.add(allowMonsterTurn,this);
-        monsterAttackText.text = "Click for Monster's Attack."
+        monsterAttackText.text = "Click for Monster's Attack.";
       }
     } else if (battleTurn === battlePlayer && battlePlayer.attacking === true) {
       if (attackText) {
@@ -3390,6 +3424,11 @@ function changeTurn() {
               playersList[i][changed.value] -= changed.count;
             });
           }
+          playersList[i].upgrades.forEach(function(upgrade) {
+            if (playersList[i].rerollUses[upgrade]) {
+              playersList[i].rerollUses[upgrade].charges = playersList[i].rerollUses[upgrade].maxCharges
+            }
+          });
         }
         turn = playersList[1];
       } 
