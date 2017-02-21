@@ -472,19 +472,20 @@ var U = {
               }
               if (this.monster.hp <= 0) {
                 this.monster.space.occupied = removeFromList(monstersList[monstersList.indexOf(this.monster)], this.monster.space);
+                this.player.mr += this.monster.mr;
                 this.player.rp += this.monster.rp;
                 if (this.player.pilot === "Bounty Hunter") {
                   var chr = String.fromCharCode(96 + this.player.sprite.number);
-                  if (destination.charAt(0) !== chr) {
+                  if (this.player.key.charAt(0) !== chr) {
                     this.player.rp += 2;
                   }
                 }
-                this.player.mr += this.monster.mr;
               } 
               if (actionPoints <= 1 || this.monster.hp <= 0) {
                 U["Fusion Cannon"].end(this.player, this.disabledInputs, this.foundMonsters)
               }
               actionPoints -= 1;
+              console.log(this.monster.hp + " hp on the hit monster.")
             }, {player: this.player, monster: foundMonster, disabledInputs: disabledInputs, foundMonsters: foundMonsters});
           }
         }

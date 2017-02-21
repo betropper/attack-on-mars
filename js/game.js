@@ -9,7 +9,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": ".9.3.0",
+   "versionNumber": ".9.4.0",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -3401,6 +3401,11 @@ function changeTurn() {
     if (turn) {
       moveMonsters();
     }
+    playersList.forEach(function(player) {
+      if (player.rbTokens) {
+        rebuild(player, game.input.mousePointer);
+      }
+    });
     actionPoints = 3;
     do {
       if (turn && turn.sprite.number && turn.sprite.number < playerCount) {
