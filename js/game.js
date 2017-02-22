@@ -570,6 +570,8 @@ class Setup {
     //game.tilebg.height = game.height*5;
     //game.tilebg.tileScale = .5;
     game.bg = game.add.sprite(0, game.world.centerY - game.height / 2, "gameboard");
+    game.bg.disableBoard = disableBoard;
+    game.bg.enableBoard = enableBoard;
     game.bg.scale.setTo(C.bg.scale, C.bg.scale);
     upgradeMenu = game.add.sprite(game.world.centerX, game.world.centerY + C.game.height/2 + (C.upgradeMenu.height*C.upgradeMenu.scale)/2 + 200*globalScale, 'upgradeMat');
     upgradeMenu.anchor.setTo(.5,.5);
@@ -709,6 +711,7 @@ update() {
       if (upgradeState === true) {
         upgradeState = false;
         game.input.onTap._bindings = [];  
+        game.bg.enableBoard();
         if (boughtBool === true) {
           actionPoints -= 1;
           boughtBool = false;
@@ -2996,6 +2999,7 @@ function displayExtras() {
     }
     if (upgrading.upgrades.length >= 12 && monsterResearchTrack >= 3) {
       game.camera.y = 0;
+      game.bg.enableBoard();
       upgradeButton.tint = 0x3d3d3d;
       upgradeButton.inputEnabled = false;
       return
@@ -3027,6 +3031,7 @@ function displayExtras() {
     game.kineticScrolling.start();
     game.input.onTap.add(chooseUpgrade, {menu: upgradeMenu});
     game.camera.y = game.height;
+    game.bg.disableBoard();
     upgradeState = true;
 }
 
@@ -3134,6 +3139,7 @@ function chooseUpgrade(event) {
                   playersList[i].sprite.closestSpaces = getClosestSpaces(playersList[i].key); 
                   if (turn.upgrades.length >= 12 && monsterResearchTrack >= 3) {
                     game.camera.y = 0;
+                    game.bg.enableBoard();
                     upgradeButton.tint = 0x3d3d3d;
                     upgradeButton.inputEnabled = false;
                   }
@@ -3158,12 +3164,32 @@ function chooseUpgrade(event) {
   }
 }
 
+function disableBoard() {
+  this.disabledValues = [];
+  console.log(this);
+  for (var i = 0; i < game.world.children.length; i++) {
+    if (game.world.children[i].y && game.world.children[i].y < this.height && game.world.children[i].inputEnabled == true) {
+      game.world.children[i].inputEnabled = false;
+      game.world.children[i].tint = 0x3d3d3d;
+      this.disabledValues.push(game.world.children[i]);
+    }
+  }
+}
+
+function enableBoard() {
+  for (var i = 0; i < this.disabledValues.length; i++) {
+    this.disabledValues[i].tint = 0xffffff;
+    console.log(this.disabledValues[i]);
+    this.disabledValues[i].inputEnabled = true;
+  }
+}
 function confirmUpgrade(player,upgradeName) {
       var consideredUpgrade = U[upgradeName];
       consideredUpgrade.tier = consideredUpgrade.cost/2;
       if ((player.upgrades.indexOf(upgradeName) === -1) && consideredUpgrade && consideredUpgrade.desc) {
       game.kineticScrolling.stop();
       confirmState = true;
+      
       game.camera.y = upgradeMenu.y + upgradeMenu.height/2 + game.camera.height/2;
       var index = options.indexOf(upgradeName);
       var timesBought = 0;
