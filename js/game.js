@@ -572,6 +572,7 @@ class Setup {
     game.bg = game.add.sprite(0, game.world.centerY - game.height / 2, "gameboard");
     game.bg.disableBoard = disableBoard;
     game.bg.enableBoard = enableBoard;
+    game.bg.disabledValues = [];
     game.bg.scale.setTo(C.bg.scale, C.bg.scale);
     upgradeMenu = game.add.sprite(game.world.centerX, game.world.centerY + C.game.height/2 + (C.upgradeMenu.height*C.upgradeMenu.scale)/2 + 200*globalScale, 'upgradeMat');
     upgradeMenu.anchor.setTo(.5,.5);
@@ -3165,7 +3166,6 @@ function chooseUpgrade(event) {
 }
 
 function disableBoard() {
-  this.disabledValues = [];
   console.log(this);
   for (var i = 0; i < game.world.children.length; i++) {
     if (game.world.children[i].y && game.world.children[i].y < this.height && game.world.children[i].inputEnabled == true) {
@@ -3182,6 +3182,7 @@ function enableBoard() {
     console.log(this.disabledValues[i]);
     this.disabledValues[i].inputEnabled = true;
   }
+  this.disabledValues = [];
 }
 function confirmUpgrade(player,upgradeName) {
       var consideredUpgrade = U[upgradeName];
