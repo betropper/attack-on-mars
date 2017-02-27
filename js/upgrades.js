@@ -554,26 +554,80 @@ var U = {
     "color": "blue",
     "cost": 8,
     "allowsReroll": true,
+    "colorsChanged": ["Energy Die"],
     passive: function(player) {
       player.canReroll = true;
+      player.rerollUses.colors.push("Energy Die");
       player.rerollUses["Mind-Machine Interface"].maxCharges += 1;
       player.rerollUses["Mind-Machine Interface"].charges += 1;
     },
     active: function() {
-      printBattleResults("Rerolling all Blue Die using the Mind Machine Interface...");
+      //printBattleResults("Rerolling all Blue Die using the Mind Machine Interface...");
       var player = this.attacker; 
-      player.rerollUses["Mind-Machine Interface"].charges -= 1;
+      U["Reroll"](player, "Mind-Machine Interface","Blue");
+    }
+      
+  },
+  "Mind-Machine Interface Unlock": {
+    "desc": "This mech may spend 4 MR once per round to re-roll all missed die.",
+    "color": "blue",
+    "unlock": true,
+    "unlockColor": "yellow",
+    "allowsReroll": true,
+    "colorsChanged": ["Energy Die", "Physical Die", "Defence Die"],
+    "cost": 3,
+    passive: function(player) {
+      player.canReroll = true;
+      player.rerollUses.colors.push("Energy Die","Physical Die","Defence Die");
+      player.rerollUses["Mind-Machine Interface Unlock"].maxCharges += 1;
+      player.rerollUses["Mind-Machine Interface Unlock"].charges += 1;
+    },
+    active: function(player) {
+      //printBattleResults("Rerolling all die using the Mind Machine Interface Unlock...");
+      var player = this.attacker;
+      if (player.mr >= 4) {
+        player.mr -= 4;
+        U["Reroll"](player, "Mind-Machine Interface Unlock","Blue and Red");
+      } else {
+        printBattleResults("You need 4 MR to use this ability, you currently have " + player.mr + ".");
+      }
+    }
+  },
+  "Reroll": function(player,upgrade,color) {
+    if (player && upgrade && color) {
+      player.rerollUses[upgrade].charges -= 1;
       var enemy = player.rerollValues.enemy;
-      console.log("Chose the Mind Machine Interface.")
-      console.log(player.rerollValues.bhits.results)
-      var bhits = rollDie(player.batk - (enemy.batkDecrease || 0), player.batkGoal || 5);
-      player.rerollValues.bhits = bhits;
+      if (color == "Blue") {
+        var bhits = rollDie(player.batk - (enemy.batkDecrease || 0), player.batkGoal || 5);
+        player.rerollValues.bhits = bhits;
+      } else if (color == "Blue and Red") {
+        var bhits = rollDie(player.batk - (enemy.batkDecrease || 0), player.batkGoal || 5);
+        player.rerollValues.bhits = bhits;
+        var rhits = rollDie(player.ratk - (enemy.ratkDecrease || 0), player.ratkGoal || 5);
+        player.rerollValues.rhits = rhits;
+      } else if (color == "Red") {
+        var rhits = rollDie(player.ratk - (enemy.ratkDecrease || 0), player.ratkGoal || 5);
+        player.rerollValues.rhits = rhits;
+      } else if (color == "Green") {
+        var defences = rollDie(player.def - (enemy.defDecrease || 0), player.defGoal || 5);
+        player.rerollValues.def = defences;
+      }
       if (player.rerollValues.damageTaken) {
         player.hp += player.rerollValues.damageTaken;
-      } else if (player.rerollValues.damageDealt) {
+        if (player.hp <= 0) {
+          player.rerollUses[upgrade].charges += 1;
+          player.hp -= player.rerollValues.damageTaken;
+          printBattleResults("You will still die if you use this reroll option.");
+          return;
+        }
+      }
+      if (player.rerollValues.damageDealt) {
         enemy.hp += player.rerollValues.damageDealt;
       }
-      attack(player,enemy);
+      battleTurn = battlePlayer;
+      battlePlayer.attacking = true;
+      //attack(player,enemy);
+    }
       for (i = 0; i < resultsList.disabledButtons.length; i++) {
         resultsList.disabledButtons[i].rerollButton.revive();
         resultsList.disabledButtons[i].rerollText.revive();
@@ -591,13 +645,5 @@ var U = {
       }
 
     }
-  },
-  "Mind-Machine Interface Unlock": {
-    "desc": "This mech may spend 4 MR once per round to re-roll all missed die.",
-    "color": "blue",
-    "unlock": true,
-    "unlockColor": "yellow",
-    "allowsReroll": true,
-    "cost": 3
-  }
+
 }

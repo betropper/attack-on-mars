@@ -253,6 +253,12 @@ var MU = {
       monster.feigned = false;
     },
     active: function(monster) {
+      for (i = 0; i < resultsList.length; i++) {
+        if (resultsList[i].rerollButton) {
+          resultsList[i].rerollButton.destroy();
+          resultsList[i].rerollText.destroy();
+        }
+      }
       var feignTween = game.add.tween(monster.sprite).to( { alpha: .3 }, 700, Phaser.Easing.Linear.None, true);
       feignTween.onComplete.add(MU["Feign Death"].revive, {monster:monster});
       battleTurn = battlePlayer;
