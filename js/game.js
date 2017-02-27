@@ -682,7 +682,9 @@ if (Phaser.Device.desktop) {
   destroyedCityIcons = game.add.group();
   var destroyedCityIcon = destroyedCityIcons.create((40*globalScale), 30*globalScale,'destroyedCity');
   destroyedCityIcon.scale.setTo(.7*globalScale);
-  for (i = 0; i < destroyedCities.length - 1; i++) {
+  //NOTE: Currently 7 tokens. May change with different player sizes
+  //enabled.
+  for (i = 0; i < 6; i++) {
       var destroyedCityIcon = destroyedCityIcons.create((destroyedCityIcons.children[destroyedCityIcons.length-1].x+(30*globalScale)), 30*globalScale,'destroyedCity');
       destroyedCityIcon.scale.setTo(.7*globalScale);
   }
@@ -1738,9 +1740,11 @@ var buttonsList = [];
 
 function scrubList(list) {
   var tempList = []
-  for (i = 0; i < list.length; i++) {
-    if (list[i] && list[i].hp > 0) {
-      tempList.push(list[i]);
+  if (list.length) {
+    for (i = 0; i < list.length; i++) {
+      if (list[i] && list[i].hp > 0) {
+        tempList.push(list[i]);
+      }
     }
   }
   return tempList;
@@ -2532,8 +2536,9 @@ function battle(player, monster) {
         destroyedCities.push(destroyedCityColumn);
         occupiedRows.push(destroyedCityColumn.key.substring(0,2));
         Space[newDestination].damage = 2;
-        var destroyedCityIcon = destroyedCityIcons.create((destroyedCityIcons.children[destroyedCityIcons.length-1].x+(30*globalScale)), 30*globalScale,'destroyedCity');
-        destroyedCityIcon.scale.setTo(.7*globalScale);
+        destroyedCityIcons.children[destroyedCityIcons.children.length-1].destroy();
+        //var destroyedCityIcon = destroyedCityIcons.create((destroyedCityIcons.children[destroyedCityIcons.length-1].x+(30*globalScale)), 30*globalScale,'destroyedCity');
+        //destroyedCityIcon.scale.setTo(.7*globalScale);
       } else {
         Space[newDestination].damage = 1;
       }
