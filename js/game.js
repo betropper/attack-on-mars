@@ -3365,7 +3365,7 @@ function confirmUpgrade(player,upgradeName) {
         if (unlocks.indexOf(upgradeName) > -1) {
           priceText.setText("Another mech has already purchased this unique upgrade.");
         } else {
-          priceText.setText("This upgrade is out of stock. Three other mechs have purchased it.");
+          priceText.setText("This upgrade is out of stock. Three other Mechas have purchased it.");
         }
         var back = game.add.text(confirmText.x, priceText.y + 200*globalScale, "Back", C.game.ynStyle);
         for (i = 0; i < game.world.children.length; i++) {
