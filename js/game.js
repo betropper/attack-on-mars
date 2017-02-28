@@ -908,10 +908,10 @@ update() {
         for (i = 0; i < battleMonster.upgrades.length; i++) {
           if (battleMonster.upgrades[i].indexOf("-1 Mech") > -1) {
             MU["Dice -#"].active(battlePlayer,battleMonster.upgrades[i].substring(8),1);
-            printBattleResults("Threat drained " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mech's " + battleMonster.upgrades[i].substring(8) + " by 1!");
+            printBattleResults("Threat reduced " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mech's " + battleMonster.upgrades[i].substring(8) + " by 1!");
           } else if (battleMonster.upgrades[i].indexOf("-2 Mech") > -1) {
             MU["Dice -#"].active(battlePlayer,battleMonster.upgrades[i].substring(8),2);
-            printBattleResults("Threat drained " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mech's " + battleMonster.upgrades[i].substring(8) + " by 2!");
+            printBattleResults("Threat reduced " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mech's " + battleMonster.upgrades[i].substring(8) + " by 2!");
           }
           if (battleMonster.upgrades[i].indexOf("+1 Mecha") > -1) {
             MU["Dice Target +#"].active(battlePlayer,battleMonster.upgrades[i].substring(9),1);
