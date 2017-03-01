@@ -288,6 +288,7 @@ class Load {
     this.load.image("yellow", "assets/PlayerIcon4.png",C.mech.width,C.mech.height);
     this.load.image("bluecircle", "assets/blue-circle.png", 72, 72);
     this.load.image("redcircle", "assets/red-circle.png", 72, 72);
+    this.load.image("yellowsquare", "assets/yellowsquare.jpg", 72, 72);
     this.load.image("purplecircle", "assets/purple-circle.png", 72, 72);
     this.load.image("destroyedCity", "assets/destroyedcity.png", 66, 124);
     this.load.image("initialMonster", "assets/InitialIcon.png", C.monster.width, C.monster.height);
@@ -573,6 +574,27 @@ class Setup {
     game.bg.disableBoard = disableBoard;
     game.bg.enableBoard = enableBoard;
     game.bg.disabledValues = [];
+    game.bg.highlightOptions = function(player) {
+      game.world.bringToTop(player);
+      var quadrant = String.fromCharCode(96 + player.sprite.number);
+      var row = "0";
+      game.bg.highlightedSpaces = []
+      for (i = 0; i < obj_keys.length; i++) {
+        var key = obj_keys[i];
+        if (key.charAt(0) == quadrant && key.charAt(2) == row && !Space[key].occupied) {
+          var highlightX = Space[key].x*C.bg.scale*C.bg.resizeX + game.bg.position.x
+          var highlightY = Space[key].y*C.bg.scale*C.bg.resizeY + game.bg.position.y
+          var highlightSprite = game.add.sprite(highlightX,highlightY,"yellowsquare");
+          highlightSprite.alpha = 0;
+          highlightSprite.anchor.setTo(.5);
+          highlightSprite.width = player.sprite.width;
+          highlightSprite.height = player.sprite.height;
+          var highlightTween = game.add.tween(highlightSprite).to({alpha: 1}, 500, Phaser.Easing.Linear.None, true,100,-1,true)
+          highlightSprite.space = Space[key];
+          game.bg.highlightedSpaces.push(highlightSprite);
+        }
+      }
+    }
     game.bg.scale.setTo(C.bg.scale, C.bg.scale);
     upgradeMenu = game.add.sprite(game.world.centerX, game.world.centerY + C.game.height/2 + (C.upgradeMenu.height*C.upgradeMenu.scale)/2 + 200*globalScale, 'upgradeMat');
     upgradeMenu.anchor.setTo(.5,.5);
@@ -729,7 +751,7 @@ update() {
     } else if (confirmState === true) {
       game.camera.y = upgradeMenu.y + upgradeMenu.height/2 + game.camera.height/2;
     }
-    if (actionPoints === 0 && pendingBattles.length === 0 && zoomOut !== true && zoomOut !== true) {
+    if (!heldSprite && actionPoints === 0 && pendingBattles.length === 0 && zoomOut !== true && zoomOut !== true) {
       changeTurn();
     }
 
@@ -1506,28 +1528,7 @@ function setLastClicked(sprite) {
     extrasButton.events.onInputDown._bindings = [];
     extrasButton.events.onInputDown.add(displayExtras, {player: lastClicked});
     for (i = 1; i < playersList.length; i++) {
-      if (!playersList[i].rebuildButton && destroyedPlayersList.length > 0 && playersList[i].rbTokens && normalState) { 
-        if (destroyedMechDisplays.length === 0) {
-          var x = hoverSprite.x + hoverSprite.width/2 - 10*globalScale;
-        } else {
-          var x = destroyedMechDisplays[destroyedMechDisplays.length-1].valueIcon.x + 300*globalScale;
-        }
-        playersList[i].rebuildButton = playersList[i].addHoverInfo(x, hoverSprite.y + batkDisplay.valueIcon.width*3,21,"rbTokens");
-        playersList[i].rebuildButton.mechSprite = game.add.sprite(playersList[i].rebuildButton.valueIcon.x + 9*globalScale, playersList[i].rebuildButton.valueIcon.y + 50*globalScale, playersList[i].sprite.key)
-        playersList[i].rebuildButton.mechSprite.scale.setTo(globalScale);
-        playersList[i].rebuildButton.valueIcon.inputEnabled = true;
-        playersList[i].rebuildButton.valueIcon.width = 160*globalScale;
-        playersList[i].rebuildButton.valueIcon.height = 160*globalScale;
-        playersList[i].rebuildButton.valueDisplay.x = playersList[i].rebuildButton.valueIcon.x  + 40 + 90*globalScale;
-        playersList[i].rebuildButton.valueDisplay.y = playersList[i].rebuildButton.valueIcon.y + 40;
-        playersList[i].rebuildButton.valueIcon.battleButton = false;
-        destroyedMechDisplays.push(playersList[i].rebuildButton);
-        playersList[i].rebuildButton.valueIcon.events.onInputDown.add(rebuild, {rebuilding: playersList[i]});
-        if (playersList[i].rebuildButton.parent.alive) {
-          playersList[i].rebuildButton.valueIcon.kill();
-          playersList[i].rebuildButton.valueDisplay.kill();
-        }
-      } else if (destroyedPlayersList.length > 0 && playersList[i].rbTokens && normalState) {
+      if (destroyedPlayersList.length > 0 && playersList[i].rbTokens && normalState) {
         playersList[i].rebuildButton.valueIcon.reset(playersList[i].rebuildButton.valueIcon.x, playersList[i].rebuildButton.valueIcon.y);
         playersList[i].rebuildButton.valueDisplay.reset(playersList[i].rebuildButton.valueDisplay.x, playersList[i].rebuildButton.valueDisplay.y);
         playersList[i].rebuildButton.mechSprite.revive();
@@ -1839,7 +1840,7 @@ function displayRerollOptions(player,text) {
           } else {
             var upgradetext = player.upgrades[i] + ": " + player.rerollUses[player.upgrades[i]].charges;
           }
-          addBattleText(upgradetext, U[player.upgrades[i]].active, 0, "rerollTexts");
+          addBattleText(upgradetext, U[player.upgrades[i]].active, text, "rerollTexts");
           break;
         }
       } 
@@ -1973,6 +1974,7 @@ function attack(attacker,defender) {
       var bhits = defender.rerollValues.bhits;
       var rhits = defender.rerollValues.rhits;
       var defences = defender.rerollValues.def;
+      console.log(defences);
     }
   }
   var successes = (rhits.hits || 0) + bhits.hits;
@@ -2092,7 +2094,7 @@ function handleDeath(damaged,survivor,deathCase) {
     battlePlayer.truePower === false;
   }
   globalList = scrubList(globalList);
-  if (deathCase === "poisoned") {
+  if (deathCase === "poisoned" && !battleMonster.alive && !battlePlayer.alive) {
     if (battleMonster.upgrades.indexOf("Feign Death") > -1 && battleMonster.feigned === false) {
       MU["Feign Death"].active(battleMonster);
       return;
@@ -2182,6 +2184,25 @@ function handleDeath(damaged,survivor,deathCase) {
     return
   }
   }
+  //Deals with making the button for a mech who has died.
+      if (!battlePlayer.rebuildButton && destroyedPlayersList.length > 0 && battlePlayer.rbTokens) {
+        if (destroyedMechDisplays.length === 0) {
+          var x = hoverSprite.x + hoverSprite.width/2 - 10*globalScale;
+        } else {
+          var x = destroyedMechDisplays[destroyedMechDisplays.length-1].valueIcon.x + 300*globalScale;
+        }
+        battlePlayer.rebuildButton = battlePlayer.addHoverInfo(x, hoverSprite.y + batkDisplay.valueIcon.width*3,21,"rbTokens");
+        battlePlayer.rebuildButton.mechSprite = game.add.sprite(battlePlayer.rebuildButton.valueIcon.x + 9*globalScale, battlePlayer.rebuildButton.valueIcon.y + 50*globalScale, battlePlayer.sprite.key)
+        battlePlayer.rebuildButton.mechSprite.scale.setTo(globalScale);
+        battlePlayer.rebuildButton.valueIcon.inputEnabled = true;
+        battlePlayer.rebuildButton.valueIcon.width = 160*globalScale;
+        battlePlayer.rebuildButton.valueIcon.height = 160*globalScale;
+        battlePlayer.rebuildButton.valueDisplay.x = battlePlayer.rebuildButton.valueIcon.x  + 40 + 90*globalScale;
+        battlePlayer.rebuildButton.valueDisplay.y = battlePlayer.rebuildButton.valueIcon.y + 40;
+        battlePlayer.rebuildButton.valueIcon.battleButton = false;
+        destroyedMechDisplays.push(battlePlayer.rebuildButton);
+        battlePlayer.rebuildButton.valueIcon.events.onInputDown.add(rebuild, {rebuilding: battlePlayer});
+      }
   monsterAttackButton.endState = true; 
 }
 
@@ -2863,6 +2884,53 @@ function getClosestByDistance(obj) {
   }
 }
 
+function placeRebuilt(player) {
+  var player = this.obj || player;
+  var closestDistance = 9999;
+  var closestX = 9999;
+  var closestY = 9999;
+  var space = null;
+  for (var i = 0; i < obj_keys.length; i++) {
+    //console.log(closestDistance);
+    var spaceObj = Space[obj_keys[i]];
+    //console.log(spaceObj);
+    var spaceObjX = spaceObj.x*C.bg.scale*C.bg.resizeX + game.bg.position.x;
+    var spaceObjY = spaceObj.y*C.bg.scale*C.bg.resizeY + game.bg.position.y;
+    var distanceTo = distance(spaceObjX,spaceObjY,player.sprite.x,player.sprite.y)
+    if (!spaceObj.wall && !spaceObj.occupied && distanceTo < closestDistance) {
+      closestDistance = distanceTo;
+      space = spaceObj;
+      closestX = spaceObjX;
+      closestY = spaceObjY;
+      spaceKey = obj_keys[i];
+    }
+  }
+  game.world.bringToTop(player);
+  var quadrant = String.fromCharCode(96 + player.sprite.number);
+  var row = "0";
+  if (spaceKey.charAt(0) == quadrant && spaceKey.charAt(2) == row && !space.wall && !space.occupied) {
+    heldSprite = null;
+    game.bg.enableBoard();
+    for (i = 0; i < game.bg.highlightedSpaces.length; i++) {
+      game.bg.highlightedSpaces[i].destroy();
+    }
+    game.bg.highlightedSpaces = [];
+    player.sprite.x = closestX;
+    player.sprite.y = closestY;
+    player.key = spaceKey;
+    if (this.array) {
+      move(battleMonster,player.key,"chasing");
+    }
+    addToOccupied(player, Space[spaceKey]);
+    player.sprite.closestSpaces = getClosestSpaces(player.key);
+    game.time.events.add(500, reEnableHover, this, player.sprite);
+    //reEnableHover(player.sprite);
+    if (playersList.indexOf(player) > -1) { 
+      return spaceKey;
+    }
+  }
+}
+
 function placeObject(obj,quadrant,column,row) {
   var obj = this.obj || obj;
   var quadrant = this.quadrant || quadrant;
@@ -2898,6 +2966,7 @@ function placeObject(obj,quadrant,column,row) {
   }
   if (!space.wall && !space.occupied && check) {
     heldSprite = null;
+    game.bg.enableBoard();
     obj.sprite.x = closestX;
     obj.sprite.y = closestY;
     obj.key = spaceKey;
@@ -2921,12 +2990,16 @@ function rebuild(rebuilding, pointer) {
     rebuilding.rbTokens = undefined;
     rebuilding.sprite.revive(pointer.x, pointer.y);
     rebuilding.hp = rebuilding.maxhp;
+    game.bg.disableBoard();
+    game.bg.highlightOptions(rebuilding);
     heldSprite = rebuilding.sprite;
+    rebuilding.sprite.inputEnabled = true;
+    rebuilding.sprite.tint = 0xffffff;
     rebuilding.sprite.events.onInputDown._bindings = [];
     rebuilding.sprite.events.onInputOver._bindings = [];
     rebuilding.sprite.events.onInputOut._bindings = [];
     rebuilding.sprite.events.onDragStop._bindings = [];
-    rebuilding.sprite.events.onInputUp.add(placeObject,{obj:rebuilding, quadrant:String.fromCharCode(96 + rebuilding.sprite.number),column:false,row:"0"})
+    rebuilding.sprite.events.onInputUp.add(placeRebuilt,{obj:rebuilding, quadrant:String.fromCharCode(96 + rebuilding.sprite.number),column:false,row:"0"})
     globalList.push(rebuilding);
   }
   actionPoints -= 1;
@@ -3266,7 +3339,6 @@ function confirmUpgrade(player,upgradeName) {
       if ((player.upgrades.indexOf(upgradeName) === -1) && consideredUpgrade && consideredUpgrade.desc) {
       game.kineticScrolling.stop();
       confirmState = true;
-      
       game.camera.y = upgradeMenu.y + upgradeMenu.height/2 + game.camera.height/2;
       var index = options.indexOf(upgradeName);
       var timesBought = 0;

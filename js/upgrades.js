@@ -587,7 +587,11 @@ var U = {
       var player = this.attacker;
       if (player.mr >= 4) {
         player.mr -= 4;
-        U["Reroll"](player, "Mind-Machine Interface Unlock","Blue and Red");
+        if (this.modifier.indexOf("Defence Die") > -1) {
+          U["Reroll"](player, "Mind-Machine Interface Unlock","Green");
+        } else {
+          U["Reroll"](player, "Mind-Machine Interface Unlock","Blue and Red");
+        }
       } else {
         printBattleResults("You need 4 MR to use this ability, you currently have " + player.mr + ".");
       }
@@ -624,8 +628,13 @@ var U = {
       if (player.rerollValues.damageDealt) {
         enemy.hp += player.rerollValues.damageDealt;
       }
-      battleTurn = battlePlayer;
-      battlePlayer.attacking = true;
+      if (color != "Green") {
+        battleTurn = battlePlayer;
+        battlePlayer.attacking = true;
+      } else {
+        battleTurn = battleMonster;
+        battleMonster.attacking = true;
+      }
       //attack(player,enemy);
     }
       for (i = 0; i < resultsList.disabledButtons.length; i++) {
