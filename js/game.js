@@ -742,6 +742,7 @@ update() {
     if (heldSprite && !battleStarting && !zoomIn && !battleState) {
       heldSprite.x = game.input.mousePointer.x;
       heldSprite.y = game.input.mousePointer.y;
+      game.world.bringToTop(heldSprite);
     }
     if (game.camera.y <= 0) {
       game.camera.y = 0;
@@ -793,6 +794,7 @@ update() {
       // Temporary for testing. Change this later.
       if (!zoomInTweens) {
         zoomInTweens = true;
+        game.bg.disableBoard("buttons");
         var zoomTween = game.add.tween(game.camera).to( { x: focusX*3 - game.camera.width/2 , y: focusY*3 - game.camera.height/2 + game.camera.height/8 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
         //zoomTween.onComplete.add(zoomWorld, {zoomScale: C.game.zoomScale});
         var scaleTween = game.add.tween(game.world.scale).to( { x: C.game.zoomScale, y: C.game.zoomScale }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
@@ -828,6 +830,7 @@ update() {
       if (menuBar.alive) {   
           var zoomTween = game.add.tween(game.camera).to( { x: 0, y: 0 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
           var scaleTween = game.add.tween(game.world.scale).to( { x: 1, y: 1 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
+          game.bg.enableBoard();
           scaleTween.onComplete.add(zoomFalse, this);
           killBattleInfo();
       }
@@ -1708,6 +1711,7 @@ function victoryScreen() {
 
 class GameOver {
     create() {
+        fade("in");
         game.world.scale.set(1);
         console.log("YOU LOSE.");
         game.input.enabled = true;
@@ -2173,6 +2177,8 @@ function handleDeath(damaged,survivor,deathCase) {
     }
     if (destroyedPlayers === playerCount) {
       zoomOut = true;
+      game.bg.disableBoard();
+      fade("out","GameOver");
       game.state.start("GameOver");
     }
     focusSpace.occupied = scrubList(focusSpace.occupied);
@@ -2210,6 +2216,8 @@ function handleDeath(damaged,survivor,deathCase) {
     console.log("There are " + destroyedPlayers + " mechs destroyed.")
     if (destroyedPlayers === playerCount) {
       zoomOut = true;
+      game.bg.disableBoard();
+      fade("out","GameOver");
       game.state.start("GameOver");
     }
   } else if (damaged === battleMonster && damaged != boss) {
@@ -2782,7 +2790,9 @@ function battle(player, monster) {
       }
     }
     if (destroyedCities.length >= (playerCount * 4) - 4){
-      game.state.start("GameOver");
+      game.bg.disableBoard();
+      fade("out","GameOver");
+      //game.state.start("GameOver");
     } else {
       var newMonster = monstersList.push(spawnRandom("monster", "random", "3")) - 1;
       console.log("New Monster is: ");
@@ -3379,10 +3389,15 @@ function chooseUpgrade(event) {
   }
 }
 
-function disableBoard() {
+function disableBoard(section) {
   console.log(this);
   for (var i = 0; i < game.world.children.length; i++) {
-    if (game.world.children[i].y && game.world.children[i].y < this.height && game.world.children[i].inputEnabled == true) {
+    if (!section) {
+      var condition = game.world.children[i].y && game.world.children[i].y < this.height && game.world.children[i].inputEnabled == true
+    } else if (section == "buttons") {
+      var condition = game.world.children[i].y && game.world.children[i].y < this.height && game.world.children.x > (game.bg.x + game.bg.width) && game.world.children[i].inputEnabled == true
+    }
+    if (condition) {
       game.world.children[i].inputEnabled = false;
       game.world.children[i].tint = 0x3d3d3d;
       this.disabledValues.push(game.world.children[i]);
