@@ -576,7 +576,7 @@ class Setup {
     game.bg.disableBoard = disableBoard;
     game.bg.enableBoard = enableBoard;
     game.bg.disabledValues = [];
-    game.bg.pendingRebuiltSprites = [];
+    game.bg.pendingRebuilt = [];
     game.bg.highlightOptions = function(player) {
       game.world.bringToTop(player);
       var quadrant = String.fromCharCode(96 + player.sprite.number);
@@ -754,22 +754,23 @@ update() {
     } else if (confirmState === true) {
       game.camera.y = upgradeMenu.y + upgradeMenu.height/2 + game.camera.height/2;
     }
-    if (!heldSprite && game.bg.pendingRebuiltSprites.length > 0) {
-      heldSprite = game.bg.pendingRebuiltSprites[game.bg.pendingRebuiltSprites.length - 1];
-      game.bg.pendingRebuiltSprites.splice(game.bg.pendingRebuiltSprites.length-1);
-      heldSprite.rbTokens = undefined;
-      heldSprite.sprite.revive(pointer.x, pointer.y);
-      heldSprite.hp = heldSprite.maxhp;
+    if (!heldSprite && game.bg.pendingRebuilt.length > 0) {
+      var pendingPlayer = game.bg.pendingRebuilt[game.bg.pendingRebuilt.length - 1];
+      heldSprite = pendingPlayer.sprite;
+      game.bg.pendingRebuilt.splice(game.bg.pendingRebuilt.length-1);
+      pendingPlayer.rbTokens = undefined;
+      pendingPlayer.sprite.revive(game.input.mousePointer.x, game.input.mousePointer.y);
+      pendingPlayer.hp = pendingPlayer.maxhp;
       game.bg.disableBoard();
-      game.bg.highlightOptions(heldSprite);
-      heldSprite.sprite.inputEnabled = true;
-      heldSprite.sprite.tint = 0xffffff;
-      heldSprite.sprite.events.onInputDown._bindings = [];
-      heldSprite.sprite.events.onInputOver._bindings = [];
-      heldSprite.sprite.events.onInputOut._bindings = [];
-      heldSprite.sprite.events.onDragStop._bindings = [];
-      heldSprite.sprite.events.onInputUp.add(placeRebuilt,{obj:heldSprite, quadrant:String.fromCharCode(96 + heldSprite.sprite.number),column:false,row:"0"})
-      globalList.push(heldSprite);
+      game.bg.highlightOptions(pendingPlayer);
+      pendingPlayer.sprite.inputEnabled = true;
+      pendingPlayer.sprite.tint = 0xffffff;
+      pendingPlayer.sprite.events.onInputDown._bindings = [];
+      pendingPlayer.sprite.events.onInputOver._bindings = [];
+      pendingPlayer.sprite.events.onInputOut._bindings = [];
+      pendingPlayer.sprite.events.onDragStop._bindings = [];
+      pendingPlayer.sprite.events.onInputUp.add(placeRebuilt,{obj:pendingPlayer, quadrant:String.fromCharCode(96 + pendingPlayer.sprite.number),column:false,row:"0"})
+      globalList.push(pendingPlayer);
     }
     if (!heldSprite && actionPoints <= 0 && pendingBattles.length === 0 && zoomOut !== true && zoomOut !== true) {
       changeTurn();
@@ -2231,7 +2232,7 @@ function handleDeath(damaged,survivor,deathCase) {
   }
   }
   //Deals with making the button for a mech who has died.
-      if (!battlePlayer.rebuildButton && destroyedPlayersList.length > 0 && battlePlayer.rbTokens) {
+      if (!battlePlayer.rebuildButton && destroyedPlayersList.length > 0 && !battlePlayer.alive) {
         if (destroyedMechDisplays.length === 0) {
           var x = hoverSprite.x + hoverSprite.width/2 - 10*globalScale;
         } else {
@@ -3050,7 +3051,7 @@ function rebuild(rebuilding, pointer, free) {
     rebuilding.sprite.events.onInputUp.add(placeRebuilt,{obj:rebuilding, quadrant:String.fromCharCode(96 + rebuilding.sprite.number),column:false,row:"0"})
     globalList.push(rebuilding);
   } else if (rebuilding.rbTokens <=0) {
-    game.bg.pendingRebuiltSprites.push(rebuilding.sprite);
+    game.bg.pendingRebuilt.push(rebuilding);
   }
   if (!free) {
     actionPoints -= 1;
