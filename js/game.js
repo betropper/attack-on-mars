@@ -608,7 +608,7 @@ class Setup {
     game.coverbg = game.add.sprite(game.bg.width, 0, 'blackground');
     game.coverbg.width = game.width - game.bg.width;
     game.coverbg.height = game.height;
-    game.coverbg.text = game.add.text(game.coverbg.x + game.coverbg.width/2, game.coverbg.y + game.coverbg.height/2,"Place your mechs on the available spots.",C.game.textStyle);
+    game.coverbg.text = game.add.text(game.coverbg.x + game.coverbg.width/2, game.coverbg.y + game.coverbg.height/2,"Place each mecha in a valid city space.",C.game.textStyle);
     game.coverbg.text.anchor.setTo(.5);
     game.world.bringToTop(game.coverbg.text);
   }
@@ -1499,8 +1499,8 @@ function setLastClicked(sprite) {
   console.log(!this.lastClicked);
   console.log(sprite.key != "monster");
   if (!turn && !this.lastClicked && sprite.key != "monster") {
-    game.add.tween(game.coverbg).to( { alpha: 0}, 1000, Phaser.Easing.Linear.None, true);
-    game.add.tween(game.coverbg.text).to( { alpha: 0}, 1000, Phaser.Easing.Linear.None, true);
+    game.coverbg.text.alpha = 0;
+    game.coverbg.alpha = 0;
     //setAttributeDisplay(playersList[sprite.number]);
     turn = playersList[sprite.number];
     turn.rp += turn.rpPerTurn;
