@@ -297,7 +297,7 @@ class Load {
     this.load.image("Co-ordinator", "assets/Co-ordinator.jpg", 827, 1299);
     this.load.image("Media Star", "assets/Media Star.jpg", 827, 1299);
     this.load.image("Teen Prodigy", "assets/Teen Prodigy.jpg", 827, 1299);
-    this.load.image("Bounty Hunter", "assets/Bounty Hunter.jpg", 827, 1299);
+    this.load.image("Bounty Hunter", "assets/BountyHunter.jpg", 827, 1299);
     this.load.image("Engineer", "assets/Engineer.jpg", 827, 1299);
     this.load.image("initialCard", "assets/Initial.jpg", 520, 791);
     this.load.image("growingCard", "assets/Growing.jpg", 520, 791);
