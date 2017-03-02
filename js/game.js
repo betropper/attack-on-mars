@@ -574,6 +574,7 @@ class Setup {
     game.bg.disableBoard = disableBoard;
     game.bg.enableBoard = enableBoard;
     game.bg.disabledValues = [];
+    game.bg.pendingRebuiltSprites = [];
     game.bg.highlightOptions = function(player) {
       game.world.bringToTop(player);
       var quadrant = String.fromCharCode(96 + player.sprite.number);
@@ -751,7 +752,24 @@ update() {
     } else if (confirmState === true) {
       game.camera.y = upgradeMenu.y + upgradeMenu.height/2 + game.camera.height/2;
     }
-    if (!heldSprite && actionPoints === 0 && pendingBattles.length === 0 && zoomOut !== true && zoomOut !== true) {
+    if (!heldSprite && game.bg.pendingRebuiltSprites.length > 0) {
+      heldSprite = game.bg.pendingRebuiltSprites[game.bg.pendingRebuiltSprites.length - 1];
+      game.bg.pendingRebuiltSprites.splice(game.bg.pendingRebuiltSprites.length-1);
+      heldSprite.rbTokens = undefined;
+      heldSprite.sprite.revive(pointer.x, pointer.y);
+      heldSprite.hp = heldSprite.maxhp;
+      game.bg.disableBoard();
+      game.bg.highlightOptions(heldSprite);
+      heldSprite.sprite.inputEnabled = true;
+      heldSprite.sprite.tint = 0xffffff;
+      heldSprite.sprite.events.onInputDown._bindings = [];
+      heldSprite.sprite.events.onInputOver._bindings = [];
+      heldSprite.sprite.events.onInputOut._bindings = [];
+      heldSprite.sprite.events.onDragStop._bindings = [];
+      heldSprite.sprite.events.onInputUp.add(placeRebuilt,{obj:heldSprite, quadrant:String.fromCharCode(96 + heldSprite.sprite.number),column:false,row:"0"})
+      globalList.push(heldSprite);
+    }
+    if (!heldSprite && actionPoints <= 0 && pendingBattles.length === 0 && zoomOut !== true && zoomOut !== true) {
       changeTurn();
     }
 
@@ -1954,12 +1972,18 @@ function attackOfOppertunity() {
 
 function attack(attacker,defender) {
   if (!attacker.rerollValues && !defender.rerollValues) {
-    var bhits = rollDie(attacker.batk - (defender.batkDecrease || 0), attacker.batkGoal || 5);
+    var bhits = 0;
+    if (attacker.batk) {
+      var bhits = rollDie(attacker.batk - (defender.batkDecrease || 0), attacker.batkGoal || 5);
+    }
     var rhits = 0;
     if (attacker.ratk) {
       rhits = rollDie(attacker.ratk - (defender.ratkDecrease || 0), attacker.ratkGoal || 5);
     }
-    var defences = rollDie(defender.def, defender.defGoal || 5);
+    var defences = 0;
+    if (defender.def) {
+      var defences = rollDie(defender.def, defender.defGoal || 5);
+    }
     if (attacker.siegeMode) {
       successes += 1;
       attacker.def -= 1;
@@ -1981,10 +2005,30 @@ function attack(attacker,defender) {
   console.log("rhits for attacker: " + rhits.hits);
   console.log("bhits for attacker: " + bhits.hits);
   console.log(successes);
-  if (playersList.indexOf(attacker) > -1 ) {
-    printBattleResults(attacker.sprite.key.capitalizeFirstLetter() + " Mecha rolled " + rhits.results.join(", ") + " on Physical Die and " + bhits.results.join(", ") + " on Energy Die!");
+
+  if (Number.isInteger(rhits)) {
+    var rhittext = "0" 
   } else {
-    printBattleResults(C.monster.names[attacker.sprite.spriteName] + " rolled " + bhits.results.join(", ") + " on Attack Die!");
+    var rhittext = rhits.results.join(",");
+  }
+  if (Number.isInteger(bhits)) {
+    var bhittext = "0" 
+  } else {
+    var bhittext = bhits.results.join(",");
+  }
+  if (Number.isInteger(defences)) {
+    var defencestext = "0" 
+    var defences = {};
+    defences.results = [0];
+    defences.hits = 0;
+  } else {
+    var defencestext = defences.results.join(",");
+  }
+
+  if (playersList.indexOf(attacker) > -1 ) {
+    printBattleResults(attacker.sprite.key.capitalizeFirstLetter() + " Mecha rolled " + bhittext + " on Physical Die and " + rhittext + " on Energy Die!");
+  } else {
+    printBattleResults(C.monster.names[attacker.sprite.spriteName] + " rolled " + bhittext + " on Attack Die!");
   }
   if (defender.guarenteedDef && successes > 0) {
     successes -= defender.guarenteedDef;
@@ -1992,9 +2036,9 @@ function attack(attacker,defender) {
   console.log(attacker.sprite.key + " hit " +successes + " hit/hits!");
   console.log(defender.sprite.key + " defended " + defences + " hit/hits!");
   if (playersList.indexOf(defender) > -1 ) {
-    printBattleResults(defender.sprite.key.capitalizeFirstLetter() + " Mecha rolled " + defences.results.join(", ") + " on Defence Die!");
+    printBattleResults(defender.sprite.key.capitalizeFirstLetter() + " Mecha rolled " + defencestext + " on Defence Die!");
   } else {
-    printBattleResults(C.monster.names[defender.sprite.spriteName] + " rolled " + defences.results.join(", ") + " on Defence Die!");
+    printBattleResults(C.monster.names[defender.sprite.spriteName] + " rolled " + defencestext + " on Defence Die!");
   }
   if (successes > defences.hits) {
     var damageTaken = successes - defences.hits;
@@ -2557,7 +2601,9 @@ function battle(player, monster) {
         destroyedCities.push(destroyedCityColumn);
         occupiedRows.push(destroyedCityColumn.key.substring(0,2));
         Space[newDestination].damage = 2;
-        destroyedCityIcons.children[destroyedCityIcons.children.length-1].destroy();
+        if (destroyedCityIcons.children.length > 0) {
+          destroyedCityIcons.children[destroyedCityIcons.children.length-1].destroy();
+        }
         //var destroyedCityIcon = destroyedCityIcons.create((destroyedCityIcons.children[destroyedCityIcons.length-1].x+(30*globalScale)), 30*globalScale,'destroyedCity');
         //destroyedCityIcon.scale.setTo(.7*globalScale);
       } else {
@@ -2982,11 +3028,11 @@ function placeObject(obj,quadrant,column,row) {
   }
 }
 
-function rebuild(rebuilding, pointer) {
+function rebuild(rebuilding, pointer, free) {
   var rebuilding = this.rebuilding || rebuilding;
   rebuilding.rbTokens -= 1;
   rebuilding.rebuildButton.update(rebuilding);
-  if (rebuilding.rbTokens === 0) {
+  if (rebuilding.rbTokens <= 0 && !heldSprite) {
     rebuilding.rbTokens = undefined;
     rebuilding.sprite.revive(pointer.x, pointer.y);
     rebuilding.hp = rebuilding.maxhp;
@@ -3001,8 +3047,12 @@ function rebuild(rebuilding, pointer) {
     rebuilding.sprite.events.onDragStop._bindings = [];
     rebuilding.sprite.events.onInputUp.add(placeRebuilt,{obj:rebuilding, quadrant:String.fromCharCode(96 + rebuilding.sprite.number),column:false,row:"0"})
     globalList.push(rebuilding);
+  } else if (rebuilding.rbTokens <=0) {
+    game.bg.pendingRebuiltSprites.push(rebuilding.sprite);
   }
-  actionPoints -= 1;
+  if (!free) {
+    actionPoints -= 1;
+  }
 }
 
 function generateRP(generating) {
@@ -3573,56 +3623,62 @@ function checkBattle(space) {
 
 
 function changeTurn() {
-    if (turn) {
-      moveMonsters();
-    }
+  var waitmove = false;
     playersList.forEach(function(player) {
       if (player.rbTokens) {
-        rebuild(player, game.input.mousePointer);
+        rebuild(player, game.input.mousePointer,true);
+        if (!player.rbTokens) {
+          var waitmove = true;
+        }
       }
     });
-    actionPoints = 3;
-    do {
-      if (turn && turn.sprite.number && turn.sprite.number < playerCount) {
-        turn = playersList[turn.sprite.number + 1];
-      } else if (turn && turn.sprite.number && turn.sprite.number === playerCount || turn === undefined) {
-        for (i = 1; i < playersList.length; i++) {
-          if (playersList[i].upgrades.indexOf("Siege Mode") > -1&& playersList[i].canSiege === false) {
-            playersList[i].canSiege = true;
-          }
-          if (playersList[i].upgrades.indexOf("Nullifier Shield") > -1 && playersList[i].shields === false) {
-            playersList[i].shields = true;
-          }
-          if (playersList[i].upgrades.indexOf("Nullifier Shield Unlock") > -1 ) {
-            U["Nullifier Shield Unlock"].active(playersList[i],1);
-          }
-          if (playersList[i].upgrades.indexOf("Weaponized Research") > -1) {
-            playersList[i].weaponizedResearchCharges = 3;
-          }
-          if (playersList[i].changedDie) {
-            playersList[i].changedDie.forEach(function(changed) {
-              playersList[i][changed.value] -= changed.count;
+    if (!waitmove) {
+      if (turn) {
+        moveMonsters();
+      }
+      actionPoints = 3;
+      do {
+        if (turn && turn.sprite.number && turn.sprite.number < playerCount) {
+          turn = playersList[turn.sprite.number + 1];
+        } else if (turn && turn.sprite.number && turn.sprite.number === playerCount || turn === undefined) {
+          for (i = 1; i < playersList.length; i++) {
+            if (playersList[i].upgrades.indexOf("Siege Mode") > -1&& playersList[i].canSiege === false) {
+              playersList[i].canSiege = true;
+            }
+            if (playersList[i].upgrades.indexOf("Nullifier Shield") > -1 && playersList[i].shields === false) {
+              playersList[i].shields = true;
+            }
+            if (playersList[i].upgrades.indexOf("Nullifier Shield Unlock") > -1 ) {
+              U["Nullifier Shield Unlock"].active(playersList[i],1);
+            }
+            if (playersList[i].upgrades.indexOf("Weaponized Research") > -1) {
+              playersList[i].weaponizedResearchCharges = 3;
+            }
+            if (playersList[i].changedDie) {
+              playersList[i].changedDie.forEach(function(changed) {
+                playersList[i][changed.value] -= changed.count;
+              });
+            }
+            playersList[i].upgrades.forEach(function(upgrade) {
+              if (playersList[i].rerollUses[upgrade]) {
+                playersList[i].rerollUses[upgrade].charges = playersList[i].rerollUses[upgrade].maxCharges;
+              }
             });
           }
-          playersList[i].upgrades.forEach(function(upgrade) {
-            if (playersList[i].rerollUses[upgrade]) {
-              playersList[i].rerollUses[upgrade].charges = playersList[i].rerollUses[upgrade].maxCharges;
-            }
-          });
+          turn = playersList[1];
+        } 
+      } while (turn === undefined)
+        console.log("Switching to this turn:");
+        console.log(turn);
+        if (turn.rpPerTurn && turn.sprite.alive) {
+          turn.rp += turn.rpPerTurn;
+          console.log(turn.sprite.key + " gained " + turn.rpPerTurn + " RP.");
         }
-        turn = playersList[1];
-      } 
-    } while (turn === undefined)
-      console.log("Switching to this turn:");
-      console.log(turn);
-      if (turn.rpPerTurn && turn.sprite.alive) {
-        turn.rp += turn.rpPerTurn;
-        console.log(turn.sprite.key + " gained " + turn.rpPerTurn + " RP.");
-      }
-      upgradeButton.reset(upgradeButton.x, upgradeButton.y);
-      upgradeButton.events.onInputUp._bindings = [];
-      upgradeButton.loadTexture(turn.sprite.key);
-      upgradeButton.events.onInputUp.add(upgrade, {upgrading: turn});
+        upgradeButton.reset(upgradeButton.x, upgradeButton.y);
+        upgradeButton.events.onInputUp._bindings = [];
+        upgradeButton.loadTexture(turn.sprite.key);
+        upgradeButton.events.onInputUp.add(upgrade, {upgrading: turn});
+    }
 }
 
 
