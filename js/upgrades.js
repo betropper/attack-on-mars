@@ -1,4 +1,61 @@
 
+var MechDeck = [
+   {
+   "hp": 4,
+   "batk": 5,
+   "ratk": 3,
+   "def": 3
+   },
+   {
+   "hp": 4,
+   "batk": 3,
+   "ratk": 3,
+   "def": 5
+   },
+   {
+   "hp": 4,
+   "batk": 3,
+   "ratk": 5,
+   "def": 3
+   },
+   {
+   "hp": 4,
+   "batk": 4,
+   "ratk": 4,
+   "def": 3
+   },
+   {
+   "hp": 4,
+   "batk": 4,
+   "ratk": 3,
+   "def": 4
+   },
+   {
+   "hp": 4,
+   "batk": 3,
+   "ratk": 4,
+   "def": 4
+   },
+   {
+   "hp": 4,
+   "batk": 4,
+   "ratk": 5,
+   "def": 2
+   },
+   {
+   "hp": 4,
+   "batk": 4,
+   "ratk": 2,
+   "def": 5
+   },
+   {
+   "hp": 4,
+   "batk": 2,
+   "ratk": 4,
+   "def": 5
+   }
+]
+
 var Corp = {
   "Genericorp": {
     "desc": "A default corporation. Doesn't specialize in anything, jack of all trades.",

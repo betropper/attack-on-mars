@@ -605,6 +605,12 @@ class Setup {
     upgradeMenu.scale.y = C.upgradeMenu.scale;
     var upgradeDescription = game.add.text(upgradeMenu.x, upgradeMenu.y - upgradeMenu.height/2 - 100*globalScale, "Click on an upgrade to see its details, scroll up to return to the game", C.game.textStyle);
     upgradeDescription.anchor.setTo(.5,.5);
+    game.coverbg = game.add.sprite(game.bg.width, 0, 'blackground');
+    game.coverbg.width = game.width - game.bg.width;
+    game.coverbg.height = game.height;
+    game.coverbg.text = game.add.text(game.coverbg.x + game.coverbg.width/2, game.coverbg.y + game.coverbg.height/2,"Place your mechs on the available spots.",C.game.textStyle);
+    game.coverbg.text.anchor.setTo(.5);
+    game.world.bringToTop(game.coverbg.text);
   }
 
   create() {
@@ -623,8 +629,7 @@ if (Phaser.Device.desktop) {
   }*/
     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
 } else {
-  alert("You are on mobile!");
-  game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
+  game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
 }
   game.camera.bounds = null;
   console.log("Placing Board");
@@ -633,14 +638,16 @@ if (Phaser.Device.desktop) {
   } else if (playerCount > 4) {
     playerCount = 4;
   }
-  game.time.events.add(Phaser.Timer.SECOND * 1, spawnBoss, this);
+  //May change this to after mechas are placed.
+  //game.time.events.add(Phaser.Timer.SECOND * 1, spawnBoss, this);
+  var pilotList = ["Bounty Hunter", "Teen Prodigy", "Co-ordinator", "Engineer"]
   for (var i = 1; i <= playerCount; i++) {
     console.log(i);
     var destroyedCityColumn = spawnRandom("destroyedCity", i, "0", false);
     destroyedCities[i-1] = destroyedCityColumn;
-    playersList[i] = spawnRandom(playerNames[i-1], i, "0", true); 
+    //playersList[i] = spawnRandom(playerNames[i-1], i, "0", true); 
+    playersList[i] = spawnPlayer(i);
     playersList[i].sprite.number = i;
-    var pilotList = ["Bounty Hunter", "Teen Prodigy", "Co-ordinator", "Engineer"]
     playersList[i].pilot = pilotList[i-1];
     playersList[i].upgrades = [];
     playersList[i].rpPerTurn = 3;
@@ -669,12 +676,13 @@ if (Phaser.Device.desktop) {
     }
     playersList[i].rerollUses.colors = [];
     playersList[i].sprite.inputEnabled = true;
-    playersList[i].sprite.input.enableDrag(true);
-    playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
-    closestSpaces = getClosestSpaces(playersList[i].key);
-    playersList[i].sprite.closestSpaces = closestSpaces;
-    playersList[i].sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
-    reEnableHover(playersList[i].sprite);
+    //playersList[i].sprite.input.enableDrag(true);
+    //playersList[i].sprite.events.onInputDown.add(setLastClicked, this);
+    //Add these back as need be
+    //closestSpaces = getClosestSpaces(playersList[i].key);
+    //playersList[i].sprite.closestSpaces = closestSpaces;
+    //playersList[i].sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
+    //reEnableHover(playersList[i].sprite);
   }
   for (var i = 0; i <= 5; i++) {
     if (i <= 3) {
@@ -755,9 +763,8 @@ update() {
       game.camera.y = upgradeMenu.y + upgradeMenu.height/2 + game.camera.height/2;
     }
     if (!heldSprite && game.bg.pendingRebuilt.length > 0) {
-      var pendingPlayer = game.bg.pendingRebuilt[game.bg.pendingRebuilt.length - 1];
+      var pendingPlayer = game.bg.pendingRebuilt.shift();
       heldSprite = pendingPlayer.sprite;
-      game.bg.pendingRebuilt.splice(game.bg.pendingRebuilt.length-1);
       pendingPlayer.rbTokens = undefined;
       pendingPlayer.sprite.revive(game.input.mousePointer.x, game.input.mousePointer.y);
       pendingPlayer.hp = pendingPlayer.maxhp;
@@ -1024,7 +1031,7 @@ update() {
         var over = globalList[i]; 
       } 
     }
-    if (over) {
+    if (over && !heldSprite && game.bg.pendingRebuilt.length == 0) {
       setAttributeDisplay(over);
     }
   }
@@ -1037,6 +1044,8 @@ function setAttributeDisplay(obj) {
     var spriteName = obj.sprite.key;
   }
   if (!hoverSprite) {
+    spawnBoss();
+    game.coverbg.text.text = "Click on any mecha to start.";
     hoverSprite = game.add.sprite(game.bg.width,0,spriteName);
    //if (obj.addHoverInfo) {
     if (hoverSprite.key === "The Bloat") {
@@ -1490,6 +1499,8 @@ function setLastClicked(sprite) {
   console.log(!this.lastClicked);
   console.log(sprite.key != "monster");
   if (!turn && !this.lastClicked && sprite.key != "monster") {
+    game.add.tween(game.coverbg).to( { alpha: 0}, 1000, Phaser.Easing.Linear.None, true);
+    game.add.tween(game.coverbg.text).to( { alpha: 0}, 1000, Phaser.Easing.Linear.None, true);
     //setAttributeDisplay(playersList[sprite.number]);
     turn = playersList[sprite.number];
     turn.rp += turn.rpPerTurn;
@@ -2967,6 +2978,7 @@ function placeRebuilt(player) {
     player.sprite.x = closestX;
     player.sprite.y = closestY;
     player.key = spaceKey;
+    player.space = space;
     if (this.array) {
       move(battleMonster,player.key,"chasing");
     }
@@ -3867,6 +3879,53 @@ function hoverScale() {
   var scaleTween = game.add.tween(this.sprite.scale).to( { x: C.mech.scale + .3, y: C.mech.scale + .3 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
 }
 
+function spawnPlayer(number) {
+  var player = game.add.sprite(game.input.mousePointer.x,game.input.mousePointer.y,playerNames[number-1]); 
+  player.kill();
+  player.anchor.x = .5;
+  player.anchor.y = .5;
+  player.scale.x = C.mech.scale;
+  player.scale.y = C.mech.scale;
+  player.glow = glow;
+  var obj =  {
+    sprite: player
+  };
+  obj.addBattleInfo = addBattleInfo;
+  obj.addHoverInfo = addHoverInfo;
+  var drawnMech = MechDeck[Math.floor(Math.random() * MechDeck.length)];
+  obj.rp = 3;
+  //Test for now. Everyone is Genericorp
+  obj.corp = "Genericorp";
+  obj.mr =  0;
+  obj.hp = drawnMech.hp;
+  obj.maxhp = drawnMech.hp;
+  obj.def = drawnMech.def;
+  obj.ratk = drawnMech.ratk;
+  obj.batk = drawnMech.batk;
+  obj.batkGoal = 5;
+  obj.ratkGoal = 5;
+  obj.defGoal = 5;
+  obj.sprite.inputEnabled = true;
+  obj.sprite.input.enableDrag(true);
+  player.parentobj = obj;
+  /*if (!heldSprite) {
+    heldSprite = obj.sprite;
+    obj.sprite.revive(game.input.mousePointer.x, game.input.mousePointer.y);
+    game.bg.disableBoard();
+    game.bg.highlightOptions(obj);
+    obj.sprite.inputEnabled = true;
+    obj.sprite.tint = 0xffffff;
+    obj.sprite.events.onInputDown._bindings = [];
+    obj.sprite.events.onInputOver._bindings = [];
+    obj.sprite.events.onInputOut._bindings = [];
+    obj.sprite.events.onDragStop._bindings = [];
+    obj.sprite.events.onInputUp.add(placeRebuilt,{obj:obj, quadrant:String.fromCharCode(96 + obj.sprite.number),column:false,row:"0"})
+  } else {*/
+    game.bg.pendingRebuilt.push(obj);
+    globalList.push(obj);
+  //}
+  return obj
+}
 function spawnRandom(object,quadrant,row,occupiedCheck) {
   var condition = true;
   var failSafe = 1;
