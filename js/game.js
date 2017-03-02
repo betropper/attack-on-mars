@@ -3629,12 +3629,9 @@ function changeTurn() {
     playersList.forEach(function(player) {
       if (player.rbTokens) {
         rebuild(player, game.input.mousePointer,true);
-        if (!player.rbTokens) {
-          var waitmove = true;
-        }
       }
     });
-    if (!waitmove) {
+    if (!heldSprite) {
       if (turn) {
         moveMonsters();
       }
