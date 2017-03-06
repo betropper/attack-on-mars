@@ -219,6 +219,7 @@ var batkDisplay;
 var ratkDisplay;
 var defDisplay;
 var pilotIcon;
+var monstersMoving = false;
 
 class Boot {
   init() {
@@ -251,7 +252,7 @@ class Load {
   preload() { 
   game.kineticScrolling = this.game.plugins.add(Phaser.Plugin.KineticScrolling);
   game.kineticScrolling.configure({
-      kineticMovement: true,
+      kineticMovement: false,
       timeConstantScroll: 700*globalScale, //really mimic iOS
       horizontalScroll: false,
       verticalScroll: true,
@@ -961,14 +962,14 @@ update() {
         for (i = 0; i < battleMonster.upgrades.length; i++) {
           if (battleMonster.upgrades[i].indexOf("-1 Mech") > -1) {
             MU["Dice -#"].active(battlePlayer,battleMonster.upgrades[i].substring(8),1);
-            printBattleResults("Threat reduced " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mech's " + battleMonster.upgrades[i].substring(8) + " by 1!");
+            printBattleResults("Threat reduced " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mecha's " + battleMonster.upgrades[i].substring(8) + " by 1!");
           } else if (battleMonster.upgrades[i].indexOf("-2 Mech") > -1) {
             MU["Dice -#"].active(battlePlayer,battleMonster.upgrades[i].substring(8),2);
-            printBattleResults("Threat reduced " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mech's " + battleMonster.upgrades[i].substring(8) + " by 2!");
+            printBattleResults("Threat reduced " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mecha's " + battleMonster.upgrades[i].substring(8) + " by 2!");
           }
           if (battleMonster.upgrades[i].indexOf("+1 Mecha") > -1) {
             MU["Dice Target +#"].active(battlePlayer,battleMonster.upgrades[i].substring(9),1);
-            printBattleResults("Threat raised " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mech's " + battleMonster.upgrades[i].substring(9) + " by 1!");
+            printBattleResults("Threat raised " + battlePlayer.sprite.key.capitalizeFirstLetter() + " Mecha's " + battleMonster.upgrades[i].substring(9) + " by 1!");
           }
         }
         if (battleMonster.upgrades.indexOf("First Attack") === -1) {
@@ -1028,6 +1029,9 @@ update() {
          actionIcons.children[actionPointsRecord-1].kill();
          actionPointsRecord -= 1;
       }
+    }
+    if (monstersMoving == "moving" && game.input.enabled == true && pendingBattles.length == 0 && game.world.scale.x == 1) {
+      monstersMoving = "moved";
     }
     for (var i = 0; i < globalList.length; i++) {
       if (destroyedCities.indexOf(globalList[i]) === -1 && globalList[i].sprite.input && globalList[i].sprite.input.pointerOver()) {
@@ -1719,7 +1723,7 @@ class GameOver {
         if (destroyedCities.length >= (playerCount * 4) - 4) {
           var ggreason = game.add.text(game.world.centerX, game.world.centerY, "You lost too many cities.", C.game.textStyle);
         } else {
-          var ggreason = game.add.text(game.world.centerX, game.world.centerY, "You lost all your mechs.", C.game.textStyle);
+          var ggreason = game.add.text(game.world.centerX, game.world.centerY, "You lost all your mechas.", C.game.textStyle);
         }
         var restart = game.add.text(game.world.centerX, game.world.centerY + 200*globalScale, "Restart?",C.game.textStyle);
         gg.anchor.setTo(.5);
@@ -2143,10 +2147,10 @@ function promptSave(player,monster,deathCase) {
     }
   }
   if (canSave) {
-    printBattleResults("This mech is about to die, would you like to reroll?");
+    printBattleResults("This mecha is about to die, would you like to reroll?");
     //displayRerollOptions(player);
   } else {
-    printBattleResults("This mech cannot save itself, it is all out of reroll charges!");
+    printBattleResults("This mecha cannot save itself, it is all out of reroll charges!");
     handleDeath(player,monster,deathCase);
   }
 }
@@ -2213,7 +2217,7 @@ function handleDeath(damaged,survivor,deathCase) {
         destroyedPlayers += 1;
       }
     }
-    console.log("There are " + destroyedPlayers + " mechs destroyed.")
+    console.log("There are " + destroyedPlayers + " mechas destroyed.")
     if (destroyedPlayers === playerCount) {
       zoomOut = true;
       game.bg.disableBoard();
@@ -2648,6 +2652,7 @@ function battle(player, monster) {
   }
 
   function moveMonsters() {
+   monstersMoving = "moving";
    updateOccupiedRows();
    monstersList = scrubList(monstersList);
    var unmovedMonsters = [];
@@ -2919,10 +2924,11 @@ function move(object,destination,escaping) {
     }
   }
 
+  //This happens when the monster's turn is over.
 function reEnable() {
-   game.input.enabled = true;
-   actionIcons.callAll('revive');
-   actionPointsRecord = 3;
+    game.input.enabled = true;
+    actionIcons.callAll('revive');
+    actionPointsRecord = 3;
 }
 
 function getClosestByDistance(obj) {
@@ -3461,7 +3467,7 @@ function confirmUpgrade(player,upgradeName) {
         priceText.anchor.setTo(.5,.5);
       }
       if (player.upgrades.indexOf(upgrade) > -1) {
-        priceText.setText("This mech already owns this upgrade!");
+        priceText.setText("This mecha already owns this upgrade!");
         for (i = 0; i < game.world.children.length; i++) {
           if (game.world.children[i].text && (game.world.children[i].text === "Yes"  || game.world.children[i].text === "No")) {
             game.world.children[i].destroy();
@@ -3515,7 +3521,7 @@ function confirmUpgrade(player,upgradeName) {
         return;
       } else if (consideredUpgrade.taken) {
         if (unlocks.indexOf(upgradeName) > -1) {
-          priceText.setText("Another mech has already purchased this unique upgrade.");
+          priceText.setText("Another mecha has already purchased this unique upgrade.");
         } else {
           priceText.setText("This upgrade is out of stock. Three other Mechas have purchased it.");
         }
@@ -3617,7 +3623,7 @@ function checkBattle(space) {
     if (pendingPlayer === null || pendingMonsters.length === 0) {
       pendingMonster = null;
       pendingPlayer = null;
-    } else {
+      } else {
       for (i = 0; i < pendingMonsters.length; i++) {
         pendingMonster = pendingMonsters[i]
         var pendingObject = {pendingPlayer: pendingPlayer, pendingMonster: pendingMonsters[i], space:space}
@@ -3654,57 +3660,59 @@ function checkBattle(space) {
 
 function changeTurn() {
   var waitmove = false;
-    playersList.forEach(function(player) {
-      if (player.rbTokens) {
-        rebuild(player, game.input.mousePointer,true);
-      }
-    });
     if (!heldSprite) {
-      if (turn) {
+      if (turn && monstersMoving == false) {
         moveMonsters();
-      }
-      actionPoints = 3;
-      do {
-        if (turn && turn.sprite.number && turn.sprite.number < playerCount) {
-          turn = playersList[turn.sprite.number + 1];
-        } else if (turn && turn.sprite.number && turn.sprite.number === playerCount || turn === undefined) {
-          for (i = 1; i < playersList.length; i++) {
-            if (playersList[i].upgrades.indexOf("Siege Mode") > -1&& playersList[i].canSiege === false) {
-              playersList[i].canSiege = true;
-            }
-            if (playersList[i].upgrades.indexOf("Nullifier Shield") > -1 && playersList[i].shields === false) {
-              playersList[i].shields = true;
-            }
-            if (playersList[i].upgrades.indexOf("Nullifier Shield Unlock") > -1 ) {
-              U["Nullifier Shield Unlock"].active(playersList[i],1);
-            }
-            if (playersList[i].upgrades.indexOf("Weaponized Research") > -1) {
-              playersList[i].weaponizedResearchCharges = 3;
-            }
-            if (playersList[i].changedDie) {
-              playersList[i].changedDie.forEach(function(changed) {
-                playersList[i][changed.value] -= changed.count;
+      } else if (monstersMoving == "moved") {
+        monstersMoving == false;
+        actionPoints = 3;
+        playersList.forEach(function(player) {
+          if (player.rbTokens) {
+            rebuild(player, game.input.mousePointer,true);
+          }
+        });
+        do {
+          if (turn && turn.sprite.number && turn.sprite.number < playerCount) {
+            turn = playersList[turn.sprite.number + 1];
+          } else if (turn && turn.sprite.number && turn.sprite.number === playerCount || turn === undefined) {
+            for (i = 1; i < playersList.length; i++) {
+              if (playersList[i].upgrades.indexOf("Siege Mode") > -1&& playersList[i].canSiege === false) {
+                playersList[i].canSiege = true;
+              }
+              if (playersList[i].upgrades.indexOf("Nullifier Shield") > -1 && playersList[i].shields === false) {
+                playersList[i].shields = true;
+              }
+              if (playersList[i].upgrades.indexOf("Nullifier Shield Unlock") > -1 ) {
+                U["Nullifier Shield Unlock"].active(playersList[i],1);
+              }
+              if (playersList[i].upgrades.indexOf("Weaponized Research") > -1) {
+                playersList[i].weaponizedResearchCharges = 3;
+              }
+              if (playersList[i].changedDie) {
+                playersList[i].changedDie.forEach(function(changed) {
+                  playersList[i][changed.value] -= changed.count;
+                });
+              }
+              playersList[i].upgrades.forEach(function(upgrade) {
+                if (playersList[i].rerollUses[upgrade]) {
+                  playersList[i].rerollUses[upgrade].charges = playersList[i].rerollUses[upgrade].maxCharges;
+                }
               });
             }
-            playersList[i].upgrades.forEach(function(upgrade) {
-              if (playersList[i].rerollUses[upgrade]) {
-                playersList[i].rerollUses[upgrade].charges = playersList[i].rerollUses[upgrade].maxCharges;
-              }
-            });
+            turn = playersList[1];
+          } 
+        } while (turn === undefined)
+          console.log("Switching to this turn:");
+          console.log(turn);
+          if (turn.rpPerTurn && turn.sprite.alive) {
+            turn.rp += turn.rpPerTurn;
+            console.log(turn.sprite.key + " gained " + turn.rpPerTurn + " RP.");
           }
-          turn = playersList[1];
-        } 
-      } while (turn === undefined)
-        console.log("Switching to this turn:");
-        console.log(turn);
-        if (turn.rpPerTurn && turn.sprite.alive) {
-          turn.rp += turn.rpPerTurn;
-          console.log(turn.sprite.key + " gained " + turn.rpPerTurn + " RP.");
-        }
-        upgradeButton.reset(upgradeButton.x, upgradeButton.y);
-        upgradeButton.events.onInputUp._bindings = [];
-        upgradeButton.loadTexture(turn.sprite.key);
-        upgradeButton.events.onInputUp.add(upgrade, {upgrading: turn});
+          upgradeButton.reset(upgradeButton.x, upgradeButton.y);
+          upgradeButton.events.onInputUp._bindings = [];
+          upgradeButton.loadTexture(turn.sprite.key);
+          upgradeButton.events.onInputUp.add(upgrade, {upgrading: turn});
+      }
     }
 }
 
