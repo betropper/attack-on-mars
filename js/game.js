@@ -781,6 +781,12 @@ update() {
       pendingPlayer.sprite.events.onInputUp.add(placeRebuilt,{obj:pendingPlayer, quadrant:String.fromCharCode(96 + pendingPlayer.sprite.number),column:false,row:"0"})
       globalList.push(pendingPlayer);
     }
+    if (monstersMoving == false && hoverSprite && actionPointsRecord != actionPoints) {
+      if (actionPointsRecord != actionPoints && actionPointsRecord != 0) {
+         actionIcons.children[actionPointsRecord-1].kill();
+         actionPointsRecord -= 1;
+      }
+    }
     if (!heldSprite && actionPoints <= 0 && pendingBattles.length === 0 && zoomOut !== true && zoomOut !== true) {
       changeTurn();
     }
@@ -1024,12 +1030,6 @@ update() {
     // set a minimum and maximum scale value
     //worldScale = Phaser.Math.clamp(worldScale, 1, C.game.zoomScale);
     //game.world.scale.set(worldScale);
-    if (hoverSprite && actionPointsRecord != actionPoints) {
-      if (actionPointsRecord != actionPoints && actionPointsRecord != 0) {
-         actionIcons.children[actionPointsRecord-1].kill();
-         actionPointsRecord -= 1;
-      }
-    }
     if (monstersMoving == "moving" && game.input.enabled == true && pendingBattles.length == 0 && game.world.scale.x == 1) {
       monstersMoving = "moved";
     }
@@ -1306,6 +1306,12 @@ function spawnBoss() {
     }
   }
   boss.def = drawnMonster.def;
+  if (drawnMonster.defGoal) {
+    boss.defGoal = drawnMonster.defGoal
+  }
+  if (drawnMonster.batkGoal) {
+    boss.batkGoal = drawnMonster.batkGoal
+  }
   boss.rp = 5;
   boss.mr = 4;
   var bossX = changeValueScale(Space["center"].x,"x");
@@ -1681,6 +1687,13 @@ function winGame(winner) {
     playersList[i].sprite.inputEnabled = true;
     reEnableHover(playersList[i].sprite);
   }
+  for (i = 0; i < resultsList.length; i++) {
+    if (resultsList[i].rerollButton) {
+      resultsList[i].rerollButton.destroy();
+      resultsList[i].rerollText.destroy();
+    }
+    resultsList[i].destroy();
+  }
   /*
   battlePlayer.sprite.events.onDragStop._bindings = [];
   battlePlayer.sprite.events.onDragStop.add(attachClosestSpace, this.sprite);
@@ -1689,7 +1702,11 @@ function winGame(winner) {
   var plusorneg = 1;
   var increment = 1;
   var monsterTween = game.add.tween(monsterBar).to( { alpha: 0 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
+  var cardTween = game.add.tween(playerBar.playerCard).to( { alpha: 0 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
   var winTween = game.add.tween(playerBar).to( { alpha: 0 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
+  monstersList.forEach(function(monster) {
+    var dyingTweens = game.add.tween(monster).to( { alpha: 0 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
+  });
   if (isOdd(playerCount)=== 1) {
     var victoryTween = game.add.tween(winner.sprite).to({ x: focusX, y: focusY }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
   } else {
@@ -1697,6 +1714,11 @@ function winGame(winner) {
   }
   victoryTween.onComplete.add(victoryScreen, this);
   for (i = 1; i < playersList.length; i++) {
+    if (!playersList[i].alive) {
+      playersList[i].revive();
+      playersList[i].alpha = 0;
+      var reviveTween = game.add.tween(playersList[i]).to( { alpha: 1 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
+    }
     if (playersList[i] != winner) {
       if (plusorneg < 0 && isOdd(playerCount) === 0) {
         increment += 2;
@@ -1711,6 +1733,8 @@ function victoryScreen() {
   var victoryText = game.add.bitmapText(focusX,focusY - game.camera.height/C.game.zoomScale, 'font', "YOU WIN!", 70*globalScale);
   victoryText.anchor.setTo(.5);
   game.add.tween(victoryText).to( { y: menuBar.y + menuBar.height/2 }, 1500, Phaser.Easing.Bounce.Out, true);   
+  victoryText.inputEnabled = true;
+  victoryText.events.onInputDown.add(completeKill, this);
 }
 
 class GameOver {
@@ -2991,8 +3015,9 @@ function placeRebuilt(player) {
       game.bg.highlightedSpaces[i].destroy();
     }
     game.bg.highlightedSpaces = [];
-    player.sprite.x = closestX;
-    player.sprite.y = closestY;
+    var moveTween = game.add.tween(player.sprite).to( { x: closestX, y: closestY}, C.game.moveSpeed/2, Phaser.Easing.Linear.None, true);
+    //player.sprite.x = closestX;
+    //player.sprite.y = closestY;
     player.key = spaceKey;
     player.space = space;
     if (this.array) {
@@ -3664,7 +3689,7 @@ function changeTurn() {
       if (turn && monstersMoving == false) {
         moveMonsters();
       } else if (monstersMoving == "moved") {
-        monstersMoving == false;
+        monstersMoving = false;
         actionPoints = 3;
         playersList.forEach(function(player) {
           if (player.rbTokens) {
