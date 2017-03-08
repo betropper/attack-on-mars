@@ -2047,18 +2047,22 @@ function attack(attacker,defender) {
       console.log(defences);
     }
   }
-  var successes = (rhits.hits || 0) + bhits.hits;
   console.log("rhits for attacker: " + rhits.hits);
   console.log("bhits for attacker: " + bhits.hits);
-  console.log(successes);
 
   if (Number.isInteger(rhits)) {
     var rhittext = "0" 
+    var rhits = {};
+    rhits.results = [0];
+    rhits.hits = 0;
   } else {
     var rhittext = rhits.results.join(",");
   }
   if (Number.isInteger(bhits)) {
     var bhittext = "0" 
+    var bhits = {};
+    bhits.results = [0];
+    bhits.hits = 0;
   } else {
     var bhittext = bhits.results.join(",");
   }
@@ -2079,13 +2083,19 @@ function attack(attacker,defender) {
   if (defender.guarenteedDef && successes > 0) {
     successes -= defender.guarenteedDef;
   }
-  console.log(attacker.sprite.key + " hit " +successes + " hit/hits!");
-  console.log(defender.sprite.key + " defended " + defences + " hit/hits!");
   if (playersList.indexOf(defender) > -1 ) {
     printBattleResults(defender.sprite.key.capitalizeFirstLetter() + " Mecha rolled " + defencestext + " on Defence Die!");
   } else {
     printBattleResults(C.monster.names[defender.sprite.spriteName] + " rolled " + defencestext + " on Defence Die!");
   }
+  if (attacker.upgrades.indexOf("Reroll Blue") != -1 && (defender.hp - bhits.hits + defences.hits > 0) && attacker.rerollTokens > 0 && bhits.hits != attacker.batk) {
+    bhits = MU["Reroll"].active(attacker,"batk",bhits);
+  } else if (defender.upgrades.indexOf("Reroll Def") != -1 && defences.hits != defender.def && defender.rerollTokens > 0) {
+    defences = MU["Reroll"].active(defender,"def",defences);
+  }
+  var successes = (rhits.hits || 0) + bhits.hits;
+  console.log(attacker.sprite.key + " hit " +successes + " hit/hits!");
+  console.log(defender.sprite.key + " defended " + defences.hits + " hit/hits!");
   if (successes > defences.hits) {
     var damageTaken = successes - defences.hits;
     damageTaken = shieldDamage(defender,damageTaken)
@@ -2108,6 +2118,7 @@ function attack(attacker,defender) {
     if (damaged && damaged != battlePlayer && battlePlayer.pilot === "Teen Prodigy") {
       damaged.hp -= Pilots["Teen Prodigy"].passive(battlePlayer);
     }
+    var stacks = 0;
     if (attacker.upgrades.indexOf("Poison Aura") > -1) {
       var stacks = countInArray(attacker.upgrades,"Poison Aura");
       if (damageTaken) {
@@ -2144,16 +2155,16 @@ function attack(attacker,defender) {
     }
     if (defender.hp <= 0) {
       if (defender.canReroll && defender.rerollUses.colors.indexOf("Defence Die") > -1) {
-        promptSave(defender,attacker,deathCase);
+        promptSave(defender,attacker);
       } else {
-        handleDeath(defender,attacker,deathCase);
+        handleDeath(defender,attacker);
       }
     }
     if (attacker.hp <= 0) {
     if (attacker.canReroll && (attacker.rerollUses.colors.indexOf("Physical Die") > -1 || attacker.rerollUses.colors.indexOf("Energy Die") > -1)) {
-        promptSave(attacker,defender,deathCase);
+        promptSave(attacker,defender);
       } else {
-        handleDeath(attacker,defender,deathCase);
+        handleDeath(attacker,defender);
       }
     }
     if (!damaged || damaged.hp > 0) {
@@ -2175,7 +2186,7 @@ function promptSave(player,monster,deathCase) {
     //displayRerollOptions(player);
   } else {
     printBattleResults("This mecha cannot save itself, it is all out of reroll charges!");
-    handleDeath(player,monster,deathCase);
+    handleDeath(player,monster);
   }
 }
 function handleDeath(damaged,survivor,deathCase) {
@@ -2228,12 +2239,16 @@ function handleDeath(damaged,survivor,deathCase) {
   }
   if (damaged === battlePlayer) {
     var monsterWinTween = game.add.tween(battleMonster.sprite).to( { x: focusX }, 1000, Phaser.Easing.Linear.None, true);
+    var deathTween = game.add.tween(damaged.sprite).to( { alpha: 0 }, 1000, Phaser.Easing.Linear.None, true);
+    deathTween.onComplete.add(function() {
+      this.damaged.sprite.kill()
+    }, {damaged: damaged});
     if (damaged.key.charAt(2) === "0") {
       destroyCity(damaged.key);
     }
     focusSpace.occupied = scrubList(focusSpace.occupied);
     playersList[damaged.sprite.number].rbTokens = 6;
-    playersList[damaged.sprite.number].sprite.kill();
+    //playersList[damaged.sprite.number].sprite.kill();
     destroyedPlayersList.push(playersList[damaged.sprite.number])
     var destroyedPlayers = 0;
     for (var i = 1; i < playersList.length; i++) {
@@ -2566,8 +2581,12 @@ function battle(player, monster) {
   if (battleTurn === battleMonster && battleMonster.sprite) {
       if (attackText) {
         if (battleMonster.upgrades.indexOf("Regeneration") > -1) {
-          var stacks = countInArray(battleMonster.upgrades,"Regeneration");
-          MU["Regeneration"].active(battleMonster, stacks);
+          var stacks = battleMonster.regenTokens;   
+          var maxRegen = battleMonster.maxhp - battleMonster.hp;
+          var regenstacks = Math.min(stacks, maxRegen);
+          if (regenstacks > 0) {
+            MU["Regeneration"].active(battleMonster, regenstacks);
+          }
         }
         for (i = 0; i < battleTexts.length; i++) {
           battleTexts[i].kill();
@@ -3724,6 +3743,16 @@ function changeTurn() {
                 }
               });
             }
+            for (i = 0; i < monstersList.length; i++) {
+              if (monstersList[i].rerollTokens) {
+                monstersList[i].rerollTokens += 1;
+              }
+              if (monstersList[i].regenTokens) {
+                for (i = 0; i < countInArray(upgrades,"Regeneration")) {
+                  monstersList[i].regenTokens += 1;
+                }
+              }
+            }
             turn = playersList[1];
           } 
         } while (turn === undefined)
@@ -4188,6 +4217,12 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     }
     if (drawnMonster.batkGoal) {
       obj.batkGoal = drawnMonster.batkGoal
+    }
+    if (drawnMonster.rerollTokens) {
+      obj.rerollTokens = drawnMonster.rerollTokens
+    }
+    if (drawnMonster.regenTokens) {
+      obj.regenTokens = drawnMonster.regenTokens
     }
     drawnMonster.drawn = true;
     

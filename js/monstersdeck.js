@@ -88,13 +88,15 @@ var MonstersDeck = {
    "batk": 4,
    "def": 4,
    "hp": 4,
-   "upgrades": ["Regeneration","Poison Aura"]
+   "upgrades": ["Regeneration","Poison Aura"],
+   "regenTokens": 1
    },
    {
    "batk": 4,
    "def": 4,
    "hp": 4,
-   "upgrades": ["Regeneration","Poison Aura"]
+   "upgrades": ["Regeneration","Poison Aura"],
+   "regenTokens": 1
    },
    {
    "batk": 6,
@@ -202,13 +204,15 @@ var MonstersDeck = {
    "batk": 7,
    "def": 3,
    "hp": 4,
-   "upgrades": ["Reroll Red"]
+   "upgrades": ["Reroll Blue"],
+   "rerollTokens": 1
    },
    {
    "batk": 6,
    "def": 5,
    "hp": 3,
-   "upgrades": ["Reroll Def"]
+   "upgrades": ["Reroll Def"],
+   "rerollTokens": 1
    },
    {
    "batk": 7,
@@ -297,6 +301,7 @@ var MU = {
     active: function(healing, stacks) {
       if (healing.hp < healing.maxhp) {
         healing.hp += stacks || 1;
+        healing.regenTokens -= stacks;
         tweenTint(healing.sprite, 0xffffff, 0x98FB98, 500, true);
         printBattleResults(healing.sprite.key + " regenerated " + (stacks || 1) + " hp.")
       }
@@ -369,6 +374,33 @@ var MU = {
       };
       mech[playerDie[pool]] -= amount;
       mech.tempStolen.splice({pool: pool, amount: amount},1);
+    }
+  },
+  "Reroll": {
+    "desc": "Once per round, this threat will reroll all misses of one color die.",
+    "cost": "4",
+    active: function(monster, pool, hits) {
+      var monsterPool = monster[pool];
+      var monsterTarget = monster[pool+"Goal"];
+      var oldHits = hits.hits;
+      console.log(hits);
+      printBattleResults("But the monster rerolled its missed die!");
+      for (i = 0; i < hits.results.length; i++) {
+        if (hits.results[i] < (monsterTarget || 5)) {
+          hits.results[i] = Math.floor(Math.random() * ((6-1)+1) + 1);
+          if (hits.results[i] >= (monsterTarget || 5)) {
+            hits.hits++
+          }
+        }
+      }
+      console.log(hits);
+      if (hits.hits - oldHits == 1) {
+        printBattleResults("Instead, it rolled " + hits.results.join(",") + " and got " + (hits.hits - oldHits) + " extra roll.");
+      } else {
+        printBattleResults("Instead, it rolled " + hits.results.join(",") + " and got " + (hits.hits - oldHits) + " extra rolls.");
+      }
+      monster.rerollTokens -= 1;
+      return hits;
     }
   }
 }
