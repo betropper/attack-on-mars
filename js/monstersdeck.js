@@ -299,11 +299,11 @@ var MU = {
     "desc": "Before attacking, this monster regenerates 1 hp.",
     "cost": 4,
     active: function(healing, stacks) {
-      if (healing.hp < healing.maxhp) {
+      if (healing.hp < healing.maxhp && healing.hp > 0) {
         healing.hp += stacks || 1;
         healing.regenTokens -= stacks;
         tweenTint(healing.sprite, 0xffffff, 0x98FB98, 500, true);
-        printBattleResults(healing.sprite.key + " regenerated " + (stacks || 1) + " hp.")
+        printBattleResults(C.monster.names[healing.sprite.spriteName] + " regenerated " + (stacks || 1) + " hp.")
       }
     }
   },
