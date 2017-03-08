@@ -3748,7 +3748,7 @@ function changeTurn() {
                 monstersList[i].rerollTokens += 1;
               }
               if (monstersList[i].regenTokens) {
-                for (i = 0; i < countInArray(upgrades,"Regeneration")) {
+                for (i = 0; i < countInArray(upgrades,"Regeneration"); i++) {
                   monstersList[i].regenTokens += 1;
                 }
               }
