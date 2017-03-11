@@ -779,7 +779,7 @@ update() {
       pendingPlayer.sprite.events.onInputOut._bindings = [];
       pendingPlayer.sprite.events.onDragStop._bindings = [];
       pendingPlayer.sprite.events.onInputUp.add(placeRebuilt,{obj:pendingPlayer, quadrant:String.fromCharCode(96 + pendingPlayer.sprite.number),column:false,row:"0"})
-      var reviveTween = game.add.tween(pendingPlayer).to( { alpha: 1 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
+      var reviveTween = game.add.tween(pendingPlayer.sprite).to( { alpha: 1 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
       globalList.push(pendingPlayer);
     }
     if (monstersMoving == false && hoverSprite && actionPointsRecord != actionPoints) {
@@ -1718,7 +1718,7 @@ function winGame(winner) {
     if (!playersList[i].alive) {
       playersList[i].revive();
       playersList[i].alpha = 0;
-      var reviveTween = game.add.tween(playersList[i]).to( { alpha: 1 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
+      var reviveTween = game.add.tween(playersList[i].sprite).to( { alpha: 1 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
     }
     if (playersList[i] != winner) {
       if (plusorneg < 0 && isOdd(playerCount) === 0) {
@@ -3030,6 +3030,19 @@ function placeRebuilt(player) {
   var row = "0";
   if (spaceKey.charAt(0) == quadrant && spaceKey.charAt(2) == row && !space.wall && !space.occupied) {
     heldSprite = null;
+    for (i = 1; i < playersList.length; i++) {
+      if (destroyedPlayersList.length > 0 && playersList[i].rbTokens && normalState) {
+        playersList[i].rebuildButton.valueIcon.reset(playersList[i].rebuildButton.valueIcon.x, playersList[i].rebuildButton.valueIcon.y);
+        playersList[i].rebuildButton.valueDisplay.reset(playersList[i].rebuildButton.valueDisplay.x, playersList[i].rebuildButton.valueDisplay.y);
+        playersList[i].rebuildButton.mechSprite.revive();
+        playersList[i].rebuildButton.valueIcon.events.onInputDown._bindings = [];
+        playersList[i].rebuildButton.valueIcon.events.onInputDown.add(rebuild, {rebuilding: playersList[i]});
+      } else if (playersList[i].rebuildButton) {
+        playersList[i].rebuildButton.valueDisplay.kill();
+        playersList[i].rebuildButton.valueIcon.kill();
+        playersList[i].rebuildButton.mechSprite.kill();
+      }
+    }
     game.bg.enableBoard();
     for (i = 0; i < game.bg.highlightedSpaces.length; i++) {
       game.bg.highlightedSpaces[i].destroy();
@@ -3122,7 +3135,7 @@ function rebuild(rebuilding, pointer, free) {
     rebuilding.sprite.events.onInputOut._bindings = [];
     rebuilding.sprite.events.onDragStop._bindings = [];
     rebuilding.sprite.events.onInputUp.add(placeRebuilt,{obj:rebuilding, quadrant:String.fromCharCode(96 + rebuilding.sprite.number),column:false,row:"0"})
-    var reviveTween = game.add.tween(rebuilding).to( { alpha: 1 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
+    var reviveTween = game.add.tween(rebuilding.sprite).to( { alpha: 1 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
     globalList.push(rebuilding);
   } else if (rebuilding.rbTokens <=0) {
     game.bg.pendingRebuilt.push(rebuilding);
