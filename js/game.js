@@ -779,6 +779,7 @@ update() {
       pendingPlayer.sprite.events.onInputOut._bindings = [];
       pendingPlayer.sprite.events.onDragStop._bindings = [];
       pendingPlayer.sprite.events.onInputUp.add(placeRebuilt,{obj:pendingPlayer, quadrant:String.fromCharCode(96 + pendingPlayer.sprite.number),column:false,row:"0"})
+      var reviveTween = game.add.tween(pendingPlayer).to( { alpha: 1 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
       globalList.push(pendingPlayer);
     }
     if (monstersMoving == false && hoverSprite && actionPointsRecord != actionPoints) {
@@ -3121,6 +3122,7 @@ function rebuild(rebuilding, pointer, free) {
     rebuilding.sprite.events.onInputOut._bindings = [];
     rebuilding.sprite.events.onDragStop._bindings = [];
     rebuilding.sprite.events.onInputUp.add(placeRebuilt,{obj:rebuilding, quadrant:String.fromCharCode(96 + rebuilding.sprite.number),column:false,row:"0"})
+    var reviveTween = game.add.tween(rebuilding).to( { alpha: 1 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
     globalList.push(rebuilding);
   } else if (rebuilding.rbTokens <=0) {
     game.bg.pendingRebuilt.push(rebuilding);
