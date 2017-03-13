@@ -275,6 +275,7 @@ class Load {
       C.upgradeMenu.height = C.upgradeMenu.height/2
       C.upgradeMenu.scale = globalScale;
     }
+    this.load.image("howto","assets/howto.png",1920,1080);
     this.load.image("blackground","assets/blackbox.png",512,512);
     this.load.image("redCard",C.mech.colorCards.redfile,520,791);
     this.load.image("blueCard",C.mech.colorCards.bluefile,520,791);
@@ -353,17 +354,20 @@ class MainMenu {
     //var playerCountText = game.add.bitmapText(game.world.centerX, countNumber.y - 140*globalScale, 'attackfont', "Player Count (Locked)", 90*globalScale);
     //playerCountText.anchor.set(.5);
     //game.input.onUp.add(checkButtons, {left: left, right: right});
-    var playButton = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/9 + 140*globalScale, 'attackfont', "Play Game", 90*globalScale);
+    var playButton = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/9 + 20*globalScale, 'attackfont', "Play Game", 90*globalScale);
     playButton.anchor.set(.5);
     playButton.inputEnabled = true;
     playButton.events.onInputUp.add(clickFade, {inorout:"out", state: "Setup"});
     var settingsButton = game.add.bitmapText(game.world.centerX, playButton.y + 140*globalScale, 'attackfont', "Settings", 90*globalScale);
     settingsButton.anchor.set(.5);
     settingsButton.inputEnabled = true;
-    var creditsButton = game.add.bitmapText(game.world.centerX, settingsButton.y + 140*globalScale, 'attackfont', "Credits", 90*globalScale);
+    var howtoButton = game.add.bitmapText(game.world.centerX, settingsButton.y + 140*globalScale, 'attackfont', "How to Play", 90*globalScale);
+    howtoButton.anchor.set(.5);
+    howtoButton.inputEnabled = true;
+    var creditsButton = game.add.bitmapText(game.world.centerX, howtoButton.y + 140*globalScale, 'attackfont', "Credits", 90*globalScale);
     creditsButton.anchor.set(.5);
     creditsButton.inputEnabled = true;
-    var menuList = [/*left,*/ /*countNumber,*/ /*right,*/ /*playerCountText,*/ playButton, settingsButton, creditsButton];
+    var menuList = [/*left,*/ /*countNumber,*/ /*right,*/ /*playerCountText,*/ playButton, settingsButton, howtoButton, creditsButton];
     returnButton = game.add.bitmapText(game.world.centerX + game.width, game.world.centerY - game.height/8, 'attackfont', "Return to Menu", 90*globalScale);
     returnButton.anchor.set(.5);
     //Off screen settings menu
@@ -382,6 +386,7 @@ class MainMenu {
       settingsList[i].events.onInputUp.add(changeQuality, {quality: settingsList[i].text});
     }
     settingsButton.events.onInputUp.add(shiftSettings, {menuList: menuList, settingsList:settingsList});
+    howtoButton.events.onInputUp.add(clickFade, {inorout: "out", state: "HowToMenu"});
     creditsButton.events.onInputUp.add(clickFade, {inorout: "out", state: "Credits"});
     returnButton.events.onInputUp.add(shiftSettings, {menuList: menuList, settingsList:settingsList});
     fade("in");
@@ -402,6 +407,21 @@ class Credits {
       var creditsTween = game.add.tween(creditsDisplay).to({y: game.world.centerY}, 4000, Phaser.Easing.Linear.None, true);
       creditsDisplay.anchor.setTo(.5);
       //creditsTween.onComplete.add(returnToMenu, this);
+  }
+  
+  create() {
+    fade("in");
+    game.input.enabled = true;
+    game.input.onTap.add(clickFade,{inorout: "out", state: "MainMenu"});
+  }
+}
+
+class HowToMenu {
+  preload() {
+      var howToMenu = game.add.sprite(game.world.centerX,game.world.centerY,"howto");
+      howToMenu.width = howToMenu.width * (game.height/howToMenu.height); 
+      howToMenu.height = game.height;
+      howToMenu.anchor.setTo(.5);
   }
   
   create() {
@@ -2670,7 +2690,7 @@ function battle(player, monster) {
         //var destroyedCityColumn = spawnSpecific("destroyedCity", newDestination);
       
         targetSpace = Space[newDestination];
-        var spawn = game.add.sprite(targetSpace.x*C.bg.scale*C.bg.resizeX + game.bg.position.x,targetSpace.y*C.bg.scale*C.bg.resizeY + game.bg.position.y,object); 
+        var spawn = game.add.sprite(targetSpace.x*C.bg.scale*C.bg.resizeX + game.bg.position.x,targetSpace.y*C.bg.scale*C.bg.resizeY + game.bg.position.y,"destroyedCity"); 
         spawn.anchor.x = .5;
         spawn.anchor.y = .5;
         spawn.scale.x = C.destroyed.scale;
@@ -2682,12 +2702,12 @@ function battle(player, monster) {
             spawn.angle = 360 - (-spawn.angle);
           }
         console.log(random.angle);
-        occupiedRows.push(space.substring(0,2));
+        occupiedRows.push(newDestination.substring(0,2));
         spawn.smoothed = true;
         addToOccupied(targetSpace,spawn);
         var destroyedCityColumn = {
           space: targetSpace,
-          key: space,
+          key: newDestination,
           sprite: spawn
         }
 
@@ -4209,7 +4229,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
       obj.def = drawnMonster.def;
       obj.rp = 1;
       obj.mr = 1;
-    } else if (threatLevel <= 24) { 
+    } else if (threatLevel <= 18) { 
       do {
         var drawnMonster = MonstersDeck.growingMonsters[Math.floor(Math.random() * MonstersDeck.growingMonsters.length)];
       } while (drawnMonster.drawn)
@@ -4226,8 +4246,8 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
       obj.rp = 2;
       obj.mr = 3;
     } else {
-      if (threatLevel >= 36) {
-        threatLevel = 24;
+      if (threatLevel >= 30) {
+        threatLevel = 18;
         for (i = 0; i < MonstersDeck.extinctionMonsters.length; i++) {
           MonstersDeck.extinctionMonsters.drawn = false;
         }
@@ -4381,5 +4401,6 @@ game.state.add("Setup",Setup);
 game.state.add("GameOver",GameOver);
 game.state.add("MainMenu",MainMenu);
 game.state.add("Credits",Credits);
+game.state.add("HowToMenu",HowToMenu);
 game.state.start("Boot");
 
