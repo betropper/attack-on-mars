@@ -2667,7 +2667,30 @@ function battle(player, monster) {
   function destroyCity(newDestination) {
       var newDestination = this.key || newDestination;
       if (fortifiedList.indexOf(newDestination.charAt(0)) === -1 || Space[newDestination].damage === 1) {
-        var destroyedCityColumn = spawnSpecific("destroyedCity", newDestination);
+        //var destroyedCityColumn = spawnSpecific("destroyedCity", newDestination);
+      
+        targetSpace = Space[newDestination];
+        var spawn = game.add.sprite(targetSpace.x*C.bg.scale*C.bg.resizeX + game.bg.position.x,targetSpace.y*C.bg.scale*C.bg.resizeY + game.bg.position.y,object); 
+        spawn.anchor.x = .5;
+        spawn.anchor.y = .5;
+        spawn.scale.x = C.destroyed.scale;
+        spawn.scale.y = C.destroyed.scale;
+        spawn.angle = Math.atan2(game.bg.y + game.bg.height/2 - spawn.y, game.bg.x + game.bg.width/2 - spawn.x );
+        spawn.angle = spawn.angle * (180/Math.PI) - 10;
+        if(spawn.angle < 0)
+          {
+            spawn.angle = 360 - (-spawn.angle);
+          }
+        console.log(random.angle);
+        occupiedRows.push(space.substring(0,2));
+        spawn.smoothed = true;
+        addToOccupied(targetSpace,spawn);
+        var destroyedCityColumn = {
+          space: targetSpace,
+          key: space,
+          sprite: spawn
+        }
+
         destroyedCities.push(destroyedCityColumn);
         occupiedRows.push(destroyedCityColumn.key.substring(0,2));
         Space[newDestination].damage = 2;
@@ -4252,6 +4275,7 @@ function addToOccupied(object,space) {
   }
 }
 
+/*
 function spawnSpecific(object,space) {
   targetSpace = Space[space];
   spawn = game.add.sprite(targetSpace.x*C.bg.scale*C.bg.resizeX + game.bg.position.x,targetSpace.y*C.bg.scale*C.bg.resizeY + game.bg.position.y,object); 
@@ -4342,6 +4366,7 @@ function spawnSpecific(object,space) {
     sprite: spawn
   }
 }
+*/
 console.log(Phaser.Device.desktop);
 var game = new Phaser.Game(C.game.width,C.game.height, Phaser.AUTO, '', {
     init: function () {
