@@ -3781,6 +3781,10 @@ function checkBattle(space) {
           zoomIn = true;
           game.input.enabled = true;
           battleStarting = true;
+          buttonsList.forEach(function(button) {
+            button.inputEnabled = false;
+            button.tint = 0x3d3d3d;
+          });
       }
     }
   }
@@ -4022,8 +4026,15 @@ function getClosestSpaces(spaceKey) {
 }
 function diff(a,b){return Math.abs(a-b);}
 
-function getRandomSpace() {
+function getRandomSpace(notOccupied) {
   var obj_keys = Object.keys(Space);
+  if (notOccupied) {
+    obj_keys.forEach(function(key) {
+      if (Space[key].occupied) {
+        obj_keys.splice(key,1);
+      }
+    });
+  }
   var ran_key = obj_keys[Math.floor(Math.random() *obj_keys.length)];
   selectedSpace = Space[ran_key];
   return {
@@ -4111,7 +4122,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
   } 
   while (condition === true) {
     failSafe += 1;
-    var space = getRandomSpace();
+    var space = getRandomSpace(true);
     if (quadrant === "random" && occupiedCheck === true) {
         if (row === "random") {
           if (!fullyOccupied) {
