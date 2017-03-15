@@ -767,7 +767,7 @@ update() {
     game.world.bringToTop(heldSprite);
   }
   if (game.camera.y <= 0) {
-    if (!howToDisplay) {
+    if (!howToDisplay || !howToDisplay.alive) {
       game.camera.y = 0;
     }
     if (upgradeState === true) {
@@ -1087,17 +1087,20 @@ function setAttributeDisplay(obj) {
     helpButton.events.onInputUp.add(function() {
       game.bg.disableBoard();
       game.input.enabled = true;
-      howToDisplay = game.add.sprite(game.world.centerX,game.world.centerY - game.height,"howto");
+      if (!howToDisplay) {
+        howToDisplay = game.add.sprite(game.world.centerX,game.world.centerY - game.height,"howto");
+        howToDisplay.width = howToDisplay.width * (game.height/howToDisplay.height); 
+        howToDisplay.height = game.height;
+        howToDisplay.anchor.setTo(.5);
+      } else {
+        howToDisplay.revive();
+      }
       howToDisplay.alpha = 0;
       var howToTween = game.add.tween(howToDisplay).to( { alpha: 1 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
-      howToDisplay.width = howToDisplay.width * (game.height/howToDisplay.height); 
-      howToDisplay.height = game.height;
-      howToDisplay.anchor.setTo(.5);
       game.camera.y -= game.height;
       game.input.onTap.add(game.bg.enableBoard,game.bg);
       game.input.onTap.add(function() {
-        howToDisplay.destroy();
-        howToDisplay = null;
+        howToDisplay.kill();
         game.camera.y = 0;
         game.input.onTap._bindings = [];  
       },{helpButton: helpButton});
