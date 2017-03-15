@@ -80,7 +80,7 @@ var Corp = {
 
 var Pilots = { 
   "Bounty Hunter": {
-    "desc": "Gain two additional Research Points for each monster you defeat outside of your home quadrant.",
+    "desc": "Gain two additional Research Points for each threat you defeat outside of your home quadrant.",
     passive: function(player) {
     }
   },
@@ -126,12 +126,12 @@ var Pilots = {
       }
     },
     "Media Star": {
-      "desc": "Once per turn, for one action, drag all Monsters within three spaces one space closer to the mecha.",
+      "desc": "Once per turn, for one action, drag all Threats within three spaces one space closer to the mecha.",
       active: function(player) {       
       }
     },
     "Profiteer": {
-      "desc": "Sell Monster Resources for three Research Points"
+      "desc": "Sell Threat Resources for three Research Points"
     },
     "Engineer": {
       "desc": "You may spend one action to restore one health. This increases to two health if the mecha has the Field Repair upgrade.",
@@ -152,7 +152,7 @@ var U = {
     passive: function(player) { player.batk += 1 }
   },
   "Mines": {
-    "desc": "Allows player to set a mine that deals one damage to a single monster.",
+    "desc": "Allows player to set a mine that deals one damage to a single threat.",
     "color": "purple",
     "cost": 2,
     passive: function(player) { },
@@ -220,7 +220,7 @@ var U = {
     }
   },
   "Drop Wall": {
-    "desc": "Allows player to drop a wall on any space that a monster must destroy before moving to.",
+    "desc": "Allows player to drop a wall on any space that a threat must destroy before moving to.",
     "color": "purple",
     "cost": 4,
     passive: function(player) { },
@@ -320,7 +320,7 @@ var U = {
       }
     },
     "Monster Bait": {
-    "desc": "Player attracts monsters from two spaces away instead of one.",
+    "desc": "Player attracts threats from two spaces away instead of one.",
     "color": "black",
     "cost": 4,
     passive: function(player) { }
@@ -461,7 +461,7 @@ var U = {
       }
   },
   "Obliteration Ray": {
-    "desc": "Spend an action to place an Obliteration Ray in an adjacent space.\nThis ray fires in a row after monsters spawn, dealing 3 defendable damage to anything in the row.",
+    "desc": "Spend an action to place an Obliteration Ray in an adjacent space.\nThis ray fires in a row after threats spawn, dealing 3 defendable damage to anything in the row.",
     "color": "purple",
     "cost": 8
   },
@@ -473,7 +473,7 @@ var U = {
     "cost": 3
   },
   "Fusion Cannon": {
-    "desc": "Spend an action to attack an adjacent monster with Red Die. This cannot cause counter damage.",
+    "desc": "Spend an action to attack an adjacent threat with Red Die. This cannot cause counter damage.",
     "color": "red",
     "cost": 8,
     active: function() {
@@ -523,9 +523,9 @@ var U = {
               var successes = rhits.hits - defences.hits;
               if (successes > 0) {
                 this.monster.hp -= successes; 
-              game.coverbg.text.text = this.player.sprite.key.capitalizeFirstLetter() + " fired and rolled " + rhits.results.join(", ") + ".\nMonster rolled " + defences.results.join(", ") + ".\n" + successes + " damage done.\nHit the Fusion Cannon button again to return."
+              game.coverbg.text.text = this.player.sprite.key.capitalizeFirstLetter() + " fired and rolled " + rhits.results.join(", ") + ".\nThreat rolled " + defences.results.join(", ") + ".\n" + successes + " damage done.\nHit the Fusion Cannon button again to return."
               } else {
-              game.coverbg.text.text = this.player.sprite.key.capitalizeFirstLetter() + " fired and rolled " + rhits.results.join(", ") + ".\nMonster rolled " + defences.results.join(", ") + ".\nNo damage done.\nHit the Fusion Cannon button again to return."
+              game.coverbg.text.text = this.player.sprite.key.capitalizeFirstLetter() + " fired and rolled " + rhits.results.join(", ") + ".\nThreat rolled " + defences.results.join(", ") + ".\nNo damage done.\nHit the Fusion Cannon button again to return."
               }
               if (this.monster.hp <= 0) {
                 this.monster.space.occupied = removeFromList(monstersList[monstersList.indexOf(this.monster)], this.monster.space);

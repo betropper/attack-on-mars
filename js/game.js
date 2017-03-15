@@ -86,9 +86,9 @@ var C = {
      "extinctionMonster": "extinctionCard"
    },
    "names": {
-     "initialMonster": "Initial Monster",
-     "growingMonster": "Growing Monster",
-     "extinctionMonster": "Extinction Monster"
+     "initialMonster": "Initial Threat",
+     "growingMonster": "Growing Threat",
+     "extinctionMonster": "Extinction Threat"
    }
  },
  "menuBar": {
@@ -139,7 +139,9 @@ var focusX,
  monsterResearchTrack = 0,
  mrConfirmButton,
  upgradeTokensList = [],
- upgradeExample
+ upgradeExample,
+ helpButton,
+ howToDisplay
 var options = ["Electric Fists","Targeting Computer","Siege Mode","Nullifier Shield","The Payload",
 "Bigger Fists","Weakpoint Analysis","Weaponized Research","Nullifier Shield Unlock","The Payload",
 "Mines","Drop Wall","Fortified Cities","Obliteration Ray","Super Go Fast",
@@ -671,7 +673,6 @@ if (Phaser.Device.desktop) {
     playersList[i].sprite.number = i;
     playersList[i].pilot = pilotList[i-1];
     playersList[i].upgrades = [];
-    playersList[i].rpPerTurn = 3;
     playersList[i].tiersOwned = [0,0,0,0];
     playersList[i].colorDiscounts = [
       {color: "red", discount: 0 },
@@ -749,68 +750,70 @@ if (Phaser.Device.desktop) {
 update() {
 
   /*if (Phaser.Device.desktop) {
-      if (window.innerWidth < C.game.width) {
-        game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-      } else {
-        game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-      }
+    if (window.innerWidth < C.game.width) {
+    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+    } else {
+    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+    }
     }*/
-    //Set ZoomIn to true or ZoomOut to false to enable zoom. It will
-    //reset itself.
-    //
-    //Disables scrolling when upgrading is done
-    //game.camera.focusOnXY(playersList[1].sprite.x, playersList[1].sprite.y);
-    if (heldSprite && !battleStarting && !zoomIn && !battleState) {
-      heldSprite.x = game.input.mousePointer.x;
-      heldSprite.y = game.input.mousePointer.y;
-      game.world.bringToTop(heldSprite);
-    }
-    if (game.camera.y <= 0) {
+  //Set ZoomIn to true or ZoomOut to false to enable zoom. It will
+  //reset itself.
+  //
+  //Disables scrolling when upgrading is done
+  //game.camera.focusOnXY(playersList[1].sprite.x, playersList[1].sprite.y);
+  if (heldSprite && !battleStarting && !zoomIn && !battleState) {
+    heldSprite.x = game.input.mousePointer.x;
+    heldSprite.y = game.input.mousePointer.y;
+    game.world.bringToTop(heldSprite);
+  }
+  if (game.camera.y <= 0) {
+    if (!howToDisplay) {
       game.camera.y = 0;
-      if (upgradeState === true) {
-        upgradeState = false;
-        game.input.onTap._bindings = [];  
-        game.bg.enableBoard();
-        if (boughtBool === true) {
-          actionPoints -= 1;
-          boughtBool = false;
-        }
-        game.kineticScrolling.stop();
-        //menuBar.reset(menuBar.x,menuBar.y);
+    }
+    if (upgradeState === true) {
+      upgradeState = false;
+      game.input.onTap._bindings = [];  
+      game.bg.enableBoard();
+      if (boughtBool === true) {
+        actionPoints -= 1;
+        boughtBool = false;
       }
+      game.kineticScrolling.stop();
+      //menuBar.reset(menuBar.x,menuBar.y);
     }
-    if (upgradeState && !confirmState && upgradeMenu && game.camera.y >= upgradeMenu.y + upgradeMenu.height/2 - game.camera.height) {
-      game.camera.y = upgradeMenu.y + upgradeMenu.height/2 - game.camera.height;
-    } else if (confirmState === true) {
-      game.camera.y = upgradeMenu.y + upgradeMenu.height/2 + game.camera.height/2;
+  }
+  if (upgradeState && !confirmState && upgradeMenu && game.camera.y >= upgradeMenu.y + upgradeMenu.height/2 - game.camera.height) {
+    game.camera.y = upgradeMenu.y + upgradeMenu.height/2 - game.camera.height;
+  } else if (confirmState === true) {
+    game.camera.y = upgradeMenu.y + upgradeMenu.height/2 + game.camera.height/2;
+  }
+  if (!heldSprite && game.bg.pendingRebuilt.length > 0) {
+    var pendingPlayer = game.bg.pendingRebuilt.shift();
+    pendingPlayer.rbTokens = undefined;
+    pendingPlayer.sprite.reset(game.input.mousePointer.x, game.input.mousePointer.y);
+    heldSprite = pendingPlayer.sprite;
+    pendingPlayer.hp = pendingPlayer.maxhp;
+    game.bg.disableBoard();
+    game.bg.highlightOptions(pendingPlayer);
+    pendingPlayer.sprite.inputEnabled = true;
+    pendingPlayer.sprite.tint = 0xffffff;
+    pendingPlayer.sprite.events.onInputDown._bindings = [];
+    pendingPlayer.sprite.events.onInputOver._bindings = [];
+    pendingPlayer.sprite.events.onInputOut._bindings = [];
+    pendingPlayer.sprite.events.onDragStop._bindings = [];
+    pendingPlayer.sprite.events.onInputUp.add(placeRebuilt,{obj:pendingPlayer, quadrant:String.fromCharCode(96 + pendingPlayer.sprite.number),column:false,row:"0"})
+    var reviveTween = game.add.tween(pendingPlayer.sprite).to( { alpha: 1 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
+    globalList.push(pendingPlayer);
+  }
+  if (monstersMoving == false && hoverSprite && actionPointsRecord != actionPoints) {
+    if (actionPointsRecord != actionPoints && actionPointsRecord != 0) {
+      actionIcons.children[actionPointsRecord-1].kill();
+      actionPointsRecord -= 1;
     }
-    if (!heldSprite && game.bg.pendingRebuilt.length > 0) {
-      var pendingPlayer = game.bg.pendingRebuilt.shift();
-      heldSprite = pendingPlayer.sprite;
-      pendingPlayer.rbTokens = undefined;
-      pendingPlayer.sprite.revive(game.input.mousePointer.x, game.input.mousePointer.y);
-      pendingPlayer.hp = pendingPlayer.maxhp;
-      game.bg.disableBoard();
-      game.bg.highlightOptions(pendingPlayer);
-      pendingPlayer.sprite.inputEnabled = true;
-      pendingPlayer.sprite.tint = 0xffffff;
-      pendingPlayer.sprite.events.onInputDown._bindings = [];
-      pendingPlayer.sprite.events.onInputOver._bindings = [];
-      pendingPlayer.sprite.events.onInputOut._bindings = [];
-      pendingPlayer.sprite.events.onDragStop._bindings = [];
-      pendingPlayer.sprite.events.onInputUp.add(placeRebuilt,{obj:pendingPlayer, quadrant:String.fromCharCode(96 + pendingPlayer.sprite.number),column:false,row:"0"})
-      var reviveTween = game.add.tween(pendingPlayer.sprite).to( { alpha: 1 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
-      globalList.push(pendingPlayer);
-    }
-    if (monstersMoving == false && hoverSprite && actionPointsRecord != actionPoints) {
-      if (actionPointsRecord != actionPoints && actionPointsRecord != 0) {
-         actionIcons.children[actionPointsRecord-1].kill();
-         actionPointsRecord -= 1;
-      }
-    }
-    if (!heldSprite && actionPoints <= 0 && pendingBattles.length === 0 && zoomOut !== true && zoomOut !== true) {
-      changeTurn();
-    }
+  }
+  if (!heldSprite && actionPoints <= 0 && pendingBattles.length === 0 && zoomOut !== true && zoomOut !== true) {
+    changeTurn();
+  }
 
     if (focusSpace && focusX) {
       //findIncrementsTo(focusSpace);
@@ -1066,7 +1069,7 @@ update() {
 }
 
 function setAttributeDisplay(obj) {
- if (obj.sprite.key === "monster") {
+ if (obj.sprite.key === "threat") {
     var spriteName = obj.sprite.spriteName;
  } else {
     var spriteName = obj.sprite.key;
@@ -1074,6 +1077,30 @@ function setAttributeDisplay(obj) {
   if (!hoverSprite) {
     spawnBoss();
     game.coverbg.text.text = "Click on any mecha to start.";
+    helpButton = game.add.text(game.width - 20,20,"?", {
+      align: 'center',
+      fill: "#ffffff",
+      font: 80*globalScale + 'px Poiret One'
+   });
+    helpButton.anchor.x = 1;
+    helpButton.inputEnabled = true;
+    helpButton.events.onInputUp.add(function() {
+      game.bg.disableBoard();
+      game.input.enabled = true;
+      howToDisplay = game.add.sprite(game.world.centerX,game.world.centerY - game.height,"howto");
+      howToDisplay.alpha = 0;
+      var howToTween = game.add.tween(howToDisplay).to( { alpha: 1 }, C.game.zoomSpeed, Phaser.Easing.Linear.None, true);
+      howToDisplay.width = howToDisplay.width * (game.height/howToDisplay.height); 
+      howToDisplay.height = game.height;
+      howToDisplay.anchor.setTo(.5);
+      game.camera.y -= game.height;
+      game.input.onTap.add(game.bg.enableBoard,game.bg);
+      game.input.onTap.add(function() {
+        howToDisplay.destroy();
+        game.camera.y = 0;
+        game.input.onTap._bindings = [];  
+      },{howToDisplay: howToDisplay, helpButton: helpButton});
+    }, helpButton);
     hoverSprite = game.add.sprite(game.bg.width,0,spriteName);
    //if (obj.addHoverInfo) {
     if (hoverSprite.key === "The Bloat") {
@@ -1532,7 +1559,7 @@ function setLastClicked(sprite) {
   console.log(!turn);
   console.log(!this.lastClicked);
   console.log(sprite.key != "monster");
-  if (!turn && !this.lastClicked && sprite.key != "monster") {
+  if (!turn && !this.lastClicked && sprite.key != "threat") {
     game.coverbg.text.alpha = 0;
     game.coverbg.alpha = 0;
     //setAttributeDisplay(playersList[sprite.number]);
@@ -1661,7 +1688,7 @@ function setLastClicked(sprite) {
         buttonsList[i].y = hoverSprite.y + 600*globalScale + (Math.floor(i/3)*200*globalScale);
      }
    }
-  } else if (sprite.key === "monster") {
+  } else if (sprite.key === "threat") {
     buttonsList.forEach(function(button) {    
       if (!fusionButton.activated) {
         button.events.onInputDown._bindings = [];
@@ -1888,7 +1915,7 @@ function printBattleResults(text,position) {
       var rerollableColor = false;
       length = battlePlayer.rerollUses.colors.length;
       while(length--) {
-      if (battleResults.text.indexOf(battlePlayer.rerollUses.colors[length])!=-1 && battleResults.text.indexOf("Monster") == -1) {
+      if (battleResults.text.indexOf(battlePlayer.rerollUses.colors[length])!=-1 && battleResults.text.indexOf("Threat") == -1) {
           // one of the substrings is in yourstring
         var rerollableColor = true;
       }
@@ -1918,7 +1945,7 @@ function displayRerollOptions(player,text) {
       var length = U[player.upgrades[i]].colorsChanged.length;
       while(length--) {
         console.log(length + " iteration check.");
-        if (text.indexOf(U[player.upgrades[i]].colorsChanged[length])!=-1 && text.indexOf("Monster") == -1) {
+        if (text.indexOf(U[player.upgrades[i]].colorsChanged[length])!=-1 && text.indexOf("Threat") == -1) {
           // one of the substrings is in yourstring
           if (player.upgrades[i] == "Mind-Machine Interface Unlock") {
             var upgradetext = "MMI Unlock: " + player.rerollUses[player.upgrades[i]].charges;
@@ -2640,7 +2667,7 @@ function battle(player, monster) {
         monsterAttackButton.events.frame = 12;
         monsterAttackButton.events.onInputUp = [];
         monsterAttackButton.events.onInputUp.add(allowMonsterTurn,this);
-        monsterAttackText.text = "Click for Monster's Attack.";
+        monsterAttackText.text = "Click for Threat's Attack.";
       }
     } else if (battleTurn === battlePlayer && battlePlayer.attacking === true) {
       if (attackText) {
@@ -3436,7 +3463,7 @@ function chooseUpgrade(event) {
               if (monsterResources < 8) {
                 totalContributions.text = (8 - monsterResources) + " MR needed to reach Level " + (monsterResearchTrack + 1);
               } else { 
-                totalContributions.text = "Confirm Monster Research Upgrade?";
+                totalContributions.text = "Confirm Threat Research Upgrade?";
                 mrConfirmButton.revive(); 
               }
             }
@@ -3706,7 +3733,7 @@ function checkBattle(space) {
 
   if (space.occupied != false) {
     for (i = 0; i < space.occupied.length; i++) {
-      if (space.occupied[i] && space.occupied[i].sprite.key.indexOf('monster') > -1) {
+      if (space.occupied[i] && space.occupied[i].sprite.key.indexOf('threat') > -1) {
           if (space.occupied[i].hp > 0) {
             pendingMonsters.push(space.occupied[i]);
           }
@@ -3806,7 +3833,7 @@ function changeTurn() {
                 monstersList[i].rerollTokens += 1;
               }
               if (monstersList[i].regenTokens) {
-                monstersList[i].regenTokens += countInArray(upgrades,"Regeneration");
+                monstersList[i].regenTokens += countInArray(monstersList[i].upgrades,"Regeneration");
               }
             }
             turn = playersList[1];
@@ -4027,6 +4054,7 @@ function spawnPlayer(number) {
   obj.addHoverInfo = addHoverInfo;
   var drawnMech = MechDeck[Math.floor(Math.random() * MechDeck.length)];
   obj.rp = 3;
+  obj.rpPerTurn = 3;
   //Test for now. Everyone is Genericorp
   obj.corp = "Genericorp";
   obj.mr =  0;
@@ -4038,6 +4066,7 @@ function spawnPlayer(number) {
   obj.batkGoal = 5;
   obj.ratkGoal = 5;
   obj.defGoal = 5;
+  Corp[obj.corp].starting(obj);
   obj.sprite.inputEnabled = true;
   obj.sprite.input.enableDrag(true);
   player.parentobj = obj;
@@ -4138,7 +4167,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
   random = game.add.sprite(space.selectedSpace.x*C.bg.scale*C.bg.resizeX + game.bg.position.x,space.selectedSpace.y*C.bg.scale*C.bg.resizeY + game.bg.position.y,"extinctionMonster"); 
     }
     random.spriteName = random.key;
-    random.key = "monster";
+    random.key = "threat";
   }
   random.anchor.x = .5;
   random.anchor.y = .5;

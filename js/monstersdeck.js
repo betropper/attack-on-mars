@@ -281,7 +281,7 @@ var MU = {
     }
   },
   "Poison Aura": {
-    "desc": "Both Monster and Mech suffer 1 point of damage after combat",
+    "desc": "Both Threat and Mech suffer 1 point of damage after combat",
     "cost": 1,
     active(attacker,defender,stacks) {
       var attackerDamage = stacks;
@@ -384,7 +384,7 @@ var MU = {
       var monsterTarget = monster[pool+"Goal"];
       var oldHits = hits.hits;
       console.log(hits);
-      printBattleResults("But the monster rerolled its missed die!");
+      printBattleResults("But the Threat rerolled its missed die!");
       for (i = 0; i < hits.results.length; i++) {
         if (hits.results[i] < (monsterTarget || 5)) {
           hits.results[i] = Math.floor(Math.random() * ((6-1)+1) + 1);
