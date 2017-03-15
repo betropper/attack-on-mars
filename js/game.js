@@ -1605,7 +1605,7 @@ function setLastClicked(sprite) {
   if (playerNames.indexOf(sprite.key) > -1) {
     lastClicked = playersList[this.lastClicked] || playersList[sprite.number];
     var normalState = !battleState && !zoomIn && !zoomOut;
-    if (turn.sprite === sprite && (turn.upgrades.length < 12 || monsterResearchTrack < 3)) {
+    if (turn.sprite === sprite && normalState && (turn.upgrades.length < 12 || monsterResearchTrack < 3)) {
       upgradeButton.inputEnabled = true;
       upgradeButton.tint = 0xffffff;
       upgradeButton.events.onInputUp._bindings = [];
@@ -3238,6 +3238,7 @@ function repair(repairing, pointer, amount) {
     }
   }
     tweenTint(repairing.sprite, 0xffffff, 0x98FB98, 500, true);
+    hpDisplay.update(repairing);
 }
 
 function displayExtras() {
