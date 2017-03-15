@@ -1097,9 +1097,10 @@ function setAttributeDisplay(obj) {
       game.input.onTap.add(game.bg.enableBoard,game.bg);
       game.input.onTap.add(function() {
         howToDisplay.destroy();
+        howToDisplay = null;
         game.camera.y = 0;
         game.input.onTap._bindings = [];  
-      },{howToDisplay: howToDisplay, helpButton: helpButton});
+      },{helpButton: helpButton});
     }, helpButton);
     hoverSprite = game.add.sprite(game.bg.width,0,spriteName);
    //if (obj.addHoverInfo) {
