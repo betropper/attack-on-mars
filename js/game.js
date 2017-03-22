@@ -221,6 +221,7 @@ var batkDisplay;
 var ratkDisplay;
 var defDisplay;
 var pilotIcon;
+var corpIcon;
 var monstersMoving = false;
 
 class Boot {
@@ -303,6 +304,7 @@ class Load {
     this.load.image("Teen Prodigy", "assets/Teen Prodigy.jpg", 827, 1299);
     this.load.image("Bounty Hunter", "assets/BountyHunter.jpg", 827, 1299);
     this.load.image("Engineer", "assets/Engineer.jpg", 827, 1299);
+    this.load.image("GenericorpCard", "assets/genericorp.png", 560, 880);
     this.load.image("initialCard", "assets/Initial.jpg", 520, 791);
     this.load.image("growingCard", "assets/Growing.jpg", 520, 791);
     this.load.image("extinctionCard", "assets/Extinction.jpg", 520, 791);
@@ -3264,7 +3266,7 @@ function displayExtras() {
       var upgradeToken = game.add.sprite(0,0,'upgradeMatIcons', options.indexOf(this.player.upgrades[i]));
       upgradeToken.scale.setTo(globalScale/3);
       upgradeToken.anchor.setTo(.5);
-      upgradeToken.x = game.width + game.camera.width/2 - upgradeToken.width*2 + (upgradeToken.width*num);
+      upgradeToken.x = game.width + game.camera.width/1.9 - upgradeToken.width*2 + (upgradeToken.width*num);
       upgradeToken.y = extrasDisplay.y + 200*globalScale + (Math.floor(i/4)*upgradeToken.height);
       upgradeTokensList[i] = upgradeToken;
     } else if (this.player.upgrades[i] && this.player.upgrades[i].indexOf("LOCKED") === 0) {
@@ -3272,7 +3274,7 @@ function displayExtras() {
       var upgradeToken = game.add.sprite(0,0,'upgradeMatIcons', options.indexOf(this.player.upgrades[i].substring(7)) + 5);
       upgradeToken.scale.setTo(globalScale/3);
       upgradeToken.anchor.setTo(.5);
-      upgradeToken.x = game.width + game.camera.width/2 - upgradeToken.width*2 + (upgradeToken.width*num);
+      upgradeToken.x = game.width + game.camera.width/1.9 - upgradeToken.width*2 + (upgradeToken.width*num);
       upgradeToken.y = extrasDisplay.y + 200*globalScale + (Math.floor(i/4)*upgradeToken.height);
       upgradeToken.tint = 0x3d3d3d
       upgradeTokensList[i] = upgradeToken;
@@ -3286,6 +3288,14 @@ function displayExtras() {
   }
   pilotIcon.scale.setTo(.8*globalScale)
   pilotIcon.anchor.y = .5
+  if (!corpIcon) {
+    corpIcon = game.add.sprite(game.width + 54*globalScale, game.world.centerY - 60*globalScale, this.player.corp + "Card");
+  } else {
+    corpIcon.destroy();
+    corpIcon = game.add.sprite(game.width + 54*globalScale, game.world.centerY - 60*globalScale, this.player.corp + "Card");
+  }
+  corpIcon.scale.setTo(.9*globalScale)
+  corpIcon.anchor.y = .5
 }
 
   function upgrade(upgrading) {
