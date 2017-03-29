@@ -1627,7 +1627,7 @@ function setLastClicked(sprite) {
     extrasButton.events.onInputDown._bindings = [];
     extrasButton.events.onInputDown.add(displayExtras, {player: lastClicked});
     for (i = 1; i < playersList.length; i++) {
-      if (destroyedPlayersList.length > 0 && playersList[i].rbTokens && normalState) {
+      if (destroyedPlayersList.length > 0 && (playersList[i].rbTokens || playersList[i].hp <= 0) && normalState) {
         playersList[i].rebuildButton.valueIcon.reset(playersList[i].rebuildButton.valueIcon.x, playersList[i].rebuildButton.valueIcon.y);
         playersList[i].rebuildButton.valueDisplay.reset(playersList[i].rebuildButton.valueDisplay.x, playersList[i].rebuildButton.valueDisplay.y);
         playersList[i].rebuildButton.mechSprite.revive();
@@ -2348,7 +2348,7 @@ function handleDeath(damaged,survivor,deathCase) {
   }
   }
   //Deals with making the button for a mech who has died.
-      if (!battlePlayer.rebuildButton && destroyedPlayersList.length > 0 && !battlePlayer.alive) {
+      if (!battlePlayer.rebuildButton && destroyedPlayersList.length > 0 && battlePlayer.hp <= 0) {
         if (destroyedMechDisplays.length === 0) {
           var x = hoverSprite.x + hoverSprite.width/2 - 10*globalScale;
         } else {
@@ -2365,6 +2365,7 @@ function handleDeath(damaged,survivor,deathCase) {
         battlePlayer.rebuildButton.valueIcon.battleButton = false;
         destroyedMechDisplays.push(battlePlayer.rebuildButton);
         battlePlayer.rebuildButton.valueIcon.events.onInputDown.add(rebuild, {rebuilding: battlePlayer});
+        console.log("Created a button for a dead mech.");
       }
   monsterAttackButton.endState = true; 
 }
@@ -2456,6 +2457,9 @@ for (i = 0; i < monsterBattleTexts.length; i++) {
   /*for (i = 0; i < monstersList.length; i++) {
     checkBattle(monstersList[i].space);
   }*/
+  if (pendingBattles.length === 0) {
+    checkBattle(battlePlayer.space);
+  }
   if (pendingBattles.length > 0) {
     console.log("There are more battles.");
     killBattleInfo();
@@ -3106,6 +3110,7 @@ function placeRebuilt(player) {
   var row = "0";
   if (spaceKey.charAt(0) == quadrant && spaceKey.charAt(2) == row && !space.wall && !space.occupied) {
     heldSprite = null;
+    var normalState = !battleState && !zoomIn && !zoomOut;
     for (i = 1; i < playersList.length; i++) {
       if (destroyedPlayersList.length > 0 && playersList[i].rbTokens && normalState) {
         playersList[i].rebuildButton.valueIcon.reset(playersList[i].rebuildButton.valueIcon.x, playersList[i].rebuildButton.valueIcon.y);
@@ -3776,6 +3781,7 @@ function checkBattle(space) {
           for (i = 0; i < pendingBattles.length; i++) {
             if (pendingBattles[i].pendingMonster === pendingObject.pendingMonster && pendingBattles[i].pendingPlayer === pendingObject.pendingPlayer) {
               var exists = true;
+              console.log("Found a copy.")
               break;
             }
           }
