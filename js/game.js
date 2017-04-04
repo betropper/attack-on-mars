@@ -9,7 +9,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": ".9.9.0",
+   "versionNumber": "1.0",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -3686,7 +3686,19 @@ function confirmUpgrade(player,upgradeName) {
         return;
       } else if (priceText) {
         if (consideredUpgrade.tier == 1 || player.tiersOwned[consideredUpgrade.tier-2] >= 2) {
-          priceText.setText(upgradeName + " is a tier " + consideredUpgrade.tier + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue));
+          priceText.setText(upgradeName + " is a tier " + consideredUpgrade.tier + " upgrade.\nOther " + consideredUpgrade.color + " upgrades you have purchased have reduced the cost to " + (consideredUpgrade.cost - discountValue) + "\nCurrent RP: " + player.rp);
+          if (player.rp < (consideredUpgrade.cost - discountValue)) {
+            var back = game.add.text(confirmText.x, priceText.y + 200*globalScale, "Back", C.game.ynStyle);
+            for (i = 0; i < game.world.children.length; i++) {
+              if (game.world.children[i].text && (game.world.children[i].text === "Yes"  || game.world.children[i].text === "No")) {
+                game.world.children[i].destroy();
+              }
+            }
+            back.anchor.setTo(.5,.5);
+            back.inputEnabled = true;
+            back.events.onInputUp.add(upgrade, {upgrading: turn, yn: "no"});
+            return;
+          }
         } else {
           priceText.setText(upgradeName + " is a tier " + consideredUpgrade.tier + " upgrade, and you currently own " + player.tiersOwned[consideredUpgrade.tier-2] + " tier " + (consideredUpgrade.tier-1) + " upgrades.\nYou need 2 upgrades from the previous tier to purchase from this tier."); 
         var back = game.add.text(confirmText.x, priceText.y + 200*globalScale, "Back", C.game.ynStyle);
