@@ -2,7 +2,7 @@ var MonstersDeck = {
  "initialMonsters": [
    {
    "batk": 2,
-   "def": 2,
+   "def": 1,
    "hp": 4,
    "upgrades": ["Poison Aura","-1 Mech Defense"]
    },
