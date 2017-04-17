@@ -4175,16 +4175,16 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     } else if (quadrant && row && quadrant === "random") {
         //var chr = String.fromCharCode(96 + Math.floor(Math.random() * (playerCount)) + 1);
         if (!fullyOccupied) {
-          condition = space.key.indexOf(row) !== 2 || space.selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1;
+          condition = space.key.charAt(2) !== row || space.selectedSpace.occupied === true || occupiedRows.indexOf(space.key.substring(0,2)) > -1;
         } else {
-          condition = space.key.indexOf(row) !== 2 || space.selectedSpace.occupied === true;
+          condition = space.key.charAt(2) !== row || space.selectedSpace.occupied === true;
         }
     } else if (quadrant === "random") {
-        condition = space.key.indexOf("0");
+        condition = space.key.indexOf("0") != -1;
     } 
     else if (quadrant && row) { 
         var chr = String.fromCharCode(96 + quadrant);
-        condition = space.key.indexOf(row) !== 2 || space.key.indexOf(chr) !== 0;
+        condition = space.key.charAt(2) !== row || space.key.indexOf(chr) !== 0;
     } 
     if (failSafe >= 700) {
       condition = false;
@@ -4207,9 +4207,9 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
   if (object !== "monster") {
   random = game.add.sprite(space.selectedSpace.x*C.bg.scale*C.bg.resizeX + game.bg.position.x,space.selectedSpace.y*C.bg.scale*C.bg.resizeY + game.bg.position.y,object); 
   } else {
-    if (threatLevel <= 12) {
+    if (threatLevel < 12) {
   random = game.add.sprite(space.selectedSpace.x*C.bg.scale*C.bg.resizeX + game.bg.position.x,space.selectedSpace.y*C.bg.scale*C.bg.resizeY + game.bg.position.y,"initialMonster"); 
-    } else if (threatLevel <= 24) {
+    } else if (threatLevel < 18) {
   random = game.add.sprite(space.selectedSpace.x*C.bg.scale*C.bg.resizeX + game.bg.position.x,space.selectedSpace.y*C.bg.scale*C.bg.resizeY + game.bg.position.y,"growingMonster"); 
     } else {
   random = game.add.sprite(space.selectedSpace.x*C.bg.scale*C.bg.resizeX + game.bg.position.x,space.selectedSpace.y*C.bg.scale*C.bg.resizeY + game.bg.position.y,"extinctionMonster"); 
