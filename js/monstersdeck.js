@@ -162,48 +162,64 @@ var MonstersDeck = {
    "batk": 8,
    "def": 4,
    "hp": 5,
+   "batkGoal": 4,
+   "defGoal": 4,
    "upgrades": ["-1 Mech Blue Attack"]
    },
    {
    "batk": 8,
    "def": 5,
    "hp": 4,
+   "batkGoal": 4,
+   "defGoal": 4,
    "upgrades": ["-1 Mech Red Attack"]
    },
    {
    "batk": 7,
    "def": 4,
    "hp": 3,
+   "batkGoal": 4,
+   "defGoal": 4,
    "upgrades": ["-2 Mech Defense", "Feign Death"]
    },
    {
    "batk": 6,
    "def": 4,
    "hp": 4,
+   "batkGoal": 4,
+   "defGoal": 4,
    "upgrades": ["-2 Mech Red Attack", "-2 Mech Blue Attack"]
    },
    {
    "batk": 6,
    "def": 5,
    "hp": 4,
+   "batkGoal": 4,
+   "defGoal": 4,
    "upgrades": ["+1 Mecha Blue Target"]
    },
    {
    "batk": 6,
    "def": 4,
    "hp": 5,
+   "batkGoal": 4,
+   "defGoal": 4,
    "upgrades": ["+1 Mecha Red Target"]
    },
    {
    "batk": 6,
    "def": 4,
    "hp": 6,
+   "batkGoal": 4,
+   "defGoal": 4,
    "upgrades": ["Poison Aura", "Poison Aura"]
    },
    {
    "batk": 7,
    "def": 3,
    "hp": 4,
+   "batkGoal": 4,
+   "defGoal": 4,
    "upgrades": ["Reroll Blue"],
    "rerollTokens": 1
    },
@@ -211,6 +227,8 @@ var MonstersDeck = {
    "batk": 6,
    "def": 5,
    "hp": 3,
+   "batkGoal": 4,
+   "defGoal": 4,
    "upgrades": ["Reroll Def"],
    "rerollTokens": 1
    },
@@ -218,18 +236,24 @@ var MonstersDeck = {
    "batk": 7,
    "def": 4,
    "hp": 4,
+   "batkGoal": 4,
+   "defGoal": 4,
    "upgrades": ["Feign Death"]
    },
    {
    "batk": 7,
    "def": 5,
    "hp": 4,
+   "batkGoal": 4,
+   "defGoal": 4,
    "upgrades": ["Feign Death"]
    },
    {
    "batk": 7,
    "def": 4,
    "hp": 5,
+   "batkGoal": 4,
+   "defGoal": 4,
    "upgrades": ["Feign Death"]
    }
  ],
