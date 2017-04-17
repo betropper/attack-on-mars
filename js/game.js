@@ -3503,6 +3503,7 @@ function chooseUpgrade(event) {
             game.camera.x = 0;
             game.kineticScrolling.start();
             monsterResearchTrack += 1;
+            boughtBool = true;
             for (i = 0; i < monsterDonerList.length; i++) {
              playersList[i+1].mr -= monsterDonerList[i].contributedResources; 
              monsterDonerList[i].contributedResources = 0;
@@ -4096,7 +4097,10 @@ function spawnPlayer(number) {
   };
   obj.addBattleInfo = addBattleInfo;
   obj.addHoverInfo = addHoverInfo;
-  var drawnMech = MechDeck[Math.floor(Math.random() * MechDeck.length)];
+  do {
+    var drawnMech = MechDeck[Math.floor(Math.random() * MechDeck.length)];
+  } while (drawnMech.drawn)
+  drawnMech.drawn = true;
   obj.rp = 3;
   obj.rpPerTurn = 3;
   //Test for now. Everyone is Genericorp
@@ -4317,7 +4321,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
       }
       obj.def = drawnMonster.def;
       obj.rp = 2;
-      obj.mr = 3;
+      obj.mr = 2;
     } else {
       if (threatLevel >= 30) {
         threatLevel = 18;
@@ -4339,7 +4343,7 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
       }
       obj.def = drawnMonster.def;
       obj.rp = 3;
-      obj.mr = 4;
+      obj.mr = 3;
     }
     if (drawnMonster.defGoal) {
       obj.defGoal = drawnMonster.defGoal
