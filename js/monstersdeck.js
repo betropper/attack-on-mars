@@ -58,7 +58,7 @@ var MonstersDeck = {
    {
    "batk": 4,
    "def": 3,
-   "hp": 1,
+   "hp": 2,
    "upgrades": ["-1 Mech Blue Attack"]
    },
 
