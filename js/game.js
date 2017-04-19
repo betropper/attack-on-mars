@@ -9,7 +9,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": "1.0",
+   "versionNumber": "1.0.1",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -747,6 +747,11 @@ if (Phaser.Device.desktop) {
   }
   upgradeTokens = game.add.group();
   mrTokens = game.add.group();
+  mrTokens.pos = [
+    {x: 1036*globalScale, y: 5098*globalScale},
+    {x: 1678*globalScale, y: 5098*globalScale},
+    {x: 2364*globalScale, y: 5098*globalScale}
+  ];
   fade("in");  
 }
 update() {
@@ -2457,8 +2462,13 @@ for (i = 0; i < monsterBattleTexts.length; i++) {
   /*for (i = 0; i < monstersList.length; i++) {
     checkBattle(monstersList[i].space);
   }*/
-  if (pendingBattles.length === 0) {
-    checkBattle(battlePlayer.space);
+  if (pendingBattles.length == 0) {
+    playersList.forEach(function(player) {
+      console.log("Checking player.");
+      if (player) {
+        checkBattle(player.space);
+      }
+    });
   }
   if (pendingBattles.length > 0) {
     console.log("There are more battles.");
@@ -3363,7 +3373,6 @@ function displayExtras() {
              }
           }
           console.log(upgrading.tiersOwned[(boughtUpgrade.cost/2)-1]);
-          console.log("TESTMEMES")
           var timesBought = 0;
           for (i = 1; i < playersList.length; i++) {
             if (playersList[i].upgrades.indexOf(this.boughtUpgrade) > -1) {
@@ -3512,7 +3521,8 @@ function chooseUpgrade(event) {
              monsterDonerList[i].contributedText.text = monsterDonerList[i].contributedResources + "\n-\n" + monsterDonerList[i].totalResources; 
             }
               mrConfirmButton.kill(); 
-              var token = mrTokens.create((x1+(255*globalScale))+(530*globalScale*(monsterResearchTrack)), y2 + 615*globalScale,'icons',18);
+              //var token = mrTokens.create((x1+(255*globalScale))+(585*globalScale*(monsterResearchTrack)), y2 + 615*globalScale,'icons',18);
+              var token = mrTokens.create(mrTokens.pos[monsterResearchTrack-1].x, mrTokens.pos[monsterResearchTrack-1].y,'icons',18);
               token.scale.setTo(globalScale);
               token.anchor.setTo(.5);
               for (i = 1; i < playersList.length; i++) { 
