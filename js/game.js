@@ -1542,7 +1542,7 @@ function queAttack() {
     }
     if (this.modifier && this.modifier === "Siege Mode") {
       this.attacker.siegeMode = true;
-      printBattleResults(battlePlayer.sprite.key.capatalizeFirstLetter() +  " Mecha has activated Seige Mode!");
+      printBattleResults(battlePlayer.sprite.key.capitalizeFirstLetter() +  " Mecha has activated Seige Mode!");
     } else if (this.modifier && this.modifier === "Weaponized Research") {
     }
   }
@@ -2089,11 +2089,6 @@ function attack(attacker,defender) {
     if (defender.def) {
       var defences = rollDie(defender.def, defender.defGoal || 5);
     }
-    if (attacker.siegeMode) {
-      successes += 1;
-      attacker.def -= 1;
-      attacker.canSiege = false;
-    }
   } else {
     if (attacker.canReroll) {
       var bhits = attacker.rerollValues.bhits;
@@ -2139,9 +2134,6 @@ function attack(attacker,defender) {
   } else {
     printBattleResults(C.monster.names[attacker.sprite.spriteName] + " rolled " + bhittext + " on Attack Die!");
   }
-  if (defender.guarenteedDef && successes > 0) {
-    successes -= defender.guarenteedDef;
-  }
   if (playersList.indexOf(defender) > -1 ) {
     printBattleResults(defender.sprite.key.capitalizeFirstLetter() + " Mecha rolled " + defencestext + " on Defence Die!");
   } else {
@@ -2153,6 +2145,15 @@ function attack(attacker,defender) {
     defences = MU["Reroll"].active(defender,"def",defences);
   }
   var successes = (rhits.hits || 0) + bhits.hits;
+  if (defender.guarenteedDef && successes > 0) {
+    successes -= defender.guarenteedDef;
+  }
+  if (attacker.siegeMode) {
+    printBattleResults(defender.sprite.key.capitalizeFirstLetter() + " Mecha has activated siege mode, guaranteeing one hit..")
+    successes += 1;
+    attacker.def -= 1;
+    attacker.canSiege = false;
+  }
   console.log(attacker.sprite.key + " hit " +successes + " hit/hits!");
   console.log(defender.sprite.key + " defended " + defences.hits + " hit/hits!");
   if (successes > defences.hits) {
@@ -2711,7 +2712,7 @@ function battle(player, monster) {
           }
           for (i = 0; i < battleTexts.length; i++) {
             battleTexts[i].reset(battleTexts[i].x, battleTexts[i].y);
-            battleTexts[i].inputEnabled = true;
+            //battleTexts[i].inputEnabled = true;
           }
           battlePlayer.sprite.inputEnabled = true;
           battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
