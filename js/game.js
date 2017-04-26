@@ -9,7 +9,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": "1.0.2",
+   "versionNumber": "1.0.3",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
