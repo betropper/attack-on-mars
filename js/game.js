@@ -331,8 +331,6 @@ class Load {
 var returnButton;
 class MainMenu {
   preload() {
-
-
   }
 
   create() {
@@ -598,6 +596,8 @@ function checkButtons() {
 class Setup {
 
   preload() {
+    game.firstTurnPassed = false;
+    game.firstMonsterTurnPassed = false;
     //game.tilebg = game.add.tileSprite(0,0,600,202,'bgtile')
     //game.tilebg.width = game.width*5;
     //game.tilebg.height = game.height*5;
@@ -760,7 +760,7 @@ if (Phaser.Device.desktop) {
   if (firstTime) {
     game.bg.disableBoard();
   }
-  game.time.events.add(Phaser.Timer.SECOND * 1, showSplash, this, [{text: "Thanks for playing Attack on Mars! This is a limited version of the board game with the Rift Guardian, Pilots, Corporations, and difficulty level locked, and some upgrade options are not available. Your objective in the game is to protect the coastal cities while defeating the threats that come out from the rift in the center until you can research a way to close the rift. You win by progressing the Monster Research track up to level 3, then defeating the Rift Guardian in the center. You can lose if all of the Mechas are destroyed, or if your twelfth city would be destroyed.\n\nYour initial cities have been destroyed, and the initial wave of threats has been placed. Select a starting spot for each of your Mecha (typically a good idea to put them in the same column as a threat), then pick a Mecha to start the game!"},{text:"This is a test page.",icon: 'icons', frame: 5}]);
+  game.time.events.add(Phaser.Timer.SECOND * 1, showSplash, this, [{text: "Thanks for playing Attack on Mars! This is a limited version of the board game with the Rift Guardian, Pilots, Corporations, and difficulty level locked, and some upgrade options are not available. Your objective in the game is to protect the coastal cities while defeating the threats that come out from the rift in the center until you can research a way to close the rift. You win by progressing the Monster Research track up to level 3, then defeating the Rift Guardian in the center. You can lose if all of the Mechas are destroyed, or if your twelfth city would be destroyed.\n\nYour initial cities have been destroyed, and the initial wave of threats has been placed. Select a starting spot for each of your Mecha (typically a good idea to put them in the same column as a threat), then pick a Mecha to start the game!"}]);
   fade("in");  
 }
 update() {
@@ -837,7 +837,13 @@ update() {
     }
   }
   if (!heldSprite && actionPoints <= 0 && pendingBattles.length === 0 && zoomOut !== true && zoomOut !== true) {
-    changeTurn();
+    if (firstTime && !game.splash.alive && !game.firstTurnPassed) {
+      showSplash([
+        {text: "At the end of your turn, it’s the Threat’s turn. All Threats will move one space out, unless they are adjacent to another Mecha, in which case they’ll move towards the Mecha or unless they are on the edge of the board, in which case they’ll move towards the nearest undestroyed city.\n\nAfter that, a new Threat will spawn. Threats will never spawn in a column that has a destroyed city, and will only spawn in a column that has another monster in it if there are no empty columns. If you are in the Extinction Threat phase, a second Threat will spawn as well!\n\nFinally, all destroyed Mechas will remove one of their rebuild tokens. Gameplay will then move to the next Mecha.", icon: 'initialMonster'}
+      ],"firstTurnPassed");
+    } else if (game.firstTurnPassed) {
+      changeTurn();
+    }
   }
 
     if (focusSpace && focusX) {
@@ -1934,7 +1940,7 @@ function checkAttack(sprite,pointer) {
   }
 }
 
-function showSplash(pages) {
+function showSplash(pages,passCondition) {
   var pageNumber = 0;
   if (firstTime) {
     game.bg.disableBoard();
@@ -1996,6 +2002,9 @@ function showSplash(pages) {
         game.splash.next.kill();
         game.splash.previous.kill();
         game.splash.icon.kill();
+        if (passCondition) {
+          game[passCondition] = true;
+        }
       } else {
         game.splash.text.text = pages[pageNumber].text;
         if (pages[pageNumber].icon) {
@@ -3983,11 +3992,19 @@ function checkBattle(space) {
 
 
 function changeTurn() {
-  var waitmove = false;
     if (!heldSprite) {
       if (turn && monstersMoving == false) {
         moveMonsters();
       } else if (monstersMoving == "moved") {
+        if (firstTime && !game.firstMonsterTurnPassed) {
+          showSplash([
+            {text: "Finally, you can mouse over any Threat or Mecha to see its stats. The number out of the brackets is how many dice that are rolled, and the number in brackets is the target number that you (or the threats) need to equal or beat on the dice.", icon: turn.sprite.key},
+            {text: " In combat you roll both Energy dice...", icon: 'icons', frame: 9},
+            {text: "...And Physical dice, adding the successes together.", icon: 'icons', frame: 5},
+            {text: "You roll these against the enemy's Defense dice. The side that has the most success deals damage equal to the difference to the side that has the least successes.\n\nIf you rolled three successes on your attack dice against a monster's two successes on their defence dice, you would deal one damage.", icon: 'icons', frame: 7},
+            {text: "If you have any further questions or suggestions, feel free to send an email to tastycookiegames@gmail.com and we’ll help you out as best we can!"}
+          ],"firstMonsterTurnPassed");
+        }
         monstersMoving = false;
         actionPoints = 3;
         playersList.forEach(function(player) {
