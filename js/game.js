@@ -760,7 +760,7 @@ if (Phaser.Device.desktop) {
   if (firstTime) {
     game.bg.disableBoard();
   }
-  game.time.events.add(Phaser.Timer.SECOND * 1, showSplash, this, "Thanks for playing Attack on Mars! This is a limited version of the board game with the Rift Guardian, Pilots, Corporations, and difficulty level locked, and some upgrade options are not available. Your objective in the game is to protect the coastal cities while defeating the threats that come out from the rift in the center until you can research a way to close the rift. You win by progressing the Monster Research track up to level 3, then defeating the Rift Guardian in the center. You can lose if all of the Mechas are destroyed, or if your twelfth city would be destroyed.\n\nYour initial cities have been destroyed, and the initial wave of threats has been placed. Select a starting spot for each of your Mecha (typically a good idea to put them in the same column as a threat), then pick a Mecha to start the game!");
+  game.time.events.add(Phaser.Timer.SECOND * 1, showSplash, this, [{text: "Thanks for playing Attack on Mars! This is a limited version of the board game with the Rift Guardian, Pilots, Corporations, and difficulty level locked, and some upgrade options are not available. Your objective in the game is to protect the coastal cities while defeating the threats that come out from the rift in the center until you can research a way to close the rift. You win by progressing the Monster Research track up to level 3, then defeating the Rift Guardian in the center. You can lose if all of the Mechas are destroyed, or if your twelfth city would be destroyed.\n\nYour initial cities have been destroyed, and the initial wave of threats has been placed. Select a starting spot for each of your Mecha (typically a good idea to put them in the same column as a threat), then pick a Mecha to start the game!"},{text:"This is a test page.",icon: 'icons', frame: 5}]);
   fade("in");  
 }
 update() {
@@ -785,7 +785,11 @@ update() {
   if (game.splash && game.splash.alive) {
     game.world.bringToTop(game.splash);
     game.world.bringToTop(game.splash.text);
-    game.world.bringToTop(game.splash.finish);
+    game.world.bringToTop(game.splash.next);
+    game.world.bringToTop(game.splash.previous);
+    if (game.splash.icon) {
+      game.world.bringToTop(game.splash.icon);
+    }
   }
   if (game.camera.y <= 0) {
     if (!howToDisplay || !howToDisplay.alive) {
@@ -1628,6 +1632,13 @@ function setLastClicked(sprite) {
     mineButton.events.onInputDown.add(displayExtras, {player: lastClicked});
     fusionButton = makeButton(7, 9)
     fusionButton.events.onInputDown.add(U["Fusion Cannon"].active, {player: lastClicked});
+    showSplash([
+      {text: "On your turn, you have three actions, signified by the battery bar. Each action will remove one segment. You can move a Mecha one space by clicking on it and dragging it to an adjacent space (in, out, clockwise, or counterclockwise).", icon: 'icons', frame: 0},
+      {text: "If a Mecha is in a city, it can repair to full health...", icon: 'icons', frame: 8},
+      {text: "..or generate a research point. Several actions are granted by upgrades you can purchase in the game, and you can upgrade the Mecha whose turn it currently is (signified by the icon above the Generate Research action), but the Mecha whose turn it is must be selected first.", icon: 'icons', frame: 6},
+      {text: "If a Mecha has been destroyed, you can spend an action to help rebuild it.", icon: 'icons', frame: 21},
+      {text: "Finally, if you have nothing to do, you can pass.", icon: 'icons', frame: 2}
+    ]);
   } else if (!turn /*&& this.lastClicked*/) {
     return;
   }
@@ -1923,7 +1934,8 @@ function checkAttack(sprite,pointer) {
   }
 }
 
-function showSplash(text) {
+function showSplash(pages) {
+  var pageNumber = 0;
   if (firstTime) {
     game.bg.disableBoard();
     if (!game.splash) {
@@ -1936,12 +1948,12 @@ function showSplash(text) {
     game.splash.width = 1;
     growSprite(game.splash,game.width,game.height);
     if (!game.splash.text) {
-      game.splash.text = game.add.text(game.world.centerX, game.world.centerY - game.world.height/5,text,C.game.textStyle);
+      game.splash.text = game.add.text(game.world.centerX, game.world.centerY - game.world.height/5,pages[0].text,C.game.textStyle);
       game.splash.text.anchor.setTo(.5);
       game.splash.text.wordWrap = true;
-      game.splash.text.wordWrapWidth = game.width;
+      game.splash.text.wordWrapWidth = game.width - 100*globalScale;
     } else {
-      game.splash.text.text = text;
+      game.splash.text.text = pages[0].text;
       game.splash.text.revive();
     }
     game.splash.text.alpha = 0;
@@ -1949,23 +1961,93 @@ function showSplash(text) {
       game.add.tween(text).to( { alpha: 1 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
     }, this, game.splash.text);
     game.world.bringToTop(game.splash.text);
-    if (!game.splash.finish) {
-      game.splash.finish = game.add.sprite(game.world.centerX, game.camera.height - 300*globalScale, 'leftright', 1);
-      game.splash.finish.events.onInputUp.add(function() {
+
+    if (!game.splash.next) {
+      game.splash.next = game.add.sprite(game.world.centerX + 200*globalScale, game.camera.height - 100*globalScale, 'leftright', 1);
+      game.splash.previous = game.add.sprite(game.world.centerX - 200*globalScale, game.camera.height - 100*globalScale, 'leftright', 2);
+      game.splash.icon = game.add.sprite(game.world.centerX, game.camera.height - 500*globalScale, 'red');
+
+      game.splash.next.anchor.setTo(.5);
+      game.splash.previous.anchor.setTo(.5);
+      game.splash.icon.anchor.setTo(.5);
+
+    } else {
+      game.splash.next.revive();
+      game.splash.next.tint = 0xffffff;
+      game.splash.next.angle = 0;
+      game.splash.next.finishState = false;
+      game.splash.previous.revive();
+      game.splash.previous.tint = 0xffffff;
+      game.splash.icon.revive();
+      if (pages[0].icon) {
+        game.splash.icon.loadTexture(pages[0].icon);
+      }
+      if (pages[0].frame) {
+        game.splash.icon.frame = pages[0].frame;
+      }
+    }
+    game.splash.next.events.onInputUp._bindings = [];
+    game.splash.next.events.onInputUp.add(function() {
+      pageNumber += 1;
+      if (pageNumber == pages.length) {
         game.bg.enableBoard();
         game.splash.kill();
         game.splash.text.kill();
-        game.splash.finish.kill();
-      }, this);
-      game.splash.text.anchor.setTo(.5);
-    } else {
-      game.splash.finish.revive();
-    }
-    game.splash.finish.alpha = 0;
-    game.time.events.add(Phaser.Timer.SECOND * .6, function(finish) {
-      game.add.tween(finish).to( { alpha: 1 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
-    }, this, game.splash.finish);
-      game.splash.finish.inputEnabled = true;
+        game.splash.next.kill();
+        game.splash.previous.kill();
+        game.splash.icon.kill();
+      } else {
+        game.splash.text.text = pages[pageNumber].text;
+        if (pages[pageNumber].icon) {
+          game.splash.icon.loadTexture(pages[pageNumber].icon);
+          if (pages[pageNumber].frame) {
+            game.splash.icon.frame = pages[pageNumber].frame;
+          }
+          game.splash.icon.alpha = 1;
+        } else {
+          game.splash.icon.alpha = 0;
+        }
+        game.splash.previous.alpha = 1;
+        game.splash.previous.inputEnabled = true;
+        if (pageNumber == pages.length - 1) {
+          game.splash.next.angle -= 90;
+          game.splash.next.finishState = true;
+        }
+      }
+    }, this);
+
+    game.splash.previous.events.onInputUp._bindings = [];
+    game.splash.previous.events.onInputUp.add(function() {
+      pageNumber -= 1;
+      game.splash.text.text = pages[pageNumber].text;
+      if (pages[pageNumber].icon) {
+        game.splash.icon.loadTexture(pages[pageNumber].icon);
+        if (pages[pageNumber].frame) {
+          game.splash.icon.frame = pages[pageNumber].frame;
+        }
+        game.splash.icon.alpha = 1;
+      } else {
+        game.splash.icon.alpha = 0;
+      }
+      if (pageNumber == 0) {
+        game.splash.previous.alpha = 0;
+        game.splash.previous.inputEnabled = false;
+      }
+      if (game.splash.next.finishState) {
+        game.splash.next.angle += 90;
+        game.splash.next.finishState = false;
+      }
+    }, this);
+    game.splash.next.alpha = 0;
+    game.splash.previous.alpha = 0;
+    game.splash.icon.alpha = 0;
+    game.time.events.add(Phaser.Timer.SECOND * .6, function(nextArrow,icon) {
+      game.add.tween(nextArrow).to( { alpha: 1 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
+      if (pages[0].icon) {
+        game.add.tween(icon).to( { alpha: 1 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
+      }
+    }, this, game.splash.next, game.splash.icon);
+      game.splash.next.inputEnabled = true;
   } 
 }
 function printBattleResults(text,position) {
