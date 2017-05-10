@@ -5,11 +5,16 @@ if (localStorage && localStorage.getItem("quality")) {
   var globalScale = .5;
   var qualitySetting = "Low";
 }
+if (localStorage && localStorage.getItem('firstTime')) {
+  var firstTime = localStorage.getItem('firstTime');
+} else {
+  var firstTime = true;
+}
 localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": "1.0.3",
+   "versionNumber": "1.0.4",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -599,7 +604,7 @@ class Setup {
     //game.tilebg.tileScale = .5;
     game.bg = game.add.sprite(0, game.world.centerY - game.height / 2, "gameboard");
     game.bg.disableBoard = disableBoard;
-    game.bg.enableBoard = enableBoard;
+    game.bg.enableBoard =enableBoard;
     game.bg.disabledValues = [];
     game.bg.pendingRebuilt = [];
     game.bg.highlightOptions = function(player) {
@@ -752,6 +757,10 @@ if (Phaser.Device.desktop) {
     {x: 1678*globalScale, y: 5098*globalScale},
     {x: 2364*globalScale, y: 5098*globalScale}
   ];
+  if (firstTime) {
+    game.bg.disableBoard();
+  }
+  game.time.events.add(Phaser.Timer.SECOND * 1, showSplash, this, "Thanks for playing Attack on Mars! This is a limited version of the board game with the Rift Guardian, Pilots, Corporations, and difficulty level locked, and some upgrade options are not available. Your objective in the game is to protect the coastal cities while defeating the threats that come out from the rift in the center until you can research a way to close the rift. You win by progressing the Monster Research track up to level 3, then defeating the Rift Guardian in the center. You can lose if all of the Mechas are destroyed, or if your twelfth city would be destroyed.\n\nYour initial cities have been destroyed, and the initial wave of threats has been placed. Select a starting spot for each of your Mecha (typically a good idea to put them in the same column as a threat), then pick a Mecha to start the game!");
   fade("in");  
 }
 update() {
@@ -772,6 +781,11 @@ update() {
     heldSprite.x = game.input.mousePointer.x;
     heldSprite.y = game.input.mousePointer.y;
     game.world.bringToTop(heldSprite);
+  }
+  if (game.splash && game.splash.alive) {
+    game.world.bringToTop(game.splash);
+    game.world.bringToTop(game.splash.text);
+    game.world.bringToTop(game.splash.finish);
   }
   if (game.camera.y <= 0) {
     if (!howToDisplay || !howToDisplay.alive) {
@@ -1403,6 +1417,10 @@ function shrinkSprite(sprite) {
   bossScaleTween.onComplete.add(enableBossInput, {boss: boss});
 }
 
+function growSprite(sprite,newWidth,newHeight) {
+  var scaleTween = game.add.tween(sprite).to({width: newWidth, height: newHeight}, 1000, Phaser.Easing.Back.InOut, true);
+}
+
 function enableBossInput(boss) {
  this.boss.sprite.inputEnabled = true; 
 
@@ -1903,6 +1921,52 @@ function checkAttack(sprite,pointer) {
     sprite.x = focusX + C.mech.battleSpacing;
     sprite.y = focusY;
   }
+}
+
+function showSplash(text) {
+  if (firstTime) {
+    game.bg.disableBoard();
+    if (!game.splash) {
+      game.splash = game.add.sprite(game.width/2, game.height/2, 'blackground');
+      game.splash.anchor.setTo(.5);
+    } else {
+      game.splash.revive();
+    }
+    game.splash.height = 1;
+    game.splash.width = 1;
+    growSprite(game.splash,game.width,game.height);
+    if (!game.splash.text) {
+      game.splash.text = game.add.text(game.world.centerX, game.world.centerY - game.world.height/5,text,C.game.textStyle);
+      game.splash.text.anchor.setTo(.5);
+      game.splash.text.wordWrap = true;
+      game.splash.text.wordWrapWidth = game.width;
+    } else {
+      game.splash.text.text = text;
+      game.splash.text.revive();
+    }
+    game.splash.text.alpha = 0;
+    game.time.events.add(Phaser.Timer.SECOND * .6, function(text) {
+      game.add.tween(text).to( { alpha: 1 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
+    }, this, game.splash.text);
+    game.world.bringToTop(game.splash.text);
+    if (!game.splash.finish) {
+      game.splash.finish = game.add.sprite(game.world.centerX, game.camera.height - 300*globalScale, 'leftright', 1);
+      game.splash.finish.events.onInputUp.add(function() {
+        game.bg.enableBoard();
+        game.splash.kill();
+        game.splash.text.kill();
+        game.splash.finish.kill();
+      }, this);
+      game.splash.text.anchor.setTo(.5);
+    } else {
+      game.splash.finish.revive();
+    }
+    game.splash.finish.alpha = 0;
+    game.time.events.add(Phaser.Timer.SECOND * .6, function(finish) {
+      game.add.tween(finish).to( { alpha: 1 }, C.game.zoomSpeed*2.5, Phaser.Easing.Linear.None, true);
+    }, this, game.splash.finish);
+      game.splash.finish.inputEnabled = true;
+  } 
 }
 function printBattleResults(text,position) {
   if (resultsList.length > 0) {
