@@ -358,6 +358,22 @@ class MainMenu {
     game.mbg.scale.setTo(C.mbg.scale, C.mbg.scale);
     var titleText = game.add.bitmapText(game.world.centerX, game.world.centerY - game.height/2.5, 'attackfont', "ATTACK ON MARS", 90*globalScale);
     titleText.anchor.set(0.5);
+    var tutorialText = game.add.bitmapText(game.width - 280*globalScale, game.world.centerY - game.height/2.5, 'attackfont', "Tutorial: OFF", 90*globalScale);
+    if (firstTime) {
+      tutorialText.text = "Tutorial: ON";
+    }
+    tutorialText.inputEnabled = true;
+    tutorialText.events.onInputUp.add(function() {
+      if (firstTime) {
+        firstTime = false;
+        tutorialText.text = "Tutorial: OFF";
+      } else {
+        firstTime = true;
+        tutorialText.text = "Tutorial: ON";
+      }
+        localStorage.setItem('firstTime',firstTime);
+    });
+    tutorialText.anchor.set(0.5);
     playerCount = 4;
     //var countNumber = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/9, 'attackfont', playerCount, 90*globalScale) 
     //countNumber.anchor.set(0.5);
@@ -863,7 +879,7 @@ update() {
     }
   }
   if (!heldSprite && actionPoints <= 0 && pendingBattles.length === 0 && zoomOut !== true && zoomOut !== true) {
-    if (firstTime && !game.splash.alive && !game.firstTurnPassed) {
+    if (firstTime && (!game.splash || !game.splash.alive) && !game.firstTurnPassed) {
       showSplash([
         {text: "At the end of your turn, it’s the Threat’s turn. All Threats will move one space out, unless they are adjacent to another Mecha, in which case they’ll move towards the Mecha or unless they are on the edge of the board, in which case they’ll move towards the nearest undestroyed city.\n\nAfter that, a new Threat will spawn. Threats will never spawn in a column that has a destroyed city, and will only spawn in a column that has another monster in it if there are no empty columns. If you are in the Extinction Threat phase, a second Threat will spawn as well!\n\nFinally, all destroyed Mechas will remove one of their rebuild tokens. Gameplay will then move to the next Mecha.", icon: 'initialMonster'}
       ],"firstTurnPassed");
@@ -1973,6 +1989,9 @@ function showSplash(pages,passCondition) {
   var pageNumber = 0;
   if (firstTime) {
     game.bg.disableBoard();
+    if (turn) {
+      turn.sprite.inputEnabled = false;
+    }
     if (!game.splash) {
       game.splash = game.add.sprite(game.width/2, game.height/2, 'blackground');
       game.splash.anchor.setTo(.5);
@@ -3946,7 +3965,7 @@ function checkBattle(space) {
   //space, battle 
   //happens
   for (i = 1; i < playersList.length; i++) {
-    if (playersList[i] && playersList[i].sprite) {
+    if (playersList[i] && playersList[i].sprite && (!game.splash || !game.splash.alive)) {
       playersList[i].sprite.inputEnabled = true;
     }
   }
@@ -4033,6 +4052,8 @@ function changeTurn() {
             {text: "You roll these against the enemy's Defense dice. The side that has the most success deals damage equal to the difference to the side that has the least successes.\n\nIf you rolled three successes on your attack dice against a monster's two successes on their defence dice, you would deal one damage.", icon: 'icons', frame: 7},
             {text: "If you have any further questions or suggestions, feel free to send an email to tastycookiegames@gmail.com and we’ll help you out as best we can!"}
           ],"firstMonsterTurnPassed");
+          firstTime = false;
+          localStorage.setItem('firstTime', firstTime);
         }
         monstersMoving = false;
         actionPoints = 3;
