@@ -13,8 +13,8 @@ function alignGameOrientation() {
       game.height = viewportHeight;*/
     } else if (orientation == 'portrait') {
       game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-      gameCanvas.style.transform = "rotate(90deg)";
-      gameCanvas.style.display = "block";
+      //gameCanvas.style.transform = "rotate(90deg)";
+      //gameCanvas.style.display = "block";
     }
   }
 }
@@ -34,7 +34,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": "1.0.5",
+   "versionNumber": "1.0.6",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -143,6 +143,7 @@ var C = {
   "height": (749/4)
  }
 }
+var firstRunPortrait;
 var bossNames = ["The Bloat","The Deciever","The Brute"] 
 var focusX,
  focusY,
@@ -312,6 +313,7 @@ class Load {
     }
     this.load.image("howto","assets/howto.png",1920,1080);
     this.load.image("blackground","assets/blackbox.png",512,512);
+    this.load.image("pleaseRotate","assets/rotatepic.png",320,568);
     this.load.image("redCard",C.mech.colorCards.redfile,520,791);
     this.load.image("blueCard",C.mech.colorCards.bluefile,520,791);
     this.load.image("greenCard",C.mech.colorCards.greenfile,520,791);
@@ -358,6 +360,22 @@ class Load {
 var returnButton;
 class MainMenu {
   preload() {
+    firstRunPortrait = game.scale.isGamePortrait;
+    game.scale.forceOrientation(true,false);
+    game.scale.enterIncorrectOrientation.add(function() {
+    if (!Phaser.Device.desktop){
+        game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+        document.getElementById("turn").style.display="block";
+    }
+    });
+    game.scale.leaveIncorrectOrientation.add(function() {
+    if (!Phaser.Device.desktop){
+          if (firstRunPortrait){
+            game.renderer.resize(game.width,game.height);
+          }
+          document.getElementById("turn").style.display="none";
+        }
+    });
   }
 
   create() {
