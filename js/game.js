@@ -1,13 +1,21 @@
 function alignGameOrientation() {
-  var gameCanvas = document.querySelector('canvas');
-  var viewportWidth  = document.documentElement.clientWidth;
-  var viewportHeight = document.documentElement.clientHeight;
-  if (screen.orientation.type == 'landscape-primary' || screen.orientation.type == 'landscape' || screen.orientation.type == 'landscape-secondrary' ) {
-    gameCanvas.style.transform = "rotate(0deg)";
-    /*game.width = viewportWidth;
-    game.height = viewportHeight;*/
-  } else if (screen.orientation.type == 'portrait-primary' || screen.orientation.type == 'portrait' || screen.orientation.type == 'portrait-secondrary' ) {
-    gameCanvas.style.transform = "rotate(90deg)";
+  if (!Phaser.Device.desktop) {
+    if (window.innerHeight > window.innerWidth){
+          var orientation = 'portrait';
+    } else{
+          var orientation = 'landscape';
+    }
+    var gameCanvas = document.querySelector('canvas');
+    if (orientation == 'landscape') {
+      gameCanvas.style.transform = "rotate(0deg)";
+      game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+      /*game.width = viewportWidth;
+      game.height = viewportHeight;*/
+    } else if (orientation == 'portrait') {
+      game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+      gameCanvas.style.transform = "rotate(90deg)";
+      gameCanvas.style.display = "block";
+    }
   }
 }
 if (localStorage && localStorage.getItem("quality")) {
@@ -260,8 +268,8 @@ class Boot {
       game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
     } else {
       game.scale.scaleMode = Phaser.ScaleManager.NO_SCALE;
-      var viewportWidth  = document.documentElement.clientWidth;
-      var viewportHeight = document.documentElement.clientHeight;
+      var viewportWidth  = screen.width;
+      var viewportHeight = screen.height;
       //screen.orientation.addEventListener('change', function() {
         //console.log('new orientation is ', screen.orientation.type);
         alignGameOrientation();
@@ -807,13 +815,6 @@ class Setup {
 update() {
 
 
-  /*if (Phaser.Device.desktop) {
-    if (window.innerWidth < C.game.width) {
-    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-    } else {
-    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-    }
-    }*/
   //Set ZoomIn to true or ZoomOut to false to enable zoom. It will
   //reset itself.
   //
