@@ -1,3 +1,15 @@
+function alignGameOrientation() {
+  var gameCanvas = document.querySelector('canvas');
+  var viewportWidth  = document.documentElement.clientWidth;
+  var viewportHeight = document.documentElement.clientHeight;
+  if (screen.orientation.type == 'landscape-primary' || screen.orientation.type == 'landscape' || screen.orientation.type == 'landscape-secondrary' ) {
+    gameCanvas.style.transform = "rotate(0deg)";
+    /*game.width = viewportWidth;
+    game.height = viewportHeight;*/
+  } else if (screen.orientation.type == 'portrait-primary' || screen.orientation.type == 'portrait' || screen.orientation.type == 'portrait-secondrary' ) {
+    gameCanvas.style.transform = "rotate(90deg)";
+  }
+}
 if (localStorage && localStorage.getItem("quality")) {
   var globalScale = localStorage.getItem('quality');
   var qualitySetting = localStorage.getItem('qualityKey');
@@ -14,7 +26,7 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": "1.0.4",
+   "versionNumber": "1.0.5",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
@@ -238,6 +250,7 @@ class Boot {
     game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
     this.scale.pageAlignVertically = true;
     if (Phaser.Device.desktop) {
+      //document.getElementById("attackonmars").requestFullscreen();
       /*if (window.innerWidth < C.game.width) {
         game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
       } else {
@@ -246,7 +259,13 @@ class Boot {
       }*/
       game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
     } else {
-      game.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
+      game.scale.scaleMode = Phaser.ScaleManager.NO_SCALE;
+      var viewportWidth  = document.documentElement.clientWidth;
+      var viewportHeight = document.documentElement.clientHeight;
+      //screen.orientation.addEventListener('change', function() {
+        //console.log('new orientation is ', screen.orientation.type);
+        alignGameOrientation();
+      //});
     }
     game.load.bitmapFont('attackfont','assets/attackfont.png', 'assets/attackfont.fnt');
     game.load.bitmapFont('font','assets/font.png', 'assets/font.fnt');
@@ -650,17 +669,23 @@ class Setup {
     Space[obj_keys[i]].occupied = false;
   }   
   game.stage.smoothed = true;
-if (Phaser.Device.desktop) {
+/*if (Phaser.Device.desktop) {
+  //this.scale.enterIncorrectOrientation.add(this.enterIncorrectOrientation, this);
+  //this.scale.leaveIncorrectOrientation.add(this.leaveIncorrectOrientation, this);
   /*if (window.innerWidth < C.game.width) {
     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
   } else {
     game.scale.scaleMode = Phaser.ScaleManager.USER_SCALE;
     game.scale.setUserScale((window.innerWidth)/2800,(window.innerHeight)/1280);
-  }*/
+  }
     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
 } else {
-  game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-}
+  game.scale.scaleMode = Phaser.ScaleManager.NO_SCALE;
+  //screen.orientation.addEventListener('change', function() {
+    //console.log('new orientation is ', screen.orientation.type);
+     alignGameOrientation();
+  //});
+}*/
   game.camera.bounds = null;
   console.log("Placing Board");
   if (!playerCount || Number.isInteger(playerCount) == false || playerCount < 2) {
@@ -764,6 +789,7 @@ if (Phaser.Device.desktop) {
   fade("in");  
 }
 update() {
+
 
   /*if (Phaser.Device.desktop) {
     if (window.innerWidth < C.game.width) {
@@ -1220,7 +1246,7 @@ function pullOutInfo() {
 function allowBattle() {
   battlePlayer.sprite.events.onDragStop._bindings = [];
   //battlePlayer.sprite.events.onDragStop.add(checkAttack, this.sprite);
-  battlePlayer.sprite.events.onInputOut.add(pullInInfo, this.sprite);
+  //battlePlayer.sprite.events.onInputOut.add(pullInInfo, this.sprite);
   battlePlayer.sprite.events.onInputOver.add(pullOutInfo, this.sprite);
   //battlePlayer.sprite.input.enableDrag(false);
   battlePlayer.sprite.input.draggable = false; 
@@ -1234,7 +1260,7 @@ function allowBattle() {
     extraBattleTexts[i].valueDisplay.y = extraBattleTexts[i].originalY + extraBattleTexts[i].list.yincrement;
     game.add.tween(extraBattleTexts[i].valueIcon).to({ x: extraBattleTexts[i].list.x - 20*globalScale + extraBattleTexts[i].list.xincrement, y: extraBattleTexts[i].originalY + extraBattleTexts[i].list.yincrement}, C.game.zoomSpeed*1, Phaser.Easing.Back.InOut, true);
     var valueTween2 = game.add.tween(extraBattleTexts[i].valueDisplay).to({ x: extraBattleTexts[i].list.x + 20*globalScale + extraBattleTexts[i].list.xincrement, y: extraBattleTexts[i].originalY + extraBattleTexts[i].list.yincrement}, C.game.zoomSpeed*1, Phaser.Easing.Back.InOut, true);
-    valueTween2.onComplete.add(pullInInfo, this);
+    //valueTween2.onComplete.add(pullInInfo, this);
     }
 }
 
@@ -1533,7 +1559,7 @@ function returnToBattle(infoDisplay) {
   if (battlePlayer.sprite.input.enabled === false) {
     battlePlayer.sprite.inputEnabled = true;
   }
-  pullInInfo();
+  //pullInInfo();
   if (infoDisplay) {
     infoDisplay.valueIcon.destroy();
     infoDisplay.valueDisplay.destroy();
