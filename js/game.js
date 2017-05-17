@@ -962,8 +962,11 @@ update() {
             playerBar.playerCard.loadTexture(C.mech.colorCards[battlePlayer.sprite.key]);
           }
           playerBattleTexts.x = game.camera.x/C.game.zoomScale + game.camera.width/C.game.zoomScale - (300*globalScale)/C.game.zoomScale;
+          /* old increments.
           playerBattleTexts.yincrement = -130*globalScale;
-          playerBattleTexts.xincrement = -130*globalScale;
+          playerBattleTexts.xincrement = -130*globalScale;*/
+          playerBattleTexts.yincrement = -130*globalScale;
+          playerBattleTexts.xincrement = -150*globalScale;
           var playerBarTween = game.add.tween(playerBar).to({ x: playerBattleTexts.x + playerBattleTexts.xincrement, y: playerBar.y + playerBattleTexts.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           var playerBarTween2 = game.add.tween(playerBar.playerCard).to({ x: game.camera.width/C.game.zoomScale + game.camera.x/C.game.zoomScale - playerBar.playerCard.width/2, y: game.camera.y/C.game.zoomScale + playerBar.playerCard.height/2 }, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           playerBarTween.onComplete.add(allowBattle,this);
@@ -1019,8 +1022,8 @@ update() {
             monsterBar.monsterCard.loadTexture(C.monster.cards[battleMonster.sprite.spriteName]);
           }
           monsterBattleTexts.x = game.camera.x/C.game.zoomScale + ((300*globalScale)/C.game.zoomScale);
-          monsterBattleTexts.yincrement = -130*globalScale;
-          monsterBattleTexts.xincrement = 0;
+          monsterBattleTexts.yincrement = -150*globalScale;
+          monsterBattleTexts.xincrement = 150*globalScale;
           var monsterBarTween = game.add.tween(monsterBar).to({ x: monsterBattleTexts.x + monsterBattleTexts.xincrement, y: monsterBar.y + monsterBattleTexts.yincrement}, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           var monsterBarTween2 = game.add.tween(monsterBar.monsterCard).to({ x: game.camera.x/C.game.zoomScale + monsterBar.monsterCard.width/2, y: game.camera.y/C.game.zoomScale + monsterBar.monsterCard.height/2 }, C.game.zoomSpeed*2, Phaser.Easing.Linear.None, true);
           monsterBar.anchor.setTo(.5);
