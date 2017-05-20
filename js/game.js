@@ -1,23 +1,3 @@
-function alignGameOrientation() {
-  if (!Phaser.Device.desktop) {
-    if (window.innerHeight > window.innerWidth){
-          var orientation = 'portrait';
-    } else{
-          var orientation = 'landscape';
-    }
-    var gameCanvas = document.querySelector('canvas');
-    if (orientation == 'landscape') {
-      gameCanvas.style.transform = "rotate(0deg)";
-      game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-      /*game.width = viewportWidth;
-      game.height = viewportHeight;*/
-    } else if (orientation == 'portrait') {
-      game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-      //gameCanvas.style.transform = "rotate(90deg)";
-      //gameCanvas.style.display = "block";
-    }
-  }
-}
 if (localStorage && localStorage.getItem("quality")) {
   var globalScale = localStorage.getItem('quality');
   var qualitySetting = localStorage.getItem('qualityKey');
@@ -34,11 +14,11 @@ localStorage.setItem('quality', globalScale);
 localStorage.setItem('qualityKey', qualitySetting);
 var C = {
  "game": {
-   "versionNumber": "1.0.6",
+   "versionNumber": "1.0.8",
    "zoomScale": 3,
    "zoomSpeed": 500,
     "moveSpeed": 900,
-   "width": 2800*globalScale,
+  "width": 2800*globalScale,
     "height": 1280*globalScale,
    "textStyle": {
       align: 'center',
@@ -401,6 +381,7 @@ class MainMenu {
     });
     tutorialText.anchor.set(0.5);
     playerCount = 4;
+    //Allow players to change playercount. Disabled.
     //var countNumber = game.add.bitmapText(game.world.centerX, game.world.centerY + game.height/9, 'attackfont', playerCount, 90*globalScale) 
     //countNumber.anchor.set(0.5);
     /*var left = game.add.sprite(game.world.centerX - 140*globalScale, game.world.centerY + game.height/6, "leftright");
@@ -4361,22 +4342,8 @@ function spawnPlayer(number) {
   obj.sprite.inputEnabled = true;
   obj.sprite.input.enableDrag(true);
   player.parentobj = obj;
-  /*if (!heldSprite) {
-    heldSprite = obj.sprite;
-    obj.sprite.revive(game.input.mousePointer.x, game.input.mousePointer.y);
-    game.bg.disableBoard();
-    game.bg.highlightOptions(obj);
-    obj.sprite.inputEnabled = true;
-    obj.sprite.tint = 0xffffff;
-    obj.sprite.events.onInputDown._bindings = [];
-    obj.sprite.events.onInputOver._bindings = [];
-    obj.sprite.events.onInputOut._bindings = [];
-    obj.sprite.events.onDragStop._bindings = [];
-    obj.sprite.events.onInputUp.add(placeRebuilt,{obj:obj, quadrant:String.fromCharCode(96 + obj.sprite.number),column:false,row:"0"})
-  } else {*/
-    game.bg.pendingRebuilt.push(obj);
-    globalList.push(obj);
-  //}
+  game.bg.pendingRebuilt.push(obj);
+  globalList.push(obj);
   return obj
 }
 function spawnRandom(object,quadrant,row,occupiedCheck) {
@@ -4476,9 +4443,6 @@ function spawnRandom(object,quadrant,row,occupiedCheck) {
     } else if (space.key === "d30" || space.key === "d20") {
       random.angle += 10;
     }
-      /*if(random.angle < 0) {
-      random.angle = 360 - (-random.angle);
-    }*/
     occupiedRows.push(space.key.substring(0,2));
   } else {
     random.scale.x = C.mech.scale;
@@ -4615,98 +4579,6 @@ function addToOccupied(object,space) {
   }
 }
 
-/*
-function spawnSpecific(object,space) {
-  targetSpace = Space[space];
-  spawn = game.add.sprite(targetSpace.x*C.bg.scale*C.bg.resizeX + game.bg.position.x,targetSpace.y*C.bg.scale*C.bg.resizeY + game.bg.position.y,object); 
-  spawn.anchor.x = .5;
-  spawn.anchor.y = .5;
-  if (object === "destroyedCity") {
-    spawn.scale.x = C.destroyed.scale;
-    spawn.scale.y = C.destroyed.scale;
-    spawn.angle = Math.atan2(game.bg.y + game.bg.height/2 - spawn.y, game.bg.x + game.bg.width/2 - spawn.x );
-    spawn.angle = spawn.angle * (180/Math.PI) - 10;
-    if(spawn.angle < 0)
-      {
-        spawn.angle = 360 - (-spawn.angle);
-      }
-    console.log(random.angle);
-    occupiedRows.push(space.substring(0,2));
-  } else {
-    spawn.scale.x = C.mech.scale;
-    spawn.scale.y = C.mech.scale;
-  }
-  if (object === "monster") {
-    threatLevel += 1;
-    game.world.bringToTop(random);
-    obj.sprite.inputEnabled = true;
-    obj.sprite.events.onInputDown.add(setLastClicked, this);
-    if (threatLevel <= 12) {
-      do {
-        var drawnMonster = MonstersDeck.initialMonsters[Math.floor(Math.random() * MonstersDeck.initialMonsters.length)];
-      } while (drawnMonster.drawn)
-      obj.hp = drawnMonster.hp;
-      obj.maxhp = drawnMonster.hp;
-      obj.batk = drawnMonster.batk;
-      obj.upgrades = drawnMonster.upgrades;
-      for (i = 0; i < obj.upgrades.length; i++) {
-        if (MU[obj.upgrades[i]] && MU[obj.upgrades[i]].passive) {
-          MU[obj.upgrades[i]].passive(obj);
-        }
-      }
-      obj.def = drawnMonster.def;
-      obj.rp = 1;
-      obj.mr = 1;
-    } else if (threatLevel <= 24) { 
-      do {
-        var drawnMonster = MonstersDeck.growingMonsters[Math.floor(Math.random() * MonstersDeck.growingMonsters.length)];
-      } while (drawnMonster.drawn)
-      obj.hp = drawnMonster.hp;
-      obj.batk = drawnMonster.batk;
-      obj.maxhp = drawnMonster.hp;
-      obj.upgrades = drawnMonster.upgrades;
-      for (i = 0; i < obj.upgrades.length; i++) {
-        if (MU[obj.upgrades[i]] && MU[obj.upgrades[i]].passive) {
-          MU[obj.upgrades[i]].passive(obj);
-        }
-      }
-      obj.def = drawnMonster.def;
-      obj.rp = 2;
-      obj.mr = 3;
-    } else {
-      if (threatLevel >= 36) {
-        threatLevel = 24;
-        for (i = 0; i < MonstersDeck.extinctionMonsters.length; i++) {
-          MonsterDeck.extinctionMonsters.drawn = false;
-        }
-      }
-      do {
-        var drawnMonster = MonstersDeck.extinctionMonsters[Math.floor(Math.random() * MonstersDeck.extinctionMonsters.length)];
-      } while (drawnMonster.drawn)
-      obj.hp = drawnMonster.hp;
-      obj.maxhp = drawnMonster.hp;
-      obj.batk = drawnMonster.batk;
-      obj.upgrades = drawnMonster.upgrades;
-      for (i = 0; i < obj.upgrades.length; i++) {
-        if (MU[obj.upgrades[i]] && MU[obj.upgrades[i]].passive) {
-          MU[obj.upgrades[i]].passive(obj);
-        }
-      }
-      obj.def = drawnMonster.def;
-      obj.rp = 3;
-      obj.mr = 4;
-    } 
-    drawnMonster.drawn = true;
-  }
-  spawn.smoothed = true;
-  addToOccupied(targetSpace,spawn);
-  return {
-    space: targetSpace,
-    key: space,
-    sprite: spawn
-  }
-}
-*/
 console.log(Phaser.Device.desktop);
 var game = new Phaser.Game(C.game.width,C.game.height, Phaser.AUTO, '', {
     init: function () {
