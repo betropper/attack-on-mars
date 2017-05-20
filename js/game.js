@@ -100,10 +100,10 @@ var C = {
   "width": 294,
   "height": 120
  },
- "wrench": {
+ /*"wrench": {
   "width": 300,
   "height": 300
- },
+ },*/
  "arrow": {
   "width": 512,
   "height": 512
@@ -305,10 +305,7 @@ class Load {
     this.load.image("red", "assets/PlayerIcon2.png",C.mech.width,C.mech.height);
     this.load.image("green", "assets/PlayerIcon3.png",C.mech.width,C.mech.height);
     this.load.image("yellow", "assets/PlayerIcon4.png",C.mech.width,C.mech.height);
-    this.load.image("bluecircle", "assets/blue-circle.png", 72, 72);
-    this.load.image("redcircle", "assets/red-circle.png", 72, 72);
     this.load.image("yellowsquare", "assets/yellowsquare.jpg", 72, 72);
-    this.load.image("purplecircle", "assets/purple-circle.png", 72, 72);
     this.load.image("destroyedCity", "assets/destroyedcity.png", 66, 124);
     this.load.image("initialMonster", "assets/InitialIcon.png", C.monster.width, C.monster.height);
     this.load.image("growingMonster", "assets/GrowingIcon.png", C.monster.width, C.monster.height);
@@ -323,7 +320,7 @@ class Load {
     this.load.image("growingCard", "assets/Growing.jpg", 520, 791);
     this.load.image("extinctionCard", "assets/Extinction.jpg", 520, 791);
     this.load.image("menubar","assets/menubar.png",C.menuBar.width,C.menuBar.height);
-    this.load.image("wrench","assets/wrench.png", C.wrench.width,C.wrench.height);
+    //this.load.image("wrench","assets/wrench.png", C.wrench.width,C.wrench.height);
     this.load.image("arrow","assets/arrow.png", C.arrow.width,C.arrow.height);
     this.load.spritesheet("leftright","assets/leftright.png", 62, 128);
     this.load.image("mine","assets/Mines.png", C.extras.width,C.extras.height);
