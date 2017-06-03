@@ -493,6 +493,7 @@ var U = {
       }
       game.add.tween(game.coverbg).to( { alpha: 1}, 1000, Phaser.Easing.Linear.None, true);
       game.add.tween(game.coverbg.text).to( { alpha: 1}, 1000, Phaser.Easing.Linear.None, true);
+      game.world.bringToTop(game.coverbg);
       game.world.bringToTop(fusionButton);
       game.world.bringToTop(game.coverbg.text);
       var disabledInputs = [];

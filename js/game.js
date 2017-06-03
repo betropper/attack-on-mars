@@ -2468,11 +2468,11 @@ function handleDeath(damaged,survivor,deathCase) {
       }
     }
     console.log("There are " + destroyedPlayers + " mechas destroyed.")
-    if (destroyedPlayers === playerCount) {
+    if (destroyedPlayers === playerCount || destroyedPlayersList.length >= playerCount) {
       zoomOut = true;
       game.bg.disableBoard();
       fade("out","GameOver");
-      game.state.start("GameOver");
+      //game.state.start("GameOver");
     }
   } else if (damaged === battleMonster && damaged != boss) {
     focusSpace.occupied = scrubList(focusSpace.occupied);
