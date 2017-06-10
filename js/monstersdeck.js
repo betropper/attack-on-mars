@@ -307,7 +307,7 @@ var MU = {
   "Poison Aura": {
     "desc": "Both Threat and Mech suffer 1 point of damage after combat",
     "cost": 1,
-    active(attacker,defender,stacks) {
+    active: function(attacker,defender,stacks) {
       var attackerDamage = stacks;
       var defenderDamage = shieldDamage(defender,stacks);
       attacker.hp -= attackerDamage
